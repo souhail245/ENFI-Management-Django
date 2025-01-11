@@ -46,7 +46,7 @@ def student_home(request):
         'data_present': data_present,
         'data_absent': data_absent,
         'data_name': subject_name,
-        'page_title': 'Student Homepage'
+        'page_title': 'Acceuil : '
 
     }
     return render(request, 'student_template/home_content.html', context)
