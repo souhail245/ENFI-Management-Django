@@ -12,12 +12,12 @@
                     <div class="inner">
                         <h3>{{total_students}}</h3>
 
-                        <p>Total Students</p>
+                        <p>Total des étudiants</p>
                     </div>
                     <div class="icon">
                       <i class="nav-icon fas fa-user-graduate"></i>
                     </div>
-                    <a href="{% url 'manage_student' %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                    <a href="{% url 'manage_student' %}" class="small-box-footer">Plus d'informations <i class="fas fa-arrow-circle-right"></i></a>
 
                 </div>
             </div>
@@ -28,12 +28,12 @@
                     <div class="inner">
                         <h3>{{total_staff}}</h3>
 
-                        <p>Total Staff</p>
+                        <p>Total du personnel</p>
                     </div>
                     <div class="icon">
                       <i class="nav-icon fas fa-users"></i>
                     </div>
-                    <a href="{% url 'manage_staff' %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                    <a href="{% url 'manage_staff' %}" class="small-box-footer">Plus d'informations <i class="fas fa-arrow-circle-right"></i></a>
                 </div>
             </div>
             <!-- ./col -->
@@ -43,12 +43,12 @@
                     <div class="inner">
                         <h3>{{total_course}}</h3>
 
-                        <p>Total Course</p>
+                        <p>Total des cours</p>
                     </div>
                     <div class="icon">
                       <i class="nav-icon fas fa-th-list"></i>
                     </div>
-                    <a href="{% url 'manage_course' %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                    <a href="{% url 'manage_course' %}" class="small-box-footer">Plus d'informations <i class="fas fa-arrow-circle-right"></i></a>
                 </div>
             </div>
             <!-- ./col -->
@@ -58,12 +58,12 @@
                     <div class="inner">
                         <h3>{{total_subject}}</h3>
 
-                        <p>Total Subjects</p>
+                        <p>Total des matières</p>
                     </div>
                     <div class="icon">
                       <i class="nav-icon fas fa-book"></i>
                     </div>
-                    <a href="{% url 'manage_subject' %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                    <a href="{% url 'manage_subject' %}" class="small-box-footer">Plus d'informations <i class="fas fa-arrow-circle-right"></i></a>
                 </div>
             </div>
             <!-- ./col -->
@@ -75,7 +75,7 @@
                 <!-- LINE CHART -->
                 <div class="card card-dark">
                   <div class="card-header">
-                    <h3 class="card-title">Staffs - Students Overview</h3>
+                    <h3 class="card-title"> Aperçu Personnels - Étudiants</h3>
     
                     <div class="card-tools">
                       <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i>
@@ -93,7 +93,7 @@
                 <div class="col-md-6">
                     <div class="card card-dark">
               <div class="card-header">
-                <h3 class="card-title">Attendance Per Subject</h3>
+                <h3 class="card-title">Présence par matière</h3>
 
                 <div class="card-tools">
                   <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i>
@@ -117,7 +117,7 @@
             <!-- BAR CHART -->
             <div class="card card-dark">
               <div class="card-header">
-                <h3 class="card-title">Student's Attendance & Leave Overview</h3>
+                <h3 class="card-title">Aperçu de la présence et des congés des étudiants</h3>
 
                 <div class="card-tools">
                   <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i>
@@ -148,7 +148,7 @@
             <!-- PIE CHART -->
             <div class="card card-dark">
               <div class="card-header">
-                <h3 class="card-title">Total Students in Each Course</h3>
+                <h3 class="card-title">Total des étudiants par cours</h3>
 
                 <div class="card-tools">
                   <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i>
@@ -167,7 +167,7 @@
             <!-- PIE CHART -->
             <div class="card card-dark">
               <div class="card-header">
-                <h3 class="card-title">Total Students in Each Subject</h3>
+                <h3 class="card-title">Total des étudiants par matière</h3>
 
                 <div class="card-tools">
                   <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i>
@@ -190,7 +190,7 @@
   <script>
       $(document).ready(function(){
         var donutData        = {
-            labels: ['Students', 'Staff'],
+            labels: ['Étudiants', 'Personnel'],
             datasets: [
               {
                 data:[{{total_students}}, {{total_staff}}],
@@ -219,7 +219,7 @@
       labels  : subject_list,
       datasets: [
       {
-        label               : 'Attendance Per Subject',
+        label               : 'Présence par matière',
         backgroundColor     : '#17A2B8',
         borderColor         : 'rgba(60,141,188,0.8)',
         pointRadius          : false,
@@ -299,7 +299,7 @@
         labels  : student_name_list,
         datasets: [
           {
-            label               : 'Absent/Leave',
+            label               : 'Absent/En congé',
             backgroundColor     : '#b50a04',
             borderColor         : '#b50a04',
             pointRadius          : false,
@@ -310,7 +310,7 @@
             data                : student_attendance_leave_list 
           },
           {
-            label               : 'Attendance',
+            label               : 'Présence',
             backgroundColor     : '#5a615c',
             borderColor         : 'rgba(210, 214, 222, 1)',
             pointRadius         : false,

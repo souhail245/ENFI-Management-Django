@@ -12,7 +12,7 @@
                     <div class="inner">
                         <h3>{{total_attendance}}</h3>
 
-                        <p>Assiduité des étudiants :</p>
+                        <p>Assiduité des étudiants</p>
                     </div>
                     <div class="icon">
                       <i class="nav-icon fas fa-calendar-alt"></i>
@@ -27,7 +27,7 @@
                     <div class="inner">
                         <h3>{{ percent_present }}<sup style="font-size: 20px">%</sup></h3>
 
-                        <p>Pourcentage de présence :</p>
+                        <p>Pourcentage de présence</p>
                     </div>
                     <div class="icon">
                       <i class="nav-icon fas fa-calendar-check"></i>
@@ -42,7 +42,7 @@
                     <div class="inner">
                         <h3>{{percent_absent}}<sup style="font-size: 20px">%</sup></h3>
 
-                        <p>Pourcentage d'abscence :</p>
+                        <p>Pourcentage d'abscence</p>
                     </div>
                     <div class="icon">
                       <i class="nav-icon fas fa-calendar-minus"></i>
@@ -57,7 +57,7 @@
                     <div class="inner">
                         <h3>{{total_subject}}</h3>
 
-                        <p>Total des Matières :</p>
+                        <p>Total des Matières</p>
                     </div>
                     <div class="icon">
                       <i class="nav-icon fas fa-book"></i>
@@ -121,7 +121,7 @@ $(document).ready(function(){
 
     //Dataset
     var subjects = {{data_name|safe}}
-    var data_present = {{data_present}}
+    var data_present = {{ data_present|safe }};
     var data_absent = {{data_absent}}
 
     //-------------
@@ -134,7 +134,7 @@ $(document).ready(function(){
       datasets: [
         {
           data: [{{percent_present}}, {{percent_absent}}],
-          backgroundColor : ['#00a65a','#f56954'],
+          backgroundColor: ['#00a65a','#f56954'],
         }
       ]
     }
