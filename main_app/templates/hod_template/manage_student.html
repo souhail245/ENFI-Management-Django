@@ -21,6 +21,7 @@
                                     <th>Full Name</th>
                                     <th>Email</th>
                                     <th>Gender</th>
+                                    <th>Numéro de téléphone</th>
                                     <th>Course</th>
                                     <th>Avatar</th>
                                     <th>Actions</th>
@@ -33,6 +34,7 @@
                                     <td>{{student.last_name}}, {{student.first_name}}</td>
                                     <td>{{student.email}}</td>
                                     <td>{{student.gender}}</td>
+                                    <td>{{ student.student.phone_number|default:"Not provided" }}</td>
                                     <td>{{student.student.course.name}}</td>
                                     <td>
                                         {% if student.profile_pic == ""  %}
@@ -43,12 +45,36 @@
                                         {% endif %}
                                     </td>
                                     
-                                    <td><a href="{% url 'edit_student' student.student.id %}" class="btn btn-info">Edit</a> -
-                                        <a href="{% url 'delete_student' student.student.id %}" class="btn btn-danger" onclick="return confirm('Are you sure about this ?')">Delete</a>
-
+                                    <td>
+                                        <a href="{% url 'edit_student' student.student.id %}" class="btn btn-outline-info btn-sm">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                        
+                                        <a href="#" class="btn btn-outline-danger btn-sm" onclick="confirmDelete('{% url 'delete_student' student.student.id %}')">
+                                            <i class="fas fa-trash-alt"></i> Delete
+                                        </a>
                                     </td>
                                 </tr>
                                 {% endfor %}
+                                
+                                <script>
+                                    function confirmDelete(deleteUrl) {
+                                        Swal.fire({
+                                            title: 'Are you sure?',
+                                            text: "You won't be able to revert this!",
+                                            icon: 'warning',
+                                            showCancelButton: true,
+                                            confirmButtonText: 'Yes, delete it!',
+                                            cancelButtonText: 'Cancel',
+                                            reverseButtons: true
+                                        }).then((result) => {
+                                            if (result.isConfirmed) {
+                                                window.location.href = deleteUrl;  // Redirige vers l'URL de suppression
+                                            }
+                                        });
+                                    }
+                                </script>
+                                
                             </tbody>
                         </table>
                     </div>

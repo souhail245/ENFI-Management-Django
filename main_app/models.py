@@ -78,6 +78,7 @@ class Student(models.Model):
     admin = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.DO_NOTHING, null=True, blank=False)
     session = models.ForeignKey(Session, on_delete=models.DO_NOTHING, null=True)
+    phone_number = models.CharField(max_length=15)  # Nouveau champ
 
     def __str__(self):
         return self.admin.last_name + ", " + self.admin.first_name
