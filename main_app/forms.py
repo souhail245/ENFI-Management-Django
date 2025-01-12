@@ -1,3 +1,4 @@
+import re
 from django import forms
 from django.forms.widgets import DateInput, TextInput
 
@@ -23,7 +24,7 @@ class CustomUserForm(FormSettings):
         'password': forms.PasswordInput(),
     }
     profile_pic = forms.ImageField()
-
+    phone_number = forms.CharField(max_length=15, required=False, widget=forms.TextInput(attrs={'placeholder': 'Phone number'}))
     def __init__(self, *args, **kwargs):
         super(CustomUserForm, self).__init__(*args, **kwargs)
 
@@ -49,10 +50,17 @@ class CustomUserForm(FormSettings):
                     raise forms.ValidationError("The given email is already registered")
 
         return formEmail
-
+    
+    def clean_phone_number(self):
+        phone_number = self.cleaned_data.get('phone_number')
+        if phone_number:
+            # Exemple de validation pour un format international
+            if not re.match(r'^\+?[1-9]\d{1,14}$', phone_number):
+                raise forms.ValidationError("Invalid phone number format")
+        return phone_number
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'email', 'gender',  'password','profile_pic', 'address' ]
+        fields = ['first_name', 'last_name', 'email', 'gender', 'phone_number', 'password','profile_pic', 'address' ]
 
 
 class StudentForm(CustomUserForm):
@@ -62,7 +70,7 @@ class StudentForm(CustomUserForm):
     class Meta(CustomUserForm.Meta):
         model = Student
         fields = CustomUserForm.Meta.fields + \
-            ['course', 'session']
+            ['course', 'session', 'phone_number']
 
 
 class AdminForm(CustomUserForm):

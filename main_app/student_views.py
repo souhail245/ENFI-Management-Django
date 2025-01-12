@@ -150,6 +150,7 @@ def student_view_profile(request):
                 password = form.cleaned_data.get('password') or None
                 address = form.cleaned_data.get('address')
                 gender = form.cleaned_data.get('gender')
+                phone_number = form.cleaned_data.get('phone_number') 
                 passport = request.FILES.get('profile_pic') or None
                 admin = student.admin
                 if password != None:
@@ -164,6 +165,7 @@ def student_view_profile(request):
                 admin.address = address
                 admin.gender = gender
                 admin.save()
+                student.phone_number = phone_number
                 student.save()
                 messages.success(request, "Profile Updated!")
                 return redirect(reverse('student_view_profile'))

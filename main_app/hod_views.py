@@ -214,7 +214,7 @@ def manage_staff(request):
 
 
 def manage_student(request):
-    students = CustomUser.objects.filter(user_type=3)
+    students = CustomUser.objects.filter(user_type=3).select_related('student')
     context = {
         'students': students,
         'page_title': 'Manage Students'
