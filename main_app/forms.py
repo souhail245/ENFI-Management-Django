@@ -70,7 +70,7 @@ class StudentForm(CustomUserForm):
     class Meta(CustomUserForm.Meta):
         model = Student
         fields = CustomUserForm.Meta.fields + \
-            ['course', 'session', 'phone_number']
+            ['matricule','phone_number' , 'course', 'session']
 
 
 class AdminForm(CustomUserForm):

@@ -128,11 +128,13 @@ def add_student(request):
             first_name = student_form.cleaned_data.get('first_name')
             last_name = student_form.cleaned_data.get('last_name')
             address = student_form.cleaned_data.get('address')
-            email = student_form.cleaned_data.get('email')
+            email = student_form.cleaned_data.get('email') 
+            phone_number = student_form.cleaned_data.get('phone_number')
             gender = student_form.cleaned_data.get('gender')
             password = student_form.cleaned_data.get('password')
             course = student_form.cleaned_data.get('course')
             session = student_form.cleaned_data.get('session')
+            matricule = student_form.cleaned_data.get('matricule')
             passport = request.FILES['profile_pic']
             fs = FileSystemStorage()
             filename = fs.save(passport.name, passport)
@@ -141,16 +143,19 @@ def add_student(request):
                 user = CustomUser.objects.create_user(
                     email=email, password=password, user_type=3, first_name=first_name, last_name=last_name, profile_pic=passport_url)
                 user.gender = gender
-                user.address = address
+                user.address = address   
+                user.student.phone_number = phone_number
                 user.student.session = session
                 user.student.course = course
+                user.student.matricule = matricule
                 user.save()
+                
                 messages.success(request, "Successfully Added")
                 return redirect(reverse('add_student'))
             except Exception as e:
                 messages.error(request, "Could Not Add: " + str(e))
         else:
-            messages.error(request, "Could Not Add: ")
+            messages.error(request, "baa3 Else")
     return render(request, 'hod_template/add_student_template.html', context)
 
 
@@ -303,8 +308,10 @@ def edit_student(request, student_id):
             last_name = form.cleaned_data.get('last_name')
             address = form.cleaned_data.get('address')
             username = form.cleaned_data.get('username')
-            email = form.cleaned_data.get('email')
-            gender = form.cleaned_data.get('gender')
+            matricule = form.cleaned_data.get('matricule')
+            email = form.cleaned_data.get('email')    
+            gender = form.cleaned_data.get('gender')   
+            phone_number = form.cleaned_data.get('phone_number')
             password = form.cleaned_data.get('password') or None
             course = form.cleaned_data.get('course')
             session = form.cleaned_data.get('session')
@@ -318,14 +325,16 @@ def edit_student(request, student_id):
                     user.profile_pic = passport_url
                 user.username = username
                 user.email = email
-                if password != None:
+                if password != None:  
                     user.set_password(password)
                 user.first_name = first_name
                 user.last_name = last_name
-                student.session = session
                 user.gender = gender
                 user.address = address
+                student.matricule = matricule
+                student.session = session  
                 student.course = course
+                student.phone_number = phone_number
                 user.save()
                 student.save()
                 messages.success(request, "Successfully Updated")
