@@ -45,6 +45,7 @@ def admin_home(request):
     subject_all = Subject.objects.all()
     subject_list = []
     student_count_list_in_subject = []
+    
     for subject in subject_all:
         course = Course.objects.get(id=subject.course.id)
         student_count = Student.objects.filter(course_id=course.id).count()
@@ -729,3 +730,5 @@ def delete_session(request, session_id):
         messages.error(
             request, "There are students assigned to this session. Please move them to another session.")
     return redirect(reverse('manage_session'))
+
+
