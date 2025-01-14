@@ -19,10 +19,10 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Full Name</th>
+                                    <th>Niveau</th>
                                     <th>matricule</th>
                                     <th>Gender</th>
                                     <th>Numéro de téléphone</th>
-                                    <th>Course</th>
                                     <th>Avatar</th>
                                     <th>Actions</th>
                                 </tr>
@@ -32,10 +32,11 @@
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
                                     <td>{{student.last_name}}, {{student.first_name}}</td>
+                                    <td>{{student.student.niveau}}</td>
                                     <td>{{student.student.matricule}}</td>
                                     <td>{{student.gender}}</td>
                                     <td>{{ student.student.phone_number|default:"Not provided" }}</td>
-                                    <td>{{student.student.course.name}}</td>
+                                  
                                     <td>
                                         {% if student.profile_pic == ""  %}
                                         No Image

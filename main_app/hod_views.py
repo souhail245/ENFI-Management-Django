@@ -132,8 +132,7 @@ def add_student(request):
             gender = student_form.cleaned_data.get('gender')
             phone_number = student_form.cleaned_data.get('phone_number')
             password = student_form.cleaned_data.get('password')
-            course = student_form.cleaned_data.get('course')
-            session = student_form.cleaned_data.get('session')
+            niveau = student_form.cleaned_data.get('niveau')
             matricule = student_form.cleaned_data.get('matricule')
             passport = request.FILES['profile_pic']
             fs = FileSystemStorage()
@@ -146,9 +145,7 @@ def add_student(request):
                 user.address = address   
                 user.student.matricule = matricule
                 user.student.phone_number = phone_number
-                user.student.session = session
-                user.student.course = course
-               
+                user.student.niveau = niveau
                 user.save()
                 
                 messages.success(request, "Successfully Added")
@@ -309,13 +306,13 @@ def edit_student(request, student_id):
             last_name = form.cleaned_data.get('last_name')
             address = form.cleaned_data.get('address')
             username = form.cleaned_data.get('username')
+            niveau = form.cleaned_data.get('niveau')
             matricule = form.cleaned_data.get('matricule')
             email = form.cleaned_data.get('email')    
             gender = form.cleaned_data.get('gender')   
             phone_number = form.cleaned_data.get('phone_number')
             password = form.cleaned_data.get('password') or None
-            course = form.cleaned_data.get('course')
-            session = form.cleaned_data.get('session')
+        
             passport = request.FILES.get('profile_pic') or None
             try:
                 user = CustomUser.objects.get(id=student.admin.id)
@@ -332,9 +329,8 @@ def edit_student(request, student_id):
                 user.last_name = last_name
                 user.gender = gender
                 user.address = address
+                student.niveau = niveau
                 student.matricule = matricule
-                student.session = session  
-                student.course = course
                 student.phone_number = phone_number
                 user.save()
                 student.save()

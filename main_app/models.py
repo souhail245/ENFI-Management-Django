@@ -80,6 +80,14 @@ class Student(models.Model):
     session = models.ForeignKey(Session, on_delete=models.DO_NOTHING, null=True)
     phone_number = models.CharField(max_length=20,  default="06000007")  # Nouveau champ
     matricule = models.CharField(max_length=14, unique=False, default="5001")  # Nouveau champ
+    # Champ Niveau avec des choix
+    NIVEAU_CHOICES = [
+        ('3eme année', '3ème année'),
+        ('4eme année', '4ème année'),
+        ('5eme année', '5ème année'),
+        ('6eme année', '6ème année'),
+                  ]
+    niveau = models.CharField(max_length=20, choices=NIVEAU_CHOICES, default='3eme année')
 
     def __str__(self):
         return self.admin.last_name + ", " + self.admin.first_name
