@@ -129,8 +129,8 @@ def add_student(request):
             last_name = student_form.cleaned_data.get('last_name')
             address = student_form.cleaned_data.get('address')
             email = student_form.cleaned_data.get('email') 
-            phone_number = student_form.cleaned_data.get('phone_number')
             gender = student_form.cleaned_data.get('gender')
+            phone_number = student_form.cleaned_data.get('phone_number')
             password = student_form.cleaned_data.get('password')
             course = student_form.cleaned_data.get('course')
             session = student_form.cleaned_data.get('session')
@@ -144,10 +144,11 @@ def add_student(request):
                     email=email, password=password, user_type=3, first_name=first_name, last_name=last_name, profile_pic=passport_url)
                 user.gender = gender
                 user.address = address   
+                user.student.matricule = matricule
                 user.student.phone_number = phone_number
                 user.student.session = session
                 user.student.course = course
-                user.student.matricule = matricule
+               
                 user.save()
                 
                 messages.success(request, "Successfully Added")

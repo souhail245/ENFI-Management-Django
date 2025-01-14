@@ -46,13 +46,16 @@
                                     </td>
                                     
                                     <td>
-                                        <a href="{% url 'edit_student' student.student.id %}" class="btn btn-outline-info btn-sm">
-                                            <i class="fas fa-edit"></i> Edit
-                                        </a>
-                                        
-                                        <a href="#" class="btn btn-outline-danger btn-sm" onclick="confirmDelete('{% url 'delete_student' student.student.id %}')">
-                                            <i class="fas fa-trash-alt"></i> Delete
-                                        </a>
+                                        {% if student.student and student.student.id %}
+                                            <a href="{% url 'edit_student' student.student.id %}" class="btn btn-outline-info btn-sm">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </a>
+                                            
+                                            <a href="#" class="btn btn-outline-danger btn-sm" onclick="confirmDelete('{% url 'delete_student' student.student.id %}')">
+                                                <i class="fas fa-trash-alt"></i> Delete
+                                            </a>
+                                
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% endfor %}
