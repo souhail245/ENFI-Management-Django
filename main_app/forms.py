@@ -169,12 +169,19 @@ class FeedbackStudentForm(FormSettings):
 
 
 class StudentEditForm(CustomUserForm):
+    matricule = forms.CharField(max_length=14)  # Ajouter le champ matricule
+
     def __init__(self, *args, **kwargs):
         super(StudentEditForm, self).__init__(*args, **kwargs)
+        
+        # Réorganiser l'ordre des champs dans le formulaire
+        fields_order = ['first_name', 'last_name', 'matricule', 'email', 'gender', 'phone_number', 'password', 'profile_pic', 'address']
+        self.fields = {field: self.fields[field] for field in fields_order}  # Redéfinir l'ordre des champs
 
     class Meta(CustomUserForm.Meta):
         model = Student
-        fields = CustomUserForm.Meta.fields 
+        fields = ['first_name', 'last_name', 'matricule', 'email', 'gender', 'phone_number', 'password', 'profile_pic', 'address']
+
 
 
 class StaffEditForm(CustomUserForm):
