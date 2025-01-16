@@ -20,6 +20,10 @@ from main_app.EditResultView import EditResultView
 from . import hod_views, staff_views, student_views, views
 
 urlpatterns = [
+
+    # urls.py  export pdf 
+    path('students/export/excel/', hod_views.export_students_excel, name='export_students_excel'),
+    path('students/export/pdf/', hod_views.export_students_pdf, name='export_students_pdf'),
    
     path("", views.login_page, name='login_page'),
     path("get_attendance", views.get_attendance, name='get_attendance'),
