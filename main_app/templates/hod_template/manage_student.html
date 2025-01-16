@@ -11,6 +11,14 @@
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">{{page_title}}</h3>
+                        <div class="float-right">
+                            <a href="{% url 'export_students_excel' %}" class="btn btn-success btn-sm">
+                                <i class="fas fa-file-excel"></i> Export Excel
+                            </a>
+                            <a href="{% url 'export_students_pdf' %}" class="btn btn-danger btn-sm">
+                                <i class="fas fa-file-pdf"></i> Export PDF
+                            </a>
+                        </div>
                     </div>
 
 

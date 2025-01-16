@@ -10,8 +10,117 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import UpdateView
 
+
 from .forms import *
 from .models import *
+
+
+
+import xlwt
+from django.http import HttpResponse
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib.units import inch
+
+def export_students_excel(request):
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="students_list.xls"'
+
+    wb = xlwt.Workbook(encoding='utf-8')
+    ws = wb.add_sheet('Students')
+
+    # Styles
+    header_style = xlwt.easyxf('font: bold on; pattern: pattern solid, fore_colour gray25;')
+    
+    # En-têtes
+    row_num = 0
+    columns = [
+        '#',
+        'Full Name',
+        'Niveau',
+        'Matricule',
+        'Gender',
+        'Numéro de téléphone'
+    ]
+    
+    for col_num, column_title in enumerate(columns):
+        ws.write(row_num, col_num, column_title, header_style)
+
+    # Données
+    # Utilisez la même requête que dans votre template
+    students = CustomUser.objects.filter(user_type=3)  # Type 3 pour les étudiants
+
+    for idx, student in enumerate(students, 1):
+        row_num += 1
+        row = [
+            idx,
+            f"{student.last_name}, {student.first_name}",
+            student.student.niveau if hasattr(student, 'student') else "",
+            student.student.matricule if hasattr(student, 'student') else "",
+            student.gender,
+            student.student.phone_number if hasattr(student, 'student') else "Not provided"
+        ]
+        
+        for col_num, cell_value in enumerate(row):
+            ws.write(row_num, col_num, str(cell_value))
+
+    wb.save(response)
+    return response
+
+def export_students_pdf(request):
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="students_list.pdf"'
+
+    doc = SimpleDocTemplate(response, pagesize=landscape(letter))
+    elements = []
+
+    headers = [
+        '#',
+        'Full Name',
+        'Niveau',
+        'Matricule',
+        'Gender',
+        'Numéro de téléphone'
+    ]
+    
+    data = [headers]
+    
+    # Utilisez la même requête que dans votre template
+    students = CustomUser.objects.filter(user_type=3)  # Type 3 pour les étudiants
+
+    for idx, student in enumerate(students, 1):
+        data.append([
+            idx,
+            f"{student.last_name}, {student.first_name}",
+            student.student.niveau if hasattr(student, 'student') else "",
+            student.student.matricule if hasattr(student, 'student') else "",
+            student.gender,
+            student.student.phone_number if hasattr(student, 'student') else "Not provided"
+        ])
+
+    col_widths = [0.5*inch, 2*inch, 1*inch, 1.5*inch, 1*inch, 1.5*inch]
+    table = Table(data, colWidths=col_widths)
+    
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    
+    elements.append(table)
+    doc.build(elements)
+    return response
 
 
 def admin_home(request):
