@@ -11,13 +11,22 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            position: relative;
         }
         .header {
             text-align: center;
             margin-bottom: 1cm;
         }
-        .ministry, .school {
+        .ministry {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .ministry img {
+            display: block;
+            margin: 10px auto;
+            width: 60px; /* Ajustez la taille du logo */
+            height: auto;
+        }
+        .school {
             font-size: 14px;
         }
         .document-title {
@@ -28,12 +37,11 @@
             text-decoration: underline;
         }
         .uniform-text {
-             font-size: 14px; /* Unifiez la taille ici */
-             font-family: Arial, sans-serif; /* Conservez la police globale */
-             line-height: 1.6; /* Uniformisez l'espacement vertical */
-             margin: 0 0 10px; /* Ajoutez un espacement cohérent entre les paragraphes */
-             text-align: left; /* Alignez à gauche ou selon vos besoins */
-                     }
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 0 0 10px;
+            text-align: left;
+        }
         .content {
             font-size: 14px;
             margin: 0;
@@ -49,13 +57,23 @@
             bottom: 0;
             left: 0;
             right: 0;
-            height: 50px;
-            text-align: center;
+            height: 100px;
             font-size: 12px;
             line-height: 1.5;
+            padding: 10px 50px;
+            display: flex;
+            align-items: center;
             border-top: 1px solid #000;
-            background-color: #fff;
-            padding-top: 10px;
+        }
+        .footer-logo {
+            flex-shrink: 0;
+            width: 50px; /* Taille du logo */
+            height: auto;
+            margin-right: 15px;
+        }
+        .footer-text {
+            flex-grow: 1;
+            text-align: left;
         }
     </style>
 </head>
@@ -65,6 +83,7 @@
             Royaume du Maroc<br>
             Ministère de l'Agriculture, de la Pêche Maritime, du Développement Rural<br>
             et des Eaux et Forêts
+            <img src="C:/Users/Amine/Downloads/R.png" alt="Logo Ministère">
         </div>
         <div class="school">
             Direction de l'Enseignement, de la Formation et de la Recherche<br>
@@ -91,9 +110,12 @@
     </div>
 
     <div class="footer">
-        École Nationale Forestière d'Ingénieurs - Salé<br>
-        Av. Moulay Youssef, BP 511, Tabriquet, 11015, Salé, Maroc<br>
-        Tél: +212 (0) 537861149, Fax : +212 (0) 537862607
+        <img src="C:/Users/Amine/Downloads/enfi logo.jpg" alt="Logo École" class="footer-logo">
+        <div class="footer-text">
+            École Nationale Forestière d'Ingénieurs - Salé<br>
+            Av. Moulay Youssef, BP 511, Tabriquet, 11015, Salé, Maroc<br>
+            Tél: +212 (0) 537861149, Fax : +212 (0) 537862607
+        </div>
     </div>
 </body>
 </html>
