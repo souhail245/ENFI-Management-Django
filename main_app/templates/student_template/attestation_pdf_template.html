@@ -74,7 +74,7 @@
 
     <div class="content-wrapper">
         <p class="uniform-text">Le Directeur des études</p>
-        <p class="uniform-text">N° ...../ENFI/DE Salé</p>
+        <p class="uniform-text">N° .........../ENFI/DE Salé</p>
         
         <div class="document-title">ATTESTATION D'INSCRIPTION</div>
 
@@ -83,7 +83,7 @@
             <p>L'élève-ingénieur : <strong>{{ student.admin.last_name }} {{ student.admin.first_name }}</strong></p>
             <p>Né le : <strong>date de naissance</strong></p>
             <p>A : <strong>Ville</strong></p>
-            <p>Est inscrit dans l'établissement en qualité d'élève-ingénieur régulier de la 6ème année</p>
+            <p>Est inscrit dans l'établissement en qualité d'élève-ingénieur régulier de la {{ student.niveau }}</p>
             <p>au titre de l'année universitaire 2024-2025.</p>
             <p>Cette attestation est délivrée à l'intéressé, sur sa demande, pour servir et valoir ce que de droit.</p>
             <p>Fait à Salé, le <strong>{{ date|date:"d/m/Y" }}</strong></p>

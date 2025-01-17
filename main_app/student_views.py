@@ -27,6 +27,7 @@ def attestation_scolarite(request):
     student = request.user.student  # Adaptez selon votre modèle d'authentification
     context = {
         'student': student
+        
     }
     return render(request, 'student_template/attestation_scolarite.html', context)
 
@@ -38,7 +39,8 @@ def export_attestation_pdf(request, student_id):
     template = get_template('student_template/attestation_pdf_template.html')
     context = {
         'student': student,
-        'date': datetime.now().strftime("%d/%m/%Y")
+        'date': datetime.now()  
+       
     }
     
     # Rendre le template HTML
