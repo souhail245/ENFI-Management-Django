@@ -9,126 +9,91 @@
         }
         body {
             font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            font-size: 14px;
+            margin: 0;
+            padding: 0;
+            position: relative;
         }
         .header {
             text-align: center;
-            margin-bottom: 2cm;
-            border-bottom: 2px solid #333;
-            padding-bottom: 20px;
+            margin-bottom: 1cm;
+        }
+        .ministry, .school {
+            font-size: 14px;
         }
         .document-title {
-            font-size: 26px;
+            font-size: 20px;
             font-weight: bold;
-            text-transform: uppercase;
+            text-align: center;
             margin: 20px 0;
-            color: #003366;
+            text-decoration: underline;
         }
-        .ref {
-            font-size: 14px;
-            margin-bottom: 30px;
-        }
+        .uniform-text {
+             font-size: 14px; /* Unifiez la taille ici */
+             font-family: Arial, sans-serif; /* Conservez la police globale */
+             line-height: 1.6; /* Uniformisez l'espacement vertical */
+             margin: 0 0 10px; /* Ajoutez un espacement cohérent entre les paragraphes */
+             text-align: left; /* Alignez à gauche ou selon vos besoins */
+                     }
         .content {
+            font-size: 14px;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
             text-align: justify;
-            margin: 20px 0;
-            font-size: 16px;
         }
-        .student-info {
-            margin: 30px 0;
-            padding: 20px;
-            background-color: #f9f9f9;
-        }
-        .photo-container {
-            text-align: right;
-            margin-bottom: 20px;
-        }
-        .student-photo {
-            width: 120px;
-            height: 140px;
-            border: 1px solid #ddd;
-        }
-        .info-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            font-size: 14px;
-        }
-        .info-table th, .info-table td {
-            padding: 12px;
-            border: 1px solid #ddd;
-            font-size: 14px;
-        }
-        .info-table th {
-            background-color: #f5f5f5;
-            width: 30%;
-            text-align: left;
-        }
-        .signature {
-            margin-top: 3cm;
-            text-align: right;
-            font-size: 14px;
+        .content-wrapper {
+            margin-bottom: 100px; /* Leave space for the footer */
         }
         .footer {
             position: fixed;
             bottom: 0;
-            width: 100%;
+            left: 0;
+            right: 0;
+            height: 50px;
             text-align: center;
             font-size: 12px;
-            color: #666;
-            border-top: 1px solid #ddd;
+            line-height: 1.5;
+            border-top: 1px solid #000;
+            background-color: #fff;
             padding-top: 10px;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1 class="document-title">Attestation de Scolarité</h1>
-        <div class="ref">Réf: ENFI/AS/{{ student.matricule }}/{{ date|date:"Y" }}</div>
+        <div class="ministry">
+            Royaume du Maroc<br>
+            Ministère de l'Agriculture, de la Pêche Maritime, du Développement Rural<br>
+            et des Eaux et Forêts
+        </div>
+        <div class="school">
+            Direction de l'Enseignement, de la Formation et de la Recherche<br>
+            École Nationale Forestière d'Ingénieurs
+        </div>
     </div>
 
-    <div class="content">
-        <div class="photo-container">
-            {% if student.admin.profile_pic %}
-                <img src="{{ student.admin.profile_pic.url }}" class="student-photo" alt="Photo de l'étudiant">
-            {% endif %}
-        </div>
-
-        <p>Je soussigné, le Directeur de l'École Nationale Forestière d'Ingénieurs, atteste que :</p>
-
-        <div class="student-info">
-            <table class="info-table">
-                <tr>
-                    <th>Matricule</th>
-                    <td>{{ student.matricule }}</td>
-                </tr>
-                <tr>
-                    <th>Nom et Prénom</th>
-                    <td>{{ student.admin.last_name }} {{ student.admin.first_name }}</td>
-                </tr>
-                <tr>
-                    <th>Niveau d'études</th>
-                    <td>{{ student.niveau }}</td>
-                </tr>
-            </table>
-        </div>
-
-        <p>Est régulièrement inscrit(e) dans notre établissement pour l'année universitaire en cours.</p>
+    <div class="content-wrapper">
+        <p class="uniform-text">Le Directeur des études</p>
+        <p class="uniform-text">N° ...../ENFI/DE Salé</p>
         
-        <p>Cette attestation est délivrée à l'intéressé(e) sur sa demande pour servir et valoir ce que de droit.</p>
-    </div>
+        <div class="document-title">ATTESTATION D'INSCRIPTION</div>
 
-    <div class="signature">
-        <p>Fait à Salé, le {{ date|date:"d/m/Y" }}</p>
-        <p>Le Directeur</p>
-        <br><br><br>
-        <p>(Cachet et signature)</p>
+        <div class="content">
+            <p>Le Directeur des études de l'École Nationale Forestière d'Ingénieurs de Salé atteste que :</p>
+            <p>l'élève-ingénieur : <strong>Hifoune Hamid</strong></p>
+            <p>Né le : <strong>date de naissance</strong></p>
+            <p>A : <strong>Ville</strong></p>
+            <p>Est inscrit dans l'établissement en qualité d'élève-ingénieur régulier de la 6ème année</p>
+            <p>au titre de l'année universitaire 2024-2025.</p>
+            <p>Cette attestation est délivrée à l'intéressé, sur sa demande, pour servir et valoir ce que de droit.</p>
+            <p>Fait à Salé, le <strong>{{ date|date:"d/m/Y" }}</strong></p>
+        </div>
     </div>
 
     <div class="footer">
-        <p>École Nationale Forestière d'Ingénieurs - BP 511 Tabriquet - Salé</p>
-        <p>Tél : +212 5XX XX XX XX - Email : contact@enfi.ac.ma</p>
+        École Nationale Forestière d'Ingénieurs - Salé<br>
+        Av. Moulay Youssef, BP 511, Tabriquet, 11015, Salé, Maroc<br>
+        Tél: +212 (0) 537861149, Fax : +212 (0) 537862607
     </div>
 </body>
 </html>
