@@ -14,6 +14,50 @@ from .forms import *
 from .models import *
 
 
+
+from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from io import BytesIO
+from .models import Student
+
+def attestation_scolarite(request):
+    # Récupérer les informations de l'étudiant connecté
+    student = request.user.student  # Adaptez selon votre modèle d'authentification
+    context = {
+        'student': student
+    }
+    return render(request, 'student_template/attestation_scolarite.html', context)
+
+def export_attestation_pdf(request, student_id):
+    # Récupérer l'étudiant
+    student = get_object_or_404(Student, id=student_id)
+    
+    # Charger le template
+    template = get_template('student_template/attestation_pdf_template.html')
+    context = {
+        'student': student,
+        'date': datetime.now().strftime("%d/%m/%Y")
+    }
+    
+    # Rendre le template HTML
+    html = template.render(context)
+    
+    # Créer le PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="attestation_{student.id}.pdf"'
+    
+    # Générer le PDF
+    pdf = pisa.CreatePDF(
+        html,
+        dest=response,
+    )
+    
+    if not pdf.err:
+        return response
+    return HttpResponse('Une erreur est survenue lors de la génération du PDF')
+
 def student_home(request):
     student = get_object_or_404(Student, admin=request.user)
     total_subject = Subject.objects.filter(course=student.course).count()

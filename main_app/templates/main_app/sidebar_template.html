@@ -489,6 +489,13 @@
                                         </li>
 
                                         <li class="nav-item">
+                                            <a href="{% url 'attestation_scolarite' %}" class="nav-link {% if request.path == attestation_scolarite %} active {% endif %}">
+                                                <i class="nav-icon fas fa-file-alt"></i>
+                                                <p>Attestation de scolarité</p>
+                                            </a>
+                                        </li>
+
+                                        <li class="nav-item">
                                             {% url 'student_view_notification' as student_view_notification %}
                                             <a href="{{student_view_notification}}"
                                                 class="nav-link {% if student_view_notification == request.path %} active {% endif %}">

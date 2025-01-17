@@ -91,6 +91,8 @@ urlpatterns = [
 
 
     # Staff
+
+    
     path("staff/home/", staff_views.staff_home, name='staff_home'),
     path("staff/apply/leave/", staff_views.staff_apply_leave,
          name='staff_apply_leave'),
@@ -120,6 +122,10 @@ urlpatterns = [
 
 
     # Student
+
+    path('attestation-scolarite/', student_views.attestation_scolarite, name='attestation_scolarite'),
+    path('export-attestation-pdf/<int:student_id>/', student_views.export_attestation_pdf, name='export_attestation_pdf'),
+    
     path("student/home/", student_views.student_home, name='student_home'),
     path("student/view/attendance/", student_views.student_view_attendance,
          name='student_view_attendance'),

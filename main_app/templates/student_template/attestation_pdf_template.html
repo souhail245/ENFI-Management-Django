@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            font-size: 14px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2cm;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+        }
+        .document-title {
+            font-size: 26px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 20px 0;
+            color: #003366;
+        }
+        .ref {
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .content {
+            text-align: justify;
+            margin: 20px 0;
+            font-size: 16px;
+        }
+        .student-info {
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .photo-container {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        .student-photo {
+            width: 120px;
+            height: 140px;
+            border: 1px solid #ddd;
+        }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        .info-table th, .info-table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+        .info-table th {
+            background-color: #f5f5f5;
+            width: 30%;
+            text-align: left;
+        }
+        .signature {
+            margin-top: 3cm;
+            text-align: right;
+            font-size: 14px;
+        }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="document-title">Attestation de Scolarité</h1>
+        <div class="ref">Réf: ENFI/AS/{{ student.matricule }}/{{ date|date:"Y" }}</div>
+    </div>
+
+    <div class="content">
+        <div class="photo-container">
+            {% if student.admin.profile_pic %}
+                <img src="{{ student.admin.profile_pic.url }}" class="student-photo" alt="Photo de l'étudiant">
+            {% endif %}
+        </div>
+
+        <p>Je soussigné, le Directeur de l'École Nationale Forestière d'Ingénieurs, atteste que :</p>
+
+        <div class="student-info">
+            <table class="info-table">
+                <tr>
+                    <th>Matricule</th>
+                    <td>{{ student.matricule }}</td>
+                </tr>
+                <tr>
+                    <th>Nom et Prénom</th>
+                    <td>{{ student.admin.last_name }} {{ student.admin.first_name }}</td>
+                </tr>
+                <tr>
+                    <th>Niveau d'études</th>
+                    <td>{{ student.niveau }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <p>Est régulièrement inscrit(e) dans notre établissement pour l'année universitaire en cours.</p>
+        
+        <p>Cette attestation est délivrée à l'intéressé(e) sur sa demande pour servir et valoir ce que de droit.</p>
+    </div>
+
+    <div class="signature">
+        <p>Fait à Salé, le {{ date|date:"d/m/Y" }}</p>
+        <p>Le Directeur</p>
+        <br><br><br>
+        <p>(Cachet et signature)</p>
+    </div>
+
+    <div class="footer">
+        <p>École Nationale Forestière d'Ingénieurs - BP 511 Tabriquet - Salé</p>
+        <p>Tél : +212 5XX XX XX XX - Email : contact@enfi.ac.ma</p>
+    </div>
+</body>
+</html>
