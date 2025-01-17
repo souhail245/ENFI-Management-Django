@@ -269,25 +269,22 @@ def add_student(request):
 
 def add_course(request):
     form = CourseForm(request.POST or None)
-    context = {
-        'form': form,
-        'page_title': 'Add Course'
-    }
     if request.method == 'POST':
         if form.is_valid():
-            name = form.cleaned_data.get('name')
             try:
-                course = Course()
-                course.name = name
-                course.save()
-                messages.success(request, "Successfully Added")
-                return redirect(reverse('add_course'))
-            except:
-                messages.error(request, "Could Not Add")
+                form.save()  # Sauvegarde l'objet Course directement
+                messages.success(request, "Cours ajouté avec succès.")
+                return redirect('manage_course')  # Redirige vers la page de gestion des cours
+            except Exception as e:
+                messages.error(request, f"Erreur lors de l'ajout du cours : {str(e)}")
         else:
-            messages.error(request, "Could Not Add")
+            messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
+    
+    context = {
+        'form': form,
+        'page_title': 'Ajouter un Cours'
+    }
     return render(request, 'hod_template/add_course_template.html', context)
-
 
 def add_subject(request):
     form = SubjectForm(request.POST or None)
@@ -300,11 +297,13 @@ def add_subject(request):
             name = form.cleaned_data.get('name')
             course = form.cleaned_data.get('course')
             staff = form.cleaned_data.get('staff')
+            niveau = form.cleaned_data.get('niveau')  # Récupérer le niveau
             try:
                 subject = Subject()
                 subject.name = name
                 subject.staff = staff
                 subject.course = course
+                subject.niveau = niveau  # Ajouter le niveau
                 subject.save()
                 messages.success(request, "Successfully Added")
                 return redirect(reverse('add_subject'))
@@ -336,18 +335,38 @@ def manage_student(request):
 
 
 def manage_course(request):
+    # Récupérer tous les cours
     courses = Course.objects.all()
+
+    # Regrouper les cours par niveau
+    niveaux = Course._meta.get_field('niveau').choices  # Récupérer les choix de niveau
+    cours_par_niveau = {}
+
+    for niveau in niveaux:
+        cours = Course.objects.filter(niveau=niveau[0])  # Filtrer les cours par niveau
+        cours_par_niveau[niveau[1]] = cours  # Stocker les cours dans un dictionnaire
+
     context = {
-        'courses': courses,
-        'page_title': 'Manage Courses'
+        'cours_par_niveau': cours_par_niveau,  # Passer les cours groupés par niveau
+        'page_title': 'Gérer les Cours'
     }
     return render(request, "hod_template/manage_course.html", context)
 
 
 def manage_subject(request):
+    # Récupérer tous les sujets
     subjects = Subject.objects.all()
+
+    # Regrouper les sujets par niveau
+    niveaux = Subject._meta.get_field('niveau').choices  # Récupérer les choix de niveau
+    sujets_par_niveau = {}
+
+    for niveau in niveaux:
+        sujets = Subject.objects.filter(niveau=niveau[0])  # Filtrer les sujets par niveau
+        sujets_par_niveau[niveau[1]] = sujets  # Stocker les sujets dans un dictionnaire
+
     context = {
-        'subjects': subjects,
+        'sujets_par_niveau': sujets_par_niveau,  # Passer les sujets groupés par niveau
         'page_title': 'Manage Subjects'
     }
     return render(request, "hod_template/manage_subject.html", context)

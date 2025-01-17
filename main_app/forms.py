@@ -97,7 +97,7 @@ class CourseForm(FormSettings):
         super(CourseForm, self).__init__(*args, **kwargs)
 
     class Meta:
-        fields = ['name']
+        fields = ['name', 'niveau']  # Ajout du champ 'niveau'
         model = Course
 
 
@@ -108,7 +108,7 @@ class SubjectForm(FormSettings):
 
     class Meta:
         model = Subject
-        fields = ['name', 'staff', 'course']
+        fields = ['name', 'staff', 'course', 'niveau']  # Ajout du champ 'niveau'
 
 
 class SessionForm(FormSettings):

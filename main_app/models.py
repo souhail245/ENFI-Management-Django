@@ -65,14 +65,22 @@ class Admin(models.Model):
 
 
 
+from django.db import models
+
 class Course(models.Model):
-    name = models.CharField(max_length=120)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    LEVEL_CHOICES = [
+        ('3ème année', '3ème année'),
+        ('4ème année', '4ème année'),
+        ('5ème année', '5ème année'),
+    ]
+
+    name = models.CharField(max_length=120, unique=True)  # Le nom du cours, unique pour éviter les doublons
+    niveau = models.CharField(max_length=20, choices=LEVEL_CHOICES, default='3ème année')  # Champ pour le niveau avec valeur par défaut
+    created_at = models.DateTimeField(auto_now_add=True)  # Date de création
+    updated_at = models.DateTimeField(auto_now=True)  # Date de mise à jour
 
     def __str__(self):
-        return self.name
-
+        return f"{self.name} ({self.niveau})"  # Affiche le nom du cours avec le niveau
 
 class Student(models.Model):
     admin = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
@@ -104,6 +112,15 @@ class Staff(models.Model):
 class Subject(models.Model):
     name = models.CharField(max_length=120)
     staff = models.ForeignKey(Staff,on_delete=models.CASCADE,)
+    niveau = models.CharField(
+        max_length=20,
+        choices=[
+            ('3ème année', '3ème année'),
+            ('4ème année', '4ème année'),
+            ('5ème année', '5ème année'),
+        ],
+        default='3ème année'
+    )
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)

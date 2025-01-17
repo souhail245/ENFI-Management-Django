@@ -8,18 +8,41 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-12">
-                <!-- general form elements -->
                 <div class="card card-dark">
                     <div class="card-header">
-                        <h3 class="card-title">{{page_title}}</h3>
+                        <h3 class="card-title">{{ page_title }}</h3>
                     </div>
 
-                    {% include "main_app/form_template.html" with messages=messages  form=form button_text="Add Course"%}
+                    <div class="card-body">
+                        {% if messages %}
+                            <div class="alert alert-info">
+                                {% for message in messages %}
+                                    {{ message }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+                            {% for field in form %}
+                                <div class="form-group">
+                                    {{ field.label }}
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <div class="text-danger">
+                                            {% for error in field.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                            <button type="submit" class="btn btn-primary">Ajouter le cours</button>
+                        </form>
+                    </div>
                 </div>
-                <!-- /.card -->
-
             </div>
         </div>
     </div>
 </section>
+
 {% endblock content %}
