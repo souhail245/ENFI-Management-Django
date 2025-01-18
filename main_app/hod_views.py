@@ -242,6 +242,8 @@ def add_student(request):
             gender = student_form.cleaned_data.get('gender')
             phone_number = student_form.cleaned_data.get('phone_number')
             password = student_form.cleaned_data.get('password')
+            lieu = student_form.cleaned_data.get('lieu')
+            dateN = student_form.cleaned_data.get('dateN')
             niveau = student_form.cleaned_data.get('niveau')
             matricule = student_form.cleaned_data.get('matricule')
             passport = request.FILES['profile_pic']
@@ -256,6 +258,8 @@ def add_student(request):
                 user.student.matricule = matricule
                 user.student.phone_number = phone_number
                 user.student.niveau = niveau
+                user.student.lieu = lieu
+                user.student.dateN = dateN
                 user.save()
                 
                 messages.success(request, "Successfully Added")

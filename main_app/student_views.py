@@ -48,7 +48,7 @@ def export_attestation_pdf(request, student_id):
     
     # Créer le PDF
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="attestation_{student.id}.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="attestation_{student.admin.last_name}.pdf"'
     
     # Générer le PDF
     pdf = pisa.CreatePDF(

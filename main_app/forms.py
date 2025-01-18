@@ -70,7 +70,9 @@ class StudentForm(CustomUserForm):
     class Meta(CustomUserForm.Meta):
         model = Student
         fields = CustomUserForm.Meta.fields + \
-            ['niveau' , 'matricule']
+            [ 'lieu' , 'dateN','niveau' , 'matricule']
+       
+        dateN = forms.DateField(input_formats=['%Y-%m-%d'])
 
 
 class AdminForm(CustomUserForm):

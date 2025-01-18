@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <style>
@@ -8,7 +9,7 @@
             margin: 2cm;
         }
         body {
-            font-family: Arial, sans-serif;
+            font-family: Georgia, 'Times New Roman', Times, sans-serif;
             margin: 0;
             padding: 0;
         }
@@ -17,7 +18,7 @@
             margin-bottom: 1cm;
         }
         .ministry {
-            font-size: 14px;
+            font-size: 16px;
             margin-bottom: 10px;
         }
         .ministry img {
@@ -27,7 +28,7 @@
             height: auto;
         }
         .school {
-            font-size: 14px;
+            font-size: 16px;
         }
         .document-title {
             font-size: 20px;
@@ -42,8 +43,26 @@
             margin: 0 0 10px;
             text-align: left;
         }
+        .line-container {
+             display: flex;
+             justify-content: space-between;
+               margin: 0; /* Supprime les marges inutiles */
+              padding: 0; /* Supprime les paddings inutiles */
+                font-size: 14px; /* Taille compacte pour tout tenir sur une ligne */
+              line-height: 1.2; /* Réduit l’espacement vertical */
+          }
+
+        .left {
+          text-align: left; /* Aligne le texte à gauche */
+           margin-right: 10px; /* Optionnel, petit espace à droite */
+           }
+
+        .right {
+         text-align: right; /* Aligne le texte complètement à droite */
+            }
+
         .content {
-            font-size: 14px;
+            font-size: 16px;
             margin: 0;
             padding: 0;
             line-height: 1.6;
@@ -75,39 +94,47 @@
             flex-grow: 1;
             text-align: left;
         }
+     
     </style>
 </head>
 <body>
+ 
     <div class="header">
         <div class="ministry">
-            Royaume du Maroc<br>
-            Ministère de l'Agriculture, de la Pêche Maritime, du Développement Rural<br>
-            et des Eaux et Forêts
+            <strong>Royaume du Maroc</strong><br>
             <img src="C:/Users/Amine/Downloads/R.png" alt="Logo Ministère">
+            Ministère de l'Agriculture, de la Pêche Maritime, du Développement Rural et des Eaux et Forêts<br>
+            
+           
         </div>
         <div class="school">
             Direction de l'Enseignement, de la Formation et de la Recherche<br>
-            École Nationale Forestière d'Ingénieurs
+            <strong>École Nationale Forestière d'Ingénieurs</strong>
         </div>
     </div>
 
     <div class="content-wrapper">
-        <p class="uniform-text">Le Directeur des études</p>
-        <p class="uniform-text">N° .........../ENFI/DE Salé</p>
-        
+        <p class="uniform-text"><strong>Le Directeur des études</strong></p>
+        <div class="line-container">
+            <span class="left"><strong>N° .........../ENFI/DE Salé</strong></span>   
+        </div>
+
         <div class="document-title">ATTESTATION D'INSCRIPTION</div>
 
         <div class="content">
             <p>Le Directeur des études de l'École Nationale Forestière d'Ingénieurs de Salé atteste que :</p>
             <p>L'élève-ingénieur : <strong>{{ student.admin.last_name }} {{ student.admin.first_name }}</strong></p>
-            <p>Né le : <strong>date de naissance</strong></p>
-            <p>A : <strong>Ville</strong></p>
-            <p>Est inscrit dans l'établissement en qualité d'élève-ingénieur régulier de la {{ student.niveau }}</p>
-            <p>au titre de l'année universitaire 2024-2025.</p>
+            <p>Né le : <strong>{{ student.dateN }}</strong></p>
+            <p>A : <strong>{{ student.lieu }}</strong></p>
+            <p>Est inscrit dans l'établissement en qualité d'élève-ingénieur régulier de la <strong>{{ student.niveau }}</strong></p>
+            <p>au titre de l'année universitaire <strong>2024-2025</strong>.</p>
             <p>Cette attestation est délivrée à l'intéressé, sur sa demande, pour servir et valoir ce que de droit.</p>
-            <p>Fait à Salé, le <strong>{{ date|date:"d/m/Y" }}</strong></p>
+            <span class="right"><strong>Fait à Salé, le {{ date|date:"d/m/Y" }}</strong></span>
         </div>
+      
     </div>
+
+    
 
     <div class="footer">
         <img src="C:/Users/Amine/Downloads/enfi logo.jpg" alt="Logo École" class="footer-logo">
@@ -117,5 +144,7 @@
             Tél: +212 (0) 537861149, Fax : +212 (0) 537862607
         </div>
     </div>
+
 </body>
+
 </html>

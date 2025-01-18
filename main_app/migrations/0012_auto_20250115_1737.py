@@ -14,6 +14,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='student',
             name='session',
-            field=models.ForeignKey(default='Default Session', on_delete=django.db.models.deletion.DO_NOTHING, to='main_app.session'),
+            field=models.ForeignKey(
+                default=None,  # Utilisez None pour laisser ce champ vide par défaut
+                on_delete=django.db.models.deletion.DO_NOTHING,
+                to='main_app.session',
+                null=True,  # Permettre des valeurs nulles si nécessaire
+                blank=True,  # Permettre des valeurs vides dans les formulaires
+            ),
         ),
     ]

@@ -85,7 +85,7 @@ class Course(models.Model):
 class Student(models.Model):
     admin = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.DO_NOTHING, null=True, blank=False)
-    session = models.ForeignKey(Session, on_delete=models.DO_NOTHING, null=True)
+    session = models.ForeignKey(Session, on_delete=models.DO_NOTHING, null=True ,  blank=True)
     phone_number = models.CharField(max_length=20,  default="06000007")  # Nouveau champ
     matricule = models.CharField(max_length=14, unique=False, default="5001")  # Nouveau champ
     # Champ Niveau avec des choix
@@ -96,6 +96,8 @@ class Student(models.Model):
         ('6eme année', '6ème année'),
                   ]
     niveau = models.CharField(max_length=20, choices=NIVEAU_CHOICES, default='3eme année')
+    lieu = models.CharField(max_length=100, null=True, blank=True)
+    dateN = models.DateField(null=True, blank=True)  # Pour inclure jour/mois/année
 
     def __str__(self):
         return self.admin.last_name + ", " + self.admin.first_name
