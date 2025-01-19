@@ -85,7 +85,7 @@ class Course(models.Model):
 class Student(models.Model):
     admin = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.DO_NOTHING, null=True, blank=False)
-    session = models.ForeignKey(Session, on_delete=models.DO_NOTHING, null=True ,  blank=True)
+    session = models.ForeignKey(Session, on_delete=models.DO_NOTHING, null=True)
     phone_number = models.CharField(max_length=20,  default="06000007")  # Nouveau champ
     matricule = models.CharField(max_length=14, unique=False, default="5001")  # Nouveau champ
     # Champ Niveau avec des choix
@@ -96,8 +96,6 @@ class Student(models.Model):
         ('6eme année', '6ème année'),
                   ]
     niveau = models.CharField(max_length=20, choices=NIVEAU_CHOICES, default='3eme année')
-    lieu = models.CharField(max_length=100, null=True, blank=True)
-    dateN = models.DateField(null=True, blank=True)  # Pour inclure jour/mois/année
 
     def __str__(self):
         return self.admin.last_name + ", " + self.admin.first_name
@@ -202,22 +200,6 @@ class StudentResult(models.Model):
     exam = models.FloatField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-class Absence(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="absences")
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="absences")
-    staff = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name="absences")  # Professeur associé
-    date = models.DateField()  # Date de l'absence
-    time_from = models.TimeField()  # Heure de début de l'absence
-    time_to = models.TimeField()  # Heure de fin de l'absence
-    reason = models.TextField(null=True, blank=True)  # Raison de l'absence (facultatif)
-
-    def __str__(self):
-        return f"{self.student.matricule} - {self.subject.name} - {self.date}"
-
-    class Meta:
-        verbose_name = "Absence"
-        verbose_name_plural = "Absences"
 
 
 @receiver(post_save, sender=CustomUser)

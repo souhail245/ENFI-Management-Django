@@ -18,7 +18,7 @@ from .models import *
 
 from django.http import JsonResponse
 
-def add_absence(request):
+ndef add_absence(request):
     if request.method == 'POST':
         form = AbsenceForm(request.POST)
         if form.is_valid():
@@ -51,7 +51,7 @@ def get_student_details(request):
 
 def view_absences(request):
     absences = Absence.objects.select_related('student', 'subject').all()
-    print("Absences :", absences)  # Ajouter pour vérifier
+    print("Absences :", abseces)  # Ajouter pour vérifier
     return render(request, 'hod_template/view_absences.html', {'absences': absences})
 
 
