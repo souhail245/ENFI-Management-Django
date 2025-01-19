@@ -87,8 +87,10 @@ urlpatterns = [
          hod_views.edit_course, name='edit_course'),
     path("subject/edit/<int:subject_id>",
          hod_views.edit_subject, name='edit_subject'),
-  
 
+     path('add_absence/', hod_views.add_absence, name='add_absence'),
+     path('get_student_details/', hod_views.get_student_details, name='get_student_details'),
+       path('absences/', hod_views.view_absences, name='view_absences'),
 
     # Staff
 

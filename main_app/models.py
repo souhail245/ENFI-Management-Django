@@ -203,6 +203,22 @@ class StudentResult(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+class Absence(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="absences")
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="absences")
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name="absences")  # Professeur associé
+    date = models.DateField()  # Date de l'absence
+    time_from = models.TimeField()  # Heure de début de l'absence
+    time_to = models.TimeField()  # Heure de fin de l'absence
+    reason = models.TextField(null=True, blank=True)  # Raison de l'absence (facultatif)
+
+    def __str__(self):
+        return f"{self.student.matricule} - {self.subject.name} - {self.date}"
+
+    class Meta:
+        verbose_name = "Absence"
+        verbose_name_plural = "Absences"
+
 
 @receiver(post_save, sender=CustomUser)
 def create_user_profile(sender, instance, created, **kwargs):
