@@ -88,7 +88,13 @@ urlpatterns = [
     path("subject/edit/<int:subject_id>",
          hod_views.edit_subject, name='edit_subject'),
   
+  # gestion d'absensces view_absences
+    path('add-absence/', hod_views.add_absence, name='add_absence'),
+    path('get_student_details/', hod_views.get_student_details, name='get_student_details'),
+    path('view-absences/', hod_views.view_absences, name='view_absences'),
 
+    path('export-absences-excel/', hod_views.export_absences_excel, name='export_absences_excel'),
+    path('export-absences-pdf/', hod_views.export_absences_pdf, name='export_absences_pdf'),
 
     # Staff
     path("staff/home/", staff_views.staff_home, name='staff_home'),
@@ -135,5 +141,9 @@ urlpatterns = [
          name="student_view_notification"),
     path('student/view/result/', student_views.student_view_result,
          name='student_view_result'),
+
+      path('attestation-scolarite/', student_views.attestation_scolarite, name='attestation_scolarite'),
+     # URL pour exporter l'attestation en PDF
+     path('export-attestation/<int:student_id>/', student_views.export_attestation_pdf, name='export_attestation_pdf'),
 
 ]

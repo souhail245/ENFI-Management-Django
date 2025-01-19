@@ -1,18 +1,89 @@
 {% extends 'main_app/base.html' %}
-{% load static %}
-{% block page_title %}{{page_title}}{% endblock page_title %}
+{% load static %}{% block page_title %}{{page_title}}{% endblock page_title %}
 
 {% block content %}
 <section class="content">
     <div class="container-fluid">
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card">
+                    
+                        </div>
+                    <div class="card-header">
+                        <h3 class="card-title">Filtres</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="GET" class="row">
+                            <div class="col-md-12 mb-3">
+                                <div class="row">
+                                    <!-- Recherche par matricule -->
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="matricule">Matricule</label>
+                                            <input type="text" class="form-control" id="matricule" name="matricule" 
+                                                   value="{{ request.GET.matricule }}" placeholder="Rechercher par matricule">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Filtre par dates -->
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="date_debut">Date début</label>
+                                            <input type="date" class="form-control" id="date_debut" name="date_debut"
+                                                   value="{{ request.GET.date_debut }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="date_fin">Date fin</label>
+                                            <input type="date" class="form-control" id="date_fin" name="date_fin"
+                                                   value="{{ request.GET.date_fin }}">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Filtre par niveau -->
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="niveau">Niveau</label>
+                                            <select class="form-control" id="niveau" name="niveau">
+                                                <option value="">Tous les niveaux</option>
+                                                {% for niveau in niveaux %}
+                                                <option value="{{ niveau }}" {% if request.GET.niveau == niveau %}selected{% endif %}>
+                                                    {{ niveau }}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        
+                            <!-- Boutons sur une nouvelle ligne, centrés -->
+                            <div class="col-12 text-center">
+                                <button type="submit" class="btn btn-success mx-2">Rechercher </button>
+                                <a href="{% url 'view_absences' %}" class="btn btn-dark mx-2">Réinitialiser</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-header">
+                    <div class="card-header d-flex justify-content-between align-items-center">
                         <h3 class="card-title">{{page_title}}</h3>
+                        <div>
+                            <a href="{% url 'export_absences_excel' %}?{{ request.GET.urlencode }}" class="btn btn-outline-success mx-2">
+                                <i class="fas fa-file-excel"></i> Exporter en Excel
+                            </a>
+                            <a href="{% url 'export_absences_pdf' %}?{{ request.GET.urlencode }}" class="btn btn-outline-danger mx-2">
+                                <i class="fas fa-file-pdf"></i> Exporter en PDF
+                            </a>
+                        </div>
                     </div>
-
-                    <!-- /.card-header -->
                     <div class="card-body">
                         <table id="example2" class="table table-bordered table-hover">
                             <thead class="thead-dark">
@@ -20,7 +91,7 @@
                                     <th>#</th>
                                     <th>Matricule</th>
                                     <th>Nom de l'Étudiant</th>
-                                    <th>Niveau</th> <!-- Colonne Niveau ajoutée -->
+                                    <th>Niveau</th>
                                     <th>Matière</th>
                                     <th>Date</th>
                                     <th>Heure de début</th>
@@ -34,7 +105,7 @@
                                     <td>{{ forloop.counter }}</td>
                                     <td>{{ absence.student.matricule }}</td>
                                     <td>{{ absence.student.admin.last_name }}, {{ absence.student.admin.first_name }}</td>
-                                    <td>{{ absence.student.niveau }}</td> <!-- Affichage du niveau -->
+                                    <td>{{ absence.student.niveau }}</td>
                                     <td>{{ absence.subject.name }}</td>
                                     <td>{{ absence.date }}</td>
                                     <td>{{ absence.time_from }}</td>
@@ -43,7 +114,7 @@
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="9">Aucune absence enregistrée.</td> <!-- Correction de la colonne -->
+                                    <td colspan="9">Aucune absence enregistrée.</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

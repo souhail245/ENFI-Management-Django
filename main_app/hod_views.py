@@ -18,7 +18,7 @@ from .models import *
 
 from django.http import JsonResponse
 
-ndef add_absence(request):
+def add_absence(request):
     if request.method == 'POST':
         form = AbsenceForm(request.POST)
         if form.is_valid():
@@ -48,11 +48,175 @@ def get_student_details(request):
     return JsonResponse({'success': False, 'error': 'Matricule non fourni.'})
 
 
+# voir l'absence + le filtrage
 
 def view_absences(request):
-    absences = Absence.objects.select_related('student', 'subject').all()
-    print("Absences :", abseces)  # Ajouter pour vérifier
-    return render(request, 'hod_template/view_absences.html', {'absences': absences})
+    # Query de base avec select_related pour optimiser les performances
+    absences = Absence.objects.select_related('student', 'subject')
+
+    # Récupération des paramètres de filtrage
+    matricule = request.GET.get('matricule')
+    date_debut = request.GET.get('date_debut')
+    date_fin = request.GET.get('date_fin')
+    niveau = request.GET.get('niveau')
+
+    # Application des filtres
+    if matricule:
+        absences = absences.filter(student__matricule__icontains=matricule)
+    
+    if date_debut:
+        absences = absences.filter(date__gte=date_debut)
+    
+    if date_fin:
+        absences = absences.filter(date__lte=date_fin)
+    
+    if niveau:
+        absences = absences.filter(student__niveau=niveau)
+
+    # Récupération de la liste des niveaux pour le formulaire
+    niveaux = Absence.objects.select_related('student').values_list(
+        'student__niveau', flat=True).distinct()
+
+    context = {
+        'absences': absences,
+        'niveaux': niveaux,
+        'page_title': 'Liste des Absences'
+    }
+
+    print("Absences filtrées :", absences)  # Garde le print pour debug
+
+    return render(request, 'hod_template/view_absences.html', context)
+
+# export resultats des absences :
+from django.http import HttpResponse
+import xlsxwriter
+from io import BytesIO
+from reportlab.pdfgen import canvas
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+
+def export_absences_excel(request):
+    # Récupérer les absences filtrées
+    absences = Absence.objects.select_related('student', 'subject')
+    
+    # Appliquer les mêmes filtres que dans la vue principale
+    matricule = request.GET.get('matricule')
+    date_debut = request.GET.get('date_debut')
+    date_fin = request.GET.get('date_fin')
+    niveau = request.GET.get('niveau')
+
+    if matricule:
+        absences = absences.filter(student__matricule__icontains=matricule)
+    if date_debut:
+        absences = absences.filter(date__gte=date_debut)
+    if date_fin:
+        absences = absences.filter(date__lte=date_fin)
+    if niveau:
+        absences = absences.filter(student__niveau=niveau)
+
+    # Créer le fichier Excel en mémoire
+    output = BytesIO()
+    workbook = xlsxwriter.Workbook(output)
+    worksheet = workbook.add_worksheet()
+
+    # Entêtes
+    headers = ['#', 'Matricule', "Nom de l'Étudiant", 'Niveau', 'Matière', 
+              'Date', 'Heure début', 'Heure fin', 'Raison']
+    for col, header in enumerate(headers):
+        worksheet.write(0, col, header)
+
+    # Données
+    for row, absence in enumerate(absences, 1):
+        worksheet.write(row, 0, row)
+        worksheet.write(row, 1, absence.student.matricule)
+        worksheet.write(row, 2, f"{absence.student.admin.last_name}, {absence.student.admin.first_name}")
+        worksheet.write(row, 3, absence.student.niveau)
+        worksheet.write(row, 4, absence.subject.name)
+        worksheet.write(row, 5, absence.date.strftime('%Y-%m-%d'))
+        worksheet.write(row, 6, absence.time_from.strftime('%H:%M'))
+        worksheet.write(row, 7, absence.time_to.strftime('%H:%M'))
+        worksheet.write(row, 8, absence.reason)
+
+    workbook.close()
+    output.seek(0)
+
+    response = HttpResponse(output.read(),
+                          content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=absences.xlsx'
+    return response
+
+def export_absences_pdf(request):
+    # Récupérer les absences filtrées avec les mêmes filtres
+    absences = Absence.objects.select_related('student', 'subject')
+    
+    # Appliquer les filtres
+    matricule = request.GET.get('matricule')
+    date_debut = request.GET.get('date_debut')
+    date_fin = request.GET.get('date_fin')
+    niveau = request.GET.get('niveau')
+
+    if matricule:
+        absences = absences.filter(student__matricule__icontains=matricule)
+    if date_debut:
+        absences = absences.filter(date__gte=date_debut)
+    if date_fin:
+        absences = absences.filter(date__lte=date_fin)
+    if niveau:
+        absences = absences.filter(student__niveau=niveau)
+
+    # Créer le PDF
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    elements = []
+
+    # Préparer les données
+    data = [['#', 'Matricule', "Nom de l'Étudiant", 'Niveau', 'Matière', 
+             'Date', 'Heure début', 'Heure fin', 'Raison']]
+    
+    for i, absence in enumerate(absences, 1):
+        data.append([
+            i,
+            absence.student.matricule,
+            f"{absence.student.admin.last_name}, {absence.student.admin.first_name}",
+            absence.student.niveau,
+            absence.subject.name,
+            absence.date.strftime('%Y-%m-%d'),
+            absence.time_from.strftime('%H:%M'),
+            absence.time_to.strftime('%H:%M'),
+            absence.reason
+        ])
+
+    # Créer le tableau
+    table = Table(data)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    
+    elements.append(table)
+    doc.build(elements)
+    
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename=absences.pdf'
+    response.write(buffer.getvalue())
+    return response
+
+
+
+
+
 
 
 # export pdf excel

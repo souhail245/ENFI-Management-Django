@@ -4,8 +4,22 @@
 
 {% block content %}
 <style>
+  
+    .form-row {
+        display: flex;
+        gap: 15px; /* Espacement entre les colonnes */
+        margin-bottom: 15px; /* Espacement avec les autres champs */
+    }
+    .form-row .form-group {
+        flex: 1; /* Chaque champ prend une largeur égale */
+    }
+    .form-group {
+        margin-bottom: 20px; /* Espacement entre les groupes de champs */
+    }
+
+
     #absenceForm {
-        max-width: 800px; /* Réduit la largeur globale du formulaire */
+        max-width: 600px; /* Réduit la largeur globale du formulaire */
         margin: 0 auto; /* Centre le formulaire */
     }
 
@@ -27,9 +41,10 @@
     }
 
     #absenceForm label {
-        font-size: 0.85rem; /* Réduit la taille des étiquettes */
-        margin-bottom: 0.3rem; /* Moins d'espacement sous l'étiquette */
-    }
+    font-size: 1 rem; /* Augmente la taille de la police des étiquettes */
+    font-weight: bold; /* Rend le texte en gras pour plus de visibilité */
+    margin-bottom: 0.5rem; /* Ajuste l'espacement sous l'étiquette */
+}
 
     .notification {
         display: none; /* Caché par défaut */
@@ -51,11 +66,51 @@
 
 <form method="post" id="absenceForm">
     {% csrf_token %}
-    {{ form.as_p }}
+    <!-- Autres champs -->
+    <div class="form-group">
+        <label for="id_matricule">Matricule</label>
+        {{ form.matricule }}
+    </div>
+    <div class="form-group">
+        <label for="id_student">Étudiant</label>
+        {{ form.student }}
+    </div>
+    <div class="form-group">
+        <label for="id_subject">Matière</label>
+        {{ form.subject }}
+    </div>
+    <div class="form-group">
+        <label for="id_staff">Personnel</label>
+        {{ form.staff }}
+    </div>
+    <div class="form-group">
+        <label for="id_date">Date</label>
+        {{ form.date }}
+    </div>
+
+   
+    <div class="form-row">
+        <div class="form-group col">
+            <label for="id_time_from">Heure de début</label>
+            {{ form.time_from }}
+        </div>
+        <div class="form-group col">
+            <label for="id_time_to">Heure de fin</label>
+            {{ form.time_to }}
+        </div>
+    </div>
+     <!-- Champs reason, time_from et time_to -->
+     <div class="form-group">
+        <label for="id_reason">Raison</label>
+        {{ form.reason }}
+    </div>
+
+    <!-- Bouton Enregistrer -->
     <div class="btn-container">
         <button type="submit" class="btn btn-primary">Enregistrer</button>
     </div>
 </form>
+
 
 <!-- Zone pour afficher une notification après soumission -->
 <div id="notification" class="alert alert-success mt-3" style="display: none;">

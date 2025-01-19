@@ -96,6 +96,8 @@ class Student(models.Model):
         ('6eme année', '6ème année'),
                   ]
     niveau = models.CharField(max_length=20, choices=NIVEAU_CHOICES, default='3eme année')
+    lieu = models.CharField(max_length=100, null=True, blank=True)  # Lieu de naissance
+    dateN = models.DateField(null=True, blank=True)  # Date de naissance
 
     def __str__(self):
         return self.admin.last_name + ", " + self.admin.first_name
@@ -200,6 +202,18 @@ class StudentResult(models.Model):
     exam = models.FloatField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+class Absence(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="absences")
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="absences")
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name="absences")
+    date = models.DateField()
+    time_from = models.TimeField()
+    time_to = models.TimeField()
+    reason = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.student.matricule} - {self.subject.name} - {self.date}"
 
 
 @receiver(post_save, sender=CustomUser)
