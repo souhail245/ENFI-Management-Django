@@ -11,14 +11,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-<<<<<<< Updated upstream
-       
-=======
         migrations.RemoveField(
             model_name='student',
             name='gender',
         ),
->>>>>>> Stashed changes
         migrations.AddField(
             model_name='attendance',
             name='time_from',

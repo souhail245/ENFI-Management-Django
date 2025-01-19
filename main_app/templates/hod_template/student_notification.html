@@ -1,130 +1,327 @@
 {% extends 'main_app/base.html' %}
 {% load static %}
-{% block page_title %}{{page_title}}{% endblock page_title %}
+{% block page_title %}{{ page_title }}{% endblock page_title %}
 
 {% block content %}
-
 <section class="content">
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-12">
+                <!-- Carte principale -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">{{page_title}}</h3>
-                        
+                        <h3 class="card-title">{{ page_title }}</h3>
                     </div>
-                    <!-- /.card-header -->
+
                     <div class="card-body">
-                        <table id="example2" class="table table-bordered table-hover">
-                            <thead class="thead-dark">
-                                <tr>
-                                    <th>#</th>
-                                    <th>Full Name</th>
-                                    <th>niveau</th>
-                                    <th>matricule </th>
-                                    <th>Gender</th>
-                                    <th>Avatar</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for student in students %}
-                                <tr>
-                                    <td>{{ forloop.counter }}</td>
-                                    <td>{{student.last_name}}, {{student.first_name}}</td>
-                                    <td>{{student.student.niveau}}</td>
-                                    <td>{{student.student.matricule}}</td>
-                                    <td>{{student.gender}}</td>
-                                    <td>
-                                        {% if student.profile_pic == ""  %}
-                                        No Image
-                                        {% else %}
-                                        <img class="img img-fluid mb-2" height="56" width="56"
-                                            src="{{student.profile_pic}}" alt="">
-                                        {% endif %}
-                                    </td>
-                                    <td><button data-toggle = "modal" data-target = "#myModal"class="btn btn-primary show_notification" value="{{student.id}}">Send Notification</button> 
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                        <!-- Section Notification par niveau -->
+                        <div class="mb-4">
+                            <div class="card card-outline card-info">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-bullhorn mr-2"></i>
+                                        Notification par niveau
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="select_promotion" class="form-label">Notifier une promotion entière :</label>
+                                                <select id="select_promotion" name="promotion" class="form-control">
+                                                    <option value="">-- Sélectionnez une promotion --</option>
+                                                    {% for niveau, label in niveaux %}
+                                                        <option value="{{ niveau }}">{{ label }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="message_promotion">Message :</label>
+                                                <textarea class="form-control" id="message_promotion" rows="4" 
+                                                          placeholder="Entrez le message à notifier la promotion..." required></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 d-flex align-items-end">
+                                            <button id="notify_niveau" class="btn btn-success" type="button">
+                                                <i class="fas fa-paper-plane mr-2"></i>
+                                                Notifier la promotion
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recherche d'étudiant -->
+                        <div class="mb-4">
+                            <div class="form-group d-flex">
+                                <label for="search_matricule" class="form-label mr-2">Recherche :</label>
+                                <input type="text" id="search_matricule" class="form-control" 
+                                       placeholder="Rechercher par matricule ou nom" 
+                                       title="Entrez le matricule ou le nom de l'étudiant">
+                                <button id="search_button" class="btn btn-primary ml-2" type="button">
+                                    <i class="fas fa-search"></i> Chercher
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Tables des étudiants par niveau -->
+                        <div class="students-container">
+                            {% regroup students|dictsort:"niveau" by niveau as niveau_list %}
+                            {% for niveau in niveau_list %}
+                                <div class="level-section mb-4">
+                                    <div class="card card-outline card-info">
+                                        <div class="card-header">
+                                            <h3 class="card-title">
+                                                <i class="fas fa-users mr-2"></i>
+                                                {{ niveau.grouper }} - {{ niveau.list|length }} étudiant(s)
+                                            </h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered table-hover students-table">
+                                                    <thead class="thead-dark">
+                                                        <tr>
+                                                            <th>#</th>
+                                                            <th>Nom Complet</th>
+                                                            <th>Matricule</th>
+                                                            <th>Genre</th>
+                                                            <th>Avatar</th>
+                                                            <th>Action</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for student in niveau.list %}
+                                                            <tr data-niveau="{{ student.niveau }}" data-matricule="{{ student.matricule }}"
+                                                                data-name="{{ student.admin.last_name|add:' '|add:student.admin.first_name }}">
+                                                                <td>{{ forloop.counter }}</td>
+                                                                <td>{{ student.admin.last_name }}, {{ student.admin.first_name }}</td>
+                                                                <td>{{ student.matricule }}</td>
+                                                                <td>{{ student.admin.gender }}</td>
+                                                                <td class="text-center">
+                                                                    {% if student.profile_pic %}
+                                                                        <img class="img-circle elevation-2" 
+                                                                             src="{{ student.profile_pic }}" 
+                                                                             alt=""
+                                                                             style="width: 56px; height: 56px; object-fit: cover;">
+                                                                    {% else %}
+                                                                        <img class="img-circle elevation-2" 
+                                                                             src="{% static 'dist/img/default-profile.png' %}" 
+                                                                             alt="Photo par défaut"
+                                                                             style="width: 50px; height: 50px; object-fit: cover;">
+                                                                    {% endif %}
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <button type="button" class="btn btn-primary show_notification" 
+                                                                            data-bs-toggle="modal" data-bs-target="#notificationModal" 
+                                                                            value="{{ student.admin.id }}">
+                                                                        <i class="fas fa-bell mr-2"></i>
+                                                                        Notifier
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}                            
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
-<div class = "modal fade" id = "myModal" tabindex = "-1" role = "dialog" 
-   aria-labelledby = "myModalLabel" aria-hidden = "true">
-   
-   <div class = "modal-dialog">
-      <div class = "modal-content">
-         
-         <div class = "modal-header">Send Notification
-            <button type = "button" class = "close" data-dismiss = "modal" aria-hidden = "true">
-                  &times;
-            </button>
-            
-           
-         </div>
-         
-         <div class = "modal-body">
-            <div class="form-group">
-                <input type="text" id="message" class='form-control'>
-                <input type="hidden"  id="student_id" class='form-control'>
+
+<!-- Modal de notification -->
+<div class="modal fade" id="notificationModal" tabindex="-1" role="dialog" aria-labelledby="notificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="notificationModalLabel">
+                    <i class="fas fa-bell mr-2"></i>
+                    Envoyer une notification
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
             </div>
-         </div>
-         
-         <div class = "modal-footer">
-            <button type = "button" class = "btn btn-danger" data-dismiss = "modal">
-               Close
-            </button>
-            
-            <button type = "button" id='send' class = "btn btn-success send_notification">
-               Send Notification
-            </button>
-         </div>
-         
-      </div><!-- /.modal-content -->
-   </div><!-- /.modal-dialog -->
-  
-</div><!-- /.modal -->
+            <div class="modal-body">
+                <input type="hidden" id="student_id">
+                <div class="form-group">
+                    <label for="message">Message :</label>
+                    <textarea class="form-control" id="message" rows="4" placeholder="Entrez votre message ici..." required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times mr-2"></i>
+                    Annuler
+                </button>
+                <button type="button" class="btn btn-primary send_notification">
+                    <i class="fas fa-paper-plane mr-2"></i>
+                    Envoyer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock content %}
-{% block custom_js %}
-  <script>
-      $(".show_notification").click(function(){
-          $("#student_id").val($(this).val())
-      })
-      $(".send_notification").click(function(){
-          var id = $("#student_id").val()
-          var message = $("#message").val()
-          sendNotification(id,message);
-      })
-    function sendNotification(id,message){
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+$(document).ready(function() {
+    // Fonction pour envoyer une notification
+    function sendNotification(data) {
         $.ajax({
             url: "{% url 'send_student_notification' %}",
-            type: 'POST',
-            data: {
-                id: id,
-                message:message
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(data),
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Succès!',
+                        text: response.message
+                    });
+                    $('#notificationModal').modal('hide');
+                    $('#message').val('');
+                    $('#message_promotion').val('');
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erreur',
+                        text: response.error
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: "Une erreur s'est produite lors de l'envoi de la notification."
+                });
             }
-        }).done(function (response) {
-           
-                
-            if (response == 'True'){
-                alert("Notification Sent");
-                location.reload();
-              }else{
-                alert("Notification could not be saved. Please try again.");
-              }
-               
-           
-        }).fail(function (response) {
-            alert("Error in saving token")
-        })
-
+        });
     }
 
-  </script>
-{% endblock custom_js %}
+    // Gestionnaire pour le bouton de notification individuelle
+    $(".show_notification").click(function() {
+        var studentId = $(this).val();
+        $("#student_id").val(studentId);
+        $("#notificationModal").modal('show');
+    });
+
+    // Gestionnaire pour l'envoi de notification individuelle
+    $(".send_notification").click(function() {
+        var studentId = $("#student_id").val();
+        var message = $("#message").val();
+
+        if (!message) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Attention',
+                text: 'Veuillez entrer un message.'
+            });
+            return;
+        }
+
+        sendNotification({
+            student_ids: [studentId],
+            message: message
+        });
+    });
+
+    // Gestionnaire pour la notification par niveau
+    $("#notify_niveau").click(function() {
+        var niveau = $("#select_promotion").val();
+        var message = $("#message_promotion").val();
+
+        if (!niveau || !message) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Attention',
+                text: 'Veuillez sélectionner un niveau et entrer un message.'
+            });
+            return;
+        }
+
+        sendNotification({
+            niveau: niveau,
+            message: message
+        });
+    });
+
+    // Fonction de recherche améliorée
+    function performSearch() {
+        var searchValue = $("#search_matricule").val().toLowerCase();
+        
+        if (searchValue === '') {
+            $(".level-section").show();
+            $(".students-table tbody tr").show();
+            return;
+        }
+
+        $(".level-section").each(function() {
+            var section = $(this);
+            var hasVisibleRows = false;
+            
+            section.find("tbody tr").each(function() {
+                var row = $(this);
+                var matricule = row.data('matricule').toString().toLowerCase();
+                var name = row.data('name').toString().toLowerCase();
+                var visible = matricule.includes(searchValue) || name.includes(searchValue);
+                row.toggle(visible);
+                if (visible) hasVisibleRows = true;
+            });
+            
+            section.toggle(hasVisibleRows);
+        });
+    }
+
+    // Gestionnaire pour le bouton de recherche
+    $("#search_button").click(performSearch);
+
+    // Recherche en temps réel
+    $("#search_matricule").on('input', function() {
+        performSearch();
+    });
+
+    // Réinitialiser le modal lors de la fermeture
+    $('#notificationModal').on('hidden.bs.modal', function () {
+        $("#message").val('');
+        $("#student_id").val('');
+    });
+});
+</script>
+
+<style>
+.level-section .card-header {
+    background-color: #f8f9fa;
+}
+
+.level-section .card-header .card-title {
+    margin-bottom: 0;
+}
+
+.students-table th {
+    vertical-align: middle;
+}
+
+.img-circle {
+    border-radius: 50%;
+    border: 2px solid #dee2e6;
+}
+</style>
+{% endblock %}
