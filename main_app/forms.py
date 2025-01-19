@@ -70,7 +70,9 @@ class StudentForm(CustomUserForm):
     class Meta(CustomUserForm.Meta):
         model = Student
         fields = CustomUserForm.Meta.fields + \
-            ['niveau' , 'matricule']
+            [ 'lieu' , 'dateN','niveau' , 'matricule']
+       
+        dateN = forms.DateField(input_formats=['%Y-%m-%d'])
 
 
 class AdminForm(CustomUserForm):
@@ -204,3 +206,29 @@ class EditResultForm(FormSettings):
     class Meta:
         model = StudentResult
         fields = ['session_year', 'subject', 'student', 'test', 'exam']
+
+
+
+
+
+class AbsenceForm(forms.ModelForm):
+    matricule = forms.CharField(
+        max_length=20, 
+        widget=forms.TextInput(attrs={
+            'class': 'form-control', 
+            'placeholder': 'Saisir le matricule de l\'étudiant'
+        })
+    )
+
+    class Meta:
+        model = Absence
+        fields = ['matricule', 'student', 'subject', 'staff', 'date', 'time_from', 'time_to', 'reason']
+        widgets = {
+            'student': forms.Select(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            'subject': forms.Select(attrs={'class': 'form-control'}),
+            'staff': forms.Select(attrs={'class': 'form-control'}),
+            'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'time_from': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+            'time_to': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+            'reason': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }

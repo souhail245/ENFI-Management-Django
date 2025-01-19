@@ -14,8 +14,44 @@ from django.views.generic import UpdateView
 from .forms import *
 from .models import *
 
+# manager abscence
+
+def add_absence(request):
+    if request.method == 'POST':
+        form = AbsenceForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('view_absences')  # Redirige vers une page qui liste les absences
+    else:
+        form = AbsenceForm()
+    return render(request, 'hod_template/add_absence_template.html', {'form': form})
+
+# Vue pour récupérer les détails de l'étudiant par matricule
+def get_student_details(request):
+    matricule = request.GET.get('matricule', None)
+    if matricule:
+        try:
+            student = Student.objects.get(matricule=matricule)
+            return JsonResponse({
+                'success': True,
+                'student_id': student.id,
+                'first_name': student.admin.first_name,
+                'last_name': student.admin.last_name,
+                'niveau': student.niveau,
+            })
+        except Student.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Étudiant introuvable.'})
+    return JsonResponse({'success': False, 'error': 'Matricule non fourni.'})
 
 
+
+def view_absences(request):
+    absences = Absence.objects.select_related('student', 'subject').all()
+    print("Absences :", absences)  # Ajouter pour vérifier
+    return render(request, 'hod_template/view_absences.html', {'absences': absences})
+
+
+# export pdf excel
 import xlwt
 from django.http import HttpResponse
 from reportlab.lib import colors
@@ -242,6 +278,8 @@ def add_student(request):
             gender = student_form.cleaned_data.get('gender')
             phone_number = student_form.cleaned_data.get('phone_number')
             password = student_form.cleaned_data.get('password')
+            lieu = student_form.cleaned_data.get('lieu')
+            dateN = student_form.cleaned_data.get('dateN')
             niveau = student_form.cleaned_data.get('niveau')
             matricule = student_form.cleaned_data.get('matricule')
             passport = request.FILES['profile_pic']
@@ -256,6 +294,8 @@ def add_student(request):
                 user.student.matricule = matricule
                 user.student.phone_number = phone_number
                 user.student.niveau = niveau
+                user.student.lieu = lieu
+                user.student.dateN = dateN
                 user.save()
                 
                 messages.success(request, "Successfully Added")

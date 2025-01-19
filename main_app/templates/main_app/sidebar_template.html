@@ -8,6 +8,14 @@
         <span class="brand-text font-weight-light">Panneau Administratif</span>
     </a>
 
+
+    <style>
+
+.nav-item .nav-link i {
+    color: red; /* Change la couleur de l'icône */
+}
+
+    </style>
     <!-- Sidebar -->
     <div class="sidebar">
         <!-- Sidebar user panel (optional) -->
@@ -246,6 +254,23 @@
                         </p>
                     </a>
                 </li>
+                
+                <li class="nav-item">
+                    <a href="{% url 'add_absence' %}" class="nav-link">
+                        <i class="nav-icon fas fa-cogs text-danger"></i>
+                        <p>Note d'absences</p>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a href="{% url 'view_absences' %}" class="nav-link">
+                        <i class="nav-icon fas fa-calendar-check"></i>
+                        <p>Voir les absences</p>
+                    </a>
+                </li>
+                
+
+
                 <li class="nav-item">
                     {% url 'student_feedback_message' as student_feedback_message %}
 
@@ -485,6 +510,13 @@
                                                     Voir l'assiduité 
 
                                                 </p>
+                                            </a>
+                                        </li>
+
+                                        <li class="nav-item">
+                                            <a href="{% url 'attestation_scolarite' %}" class="nav-link {% if request.path == attestation_scolarite %} active {% endif %}">
+                                                <i class="nav-icon fas fa-file-alt"></i>
+                                                <p>Attestation de scolarité</p>
                                             </a>
                                         </li>
 

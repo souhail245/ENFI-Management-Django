@@ -1,0 +1,57 @@
+{% extends 'main_app/base.html' %}
+{% load static %}
+{% block page_title %}{{page_title}}{% endblock page_title %}
+
+{% block content %}
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">{{page_title}}</h3>
+                    </div>
+
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <table id="example2" class="table table-bordered table-hover">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Matricule</th>
+                                    <th>Nom de l'Étudiant</th>
+                                    <th>Niveau</th> <!-- Colonne Niveau ajoutée -->
+                                    <th>Matière</th>
+                                    <th>Date</th>
+                                    <th>Heure de début</th>
+                                    <th>Heure de fin</th>
+                                    <th>Raison</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for absence in absences %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ absence.student.matricule }}</td>
+                                    <td>{{ absence.student.admin.last_name }}, {{ absence.student.admin.first_name }}</td>
+                                    <td>{{ absence.student.niveau }}</td> <!-- Affichage du niveau -->
+                                    <td>{{ absence.subject.name }}</td>
+                                    <td>{{ absence.date }}</td>
+                                    <td>{{ absence.time_from }}</td>
+                                    <td>{{ absence.time_to }}</td>
+                                    <td>{{ absence.reason }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="9">Aucune absence enregistrée.</td> <!-- Correction de la colonne -->
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}
