@@ -16,12 +16,16 @@ from .models import *
 
 # manager abscence
 
+from django.http import JsonResponse
+
 def add_absence(request):
     if request.method == 'POST':
         form = AbsenceForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('view_absences')  # Redirige vers une page qui liste les absences
+            return JsonResponse({'success': True})
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors})
     else:
         form = AbsenceForm()
     return render(request, 'hod_template/add_absence_template.html', {'form': form})

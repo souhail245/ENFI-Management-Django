@@ -1,26 +1,117 @@
 {% extends 'main_app/base.html' %}
 {% load static %}
-{% block page_title %}{{page_title}}{% endblock page_title %}
-
+{% block page_title %}{{ page_title }}{% endblock page_title %}
 
 {% block content %}
+<style>
+    #absenceForm {
+        max-width: 800px; /* Réduit la largeur globale du formulaire */
+        margin: 0 auto; /* Centre le formulaire */
+    }
+
+    #absenceForm .form-control {
+        font-size: 0.9rem; /* Réduit la taille de la police */
+        padding: 0.4rem 0.6rem; /* Réduit l'espacement interne */
+    }
+
+    #absenceForm .btn {
+        font-size: 1.1rem; /* Agrandit la taille du bouton */
+        padding: 0.7rem 1.5rem;
+        background-color: red; /* Couleur rouge pour le bouton */
+        color: white;
+        border: none;
+    }
+
+    #absenceForm .btn:hover {
+        background-color: darkred; /* Rouge plus foncé au survol */
+    }
+
+    #absenceForm label {
+        font-size: 0.85rem; /* Réduit la taille des étiquettes */
+        margin-bottom: 0.3rem; /* Moins d'espacement sous l'étiquette */
+    }
+
+    .notification {
+        display: none; /* Caché par défaut */
+        margin-top: 20px;
+        padding: 10px;
+        color: white;
+        background-color: #28a745; /* Vert */
+        border-radius: 5px;
+        font-size: 1rem;
+    }
+
+    /* Centrer le bouton dans le formulaire */
+    #absenceForm .btn-container {
+        display: flex;
+        justify-content: center; /* Centre le bouton horizontalement */
+        margin-top: 20px; /* Espacement au-dessus du bouton */
+    }
+</style>
+
 <form method="post" id="absenceForm">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Enregistrer</button>
+    <div class="btn-container">
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+    </div>
 </form>
 
+<!-- Zone pour afficher une notification après soumission -->
+<div id="notification" class="alert alert-success mt-3" style="display: none;">
+    Absence enregistrée avec succès !
+</div>
+
 <script>
+    // Gestion de la soumission du formulaire avec AJAX
+    document.getElementById('absenceForm').addEventListener('submit', function (e) {
+        e.preventDefault(); // Empêche le comportement par défaut du formulaire
+        const form = this;
+
+        fetch("{% url 'add_absence' %}", {
+            method: 'POST',
+            body: new FormData(form),
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Réinitialiser les champs du formulaire
+                form.reset();
+
+                // Afficher une notification de succès
+                const notification = document.getElementById('notification');
+                notification.style.display = 'block';
+                notification.textContent = 'Absence enregistrée avec succès !';
+
+                // Masquer la notification après quelques secondes
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+            } else if (data.errors) {
+                alert('Erreur lors de la soumission : vérifiez les données.');
+                console.error(data.errors);
+            }
+        })
+        .catch(error => {
+            alert('Une erreur est survenue. Veuillez réessayer.');
+            console.error('Erreur:', error);
+        });
+    });
+
+    // Gestion de l’événement pour le champ matricule
     document.getElementById('id_matricule').addEventListener('change', function () {
         const matricule = this.value;
 
         if (matricule) {
-            fetch(/get_student_details/?matricule=${matricule})
+            fetch(`/get_student_details/?matricule=${matricule}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
                         document.getElementById('id_student').innerHTML =
-                            <option value="${data.student_id}" selected>${data.first_name} ${data.last_name}</option>;
+                            `<option value="${data.student_id}" selected>${data.first_name} ${data.last_name}</option>`;
                         document.getElementById('id_niveau').value = data.niveau;
                     } else {
                         alert(data.error);
@@ -31,4 +122,3 @@
     });
 </script>
 {% endblock %}
-
