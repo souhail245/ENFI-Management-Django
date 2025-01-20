@@ -8,19 +8,40 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">{{page_title}}</h3>
-                        <div class="float-right">
-                            <a href="{% url 'export_students_excel' %}" class="btn btn-success btn-sm">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <!-- Titre à gauche -->
+                
+                        <!-- Groupe central avec le filtre -->
+                        <div class="flex-grow-1 mx-4">
+                            <form method="GET" class="d-flex align-items-center justify-content-center">
+                                <div class="form-group mb-0 d-flex align-items-center">
+                                    <label for="niveau" class="mr-2 mb-0">Filtrer par niveau:</label>
+                                    <select name="niveau" id="niveau" class="form-control form-control-sm" style="width: 150px;" onchange="this.form.submit()">
+                                        <option value="">Tous les niveaux</option>
+                                        {% for niveau in niveaux %}
+                                            <option value="{{ niveau }}" {% if selected_niveau == niveau %}selected{% endif %}>
+                                                {{ niveau }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                
+                        <!-- Boutons d'export à droite -->
+                        <div class="d-flex align-items-center">
+                            <a href="{% url 'export_students_excel' %}{% if selected_niveau %}?niveau={{ selected_niveau }}{% endif %}" 
+                               class="btn btn-success btn-sm mr-2">
                                 <i class="fas fa-file-excel"></i> Export Excel
                             </a>
-                            <a href="{% url 'export_students_pdf' %}" class="btn btn-danger btn-sm">
+                            <a href="{% url 'export_students_pdf' %}{% if selected_niveau %}?niveau={{ selected_niveau }}{% endif %}" 
+                               class="btn btn-danger btn-sm">
                                 <i class="fas fa-file-pdf"></i> Export PDF
                             </a>
                         </div>
                     </div>
-
+                </div>
 
                     <!-- /.card-header -->
                     <div class="card-body">
