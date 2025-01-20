@@ -965,7 +965,7 @@ def admin_notify_staff(request):
 def admin_notify_student(request):
     # Récupérer tous les étudiants triés par niveau
     students = Student.objects.all().order_by('niveau')
-
+    
     # Regrouper les étudiants par niveau
     students_by_niveau = {}
     for student in students:

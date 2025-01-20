@@ -46,12 +46,15 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="file">Fichier (facultatif) :</label>
-                                                    <input type="file" id="file" name="file" class="form-control">  <!-- Champ de fichier sans 'required' -->
+                                                    <label for="file">Fichier :</label>
+                                                    <input type="file" id="file" name="file" class="form-control">
                                                 </div>
                                             </div>
                                             <div class="col-md-12">
-                                                <button type="submit" class="btn btn-primary">Envoyer la notification</button>
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="fas fa-paper-plane mr-1"></i>
+                                                    Envoyer la notification
+                                                </button>
                                             </div>
                                         </div>
                                     </form>
@@ -63,49 +66,69 @@
                         <div class="mb-4">
                             <h4>Liste des étudiants par niveau</h4>
                             {% for niveau, students in students_by_niveau.items %}
-                                <h5>{{ niveau }} - {{ students|length }} étudiant(s)</h5>
-                                <table class="table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th>Matricule</th>
-                                            <th>Nom</th>
-                                            <th>Prénom</th>
-                                            <th>Avatar</th>
-                                            <th>Notifier</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for student in students %}
-                                            <tr>
-                                                <td>{{ student.matricule }}</td>
-                                                <td>{{ student.admin.last_name }}</td>
-                                                <td>{{ student.admin.first_name }}</td>
-                                                <td class="text-center">
-                                                    {% if student.profile_pic %}
-                                                        <img class="img-circle elevation-2" 
-                                                             src="{{ student.profile_pic }}" 
-                                                             alt="Photo de profil"
-                                                             style="width: 50px; height: 50px; object-fit: cover;">
-                                                    {% else %}
-                                                        <img class="img-circle elevation-2" 
-                                                             src="{% static 'dist/img/default-profile.png' %}" 
-                                                             alt="Photo par défaut"
-                                                             style="width: 50px; height: 50px; object-fit: cover;">
-                                                    {% endif %}
-                                                </td>
-                                                <td class="text-center">
-                                                    <form method="POST" action="{% url 'send_student_notification' %}">
-                                                        {% csrf_token %}
-                                                        <input type="hidden" name="id" value="{{ student.id }}">
-                                                        <textarea name="message" placeholder="Entrez votre message" required></textarea>
-                                                        <input type="file" name="file" class="form-control">  <!-- Champ de fichier sans 'required' -->
-                                                        <button type="submit" class="btn btn-success">Notifier</button>
-                                                    </form>
-                                                </td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <h5 class="m-0">{{ niveau }} - {{ students|length }} étudiant(s)</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width: 10%">Matricule</th>
+                                                        <th style="width: 15%">Nom</th>
+                                                        <th style="width: 15%">Prénom</th>
+                                                        <th style="width: 10%">Avatar</th>
+                                                        <th style="width: 50%">Notification</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for student in students %}
+                                                        <tr>
+                                                            <td>{{ student.matricule }}</td>
+                                                            <td>{{ student.admin.last_name }}</td>
+                                                            <td>{{ student.admin.first_name }}</td>
+                                                            <td class="text-center">
+                                                                {% if student.profile_pic %}
+                                                                    <img class="img-circle elevation-2" 
+                                                                         src="{{ student.profile_pic }}" 
+                                                                         alt="Photo de profil"
+                                                                         style="width: 50px; height: 50px; object-fit: cover;">
+                                                                {% else %}
+                                                                    <img class="img-circle elevation-2" 
+                                                                         src="{% static 'dist/img/default-profile.png' %}" 
+                                                                         alt="Photo par défaut"
+                                                                         style="width: 50px; height: 50px; object-fit: cover;">
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>
+                                                                <form class="student-notification-form" method="POST" action="{% url 'send_student_notification' %}">
+                                                                    {% csrf_token %}
+                                                                    <input type="hidden" name="id" value="{{ student.id }}">
+                                                                    <div class="form-group mb-2">
+                                                                        <textarea name="message" class="form-control" rows="2" 
+                                                                                  placeholder="Entrez votre message" required></textarea>
+                                                                    </div>
+                                                                    <div class="form-group mb-2">
+                                                                        <div class="custom-file">
+                                                                            <input type="file" name="file" class="custom-file-input" id="file_{{ student.id }}">
+                                                                            <label class="custom-file-label" for="file_{{ student.id }}">Choisir un fichier</label>
+                                                                        </div>
+                                                                    </div>
+                                                                    <button type="button" class="btn btn-primary btn-sm show_notification w-100" 
+                                                                            value="{{ student.id }}" data-toggle="modal" data-target="#myModal">
+                                                                        <i class="fas fa-paper-plane mr-1"></i>
+                                                                        Envoyer
+                                                                    </button>
+                                                                </form>
+                                                            </td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
                             {% endfor %}
                         </div>
                     </div>
@@ -114,4 +137,78 @@
         </div>
     </div>
 </section>
+
 {% endblock content %}
+
+{% block custom_js %}
+<script>
+$(document).ready(function() {
+    // Mise à jour du nom du fichier sélectionné
+    $('.custom-file-input').on('change', function() {
+        var fileName = $(this).val().split('\\').pop();
+        $(this).siblings('.custom-file-label').addClass('selected').html(fileName || 'Choisir un fichier');
+    });
+
+    // Gestionnaire pour l'ouverture du modal
+    $(".show_notification").click(function() {
+        var form = $(this).closest('form');
+        var message = form.find('textarea[name="message"]').val();
+        $("#student_id").val($(this).val());
+        $("#message").val(message);
+    });
+
+    // Envoi de la notification
+    $(".send_notification").click(function() {
+        var id = $("#student_id").val();
+        var message = $("#message").val();
+        var studentForm = $('button[value="' + id + '"]').closest('form');
+        var files = studentForm.find('input[type="file"]')[0].files[0];
+        
+        sendNotification(id, message, files);
+    });
+
+    function sendNotification(id, message, file) {
+        var formData = new FormData();
+        formData.append('id', id);
+        formData.append('message', message);
+        if (file) {
+            formData.append('file', file);
+        }
+
+        $.ajax({
+            url: "{% url 'send_student_notification' %}",
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response == 'True') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Succès',
+                        text: 'Notification envoyée avec succès',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(function() {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erreur',
+                        text: 'La notification n\'a pas pu être envoyée. Veuillez réessayer.'
+                    });
+                }
+            },
+            error: function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: 'Erreur lors de l\'envoi de la notification'
+                });
+            }
+        });
+    }
+});
+</script>
+{% endblock custom_js %}

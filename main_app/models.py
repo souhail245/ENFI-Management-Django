@@ -189,9 +189,9 @@ class NotificationStaff(models.Model):
 
 
 class NotificationStudent(models.Model):
-    student = models.ForeignKey('Student', on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
     message = models.TextField()
-    file = models.FileField(upload_to='notifications/', blank=True, null=True)  # Pour les fichiers
+    files = models.FileField(upload_to='ENFI-Management-Django\media', blank=True, null=True)  # Pour les fichiers
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=[('success', 'Success'), ('failed', 'Failed')], default='success')  # Nouveau champ pour le statut
 
