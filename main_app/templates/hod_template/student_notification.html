@@ -44,18 +44,20 @@
                                                               placeholder="Entrez le message à notifier la promotion..." required></textarea>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label for="file">Fichier :</label>
-                                                    <input type="file" id="file" name="file" class="form-control">
+                                            <form class="student-notification-form" method="POST" action="{% url 'send_student_notification' %}">
+                                                <input type="hidden" name="id" value="{{ student.id }}">
+                                                <div class="form-group mb-2">
+                                                    <div class="custom-file">
+                                                        <input type="file" name="file" class="custom-file-input" id="file_{{ student.id }}">
+                                                        <label class="custom-file-label" for="file_{{ student.id }}">Choisir un fichier</label>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div class="col-md-12">
-                                                <button type="submit" class="btn btn-primary">
+                                                <button type="button" class="btn btn-primary btn-sm show_notification w-100" 
+                                                        value="{{ student.id }}" data-toggle="modal" data-target="#myModal">
                                                     <i class="fas fa-paper-plane mr-1"></i>
-                                                    Envoyer la notification
+                                                    Envoyer
                                                 </button>
-                                            </div>
+                                            </form>
                                         </div>
                                     </form>
                                 </div>
