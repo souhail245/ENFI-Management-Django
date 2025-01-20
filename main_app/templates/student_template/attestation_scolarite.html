@@ -1,0 +1,53 @@
+{% extends 'main_app/base.html' %}
+{% load static %}
+{% block page_title %}{{page_title}}{% endblock page_title %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="card shadow">
+        <div class="card-header bg-gradient-primary">
+            <h3 class="card-title text-white">Attestation de Scolarité</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8 mx-auto">
+                    
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tr>
+                                <th class="bg-light w-25">Matricule</th>
+                                <td>{{ student.matricule }}</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light">Nom</th>
+                                <td>{{ student.admin.last_name }}</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light">Prénom</th>
+                                <td>{{ student.admin.first_name }}</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light">Lieu de naissance</th>
+                                <td>{{ student.lieu }}</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light">Date de naissance</th>
+                                <td>{{ student.dateN|date:"d/m/Y"  }}</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light">Niveau</th>
+                                <td>{{ student.niveau }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="text-center mt-4">
+                        <a href="{% url 'export_attestation_pdf' student.id %}" class="btn btn-danger btn-lg">
+                            <i class="fas fa-file-pdf mr-2"></i> Télécharger l'attestation
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

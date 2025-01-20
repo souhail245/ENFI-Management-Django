@@ -1,0 +1,100 @@
+{% extends 'main_app/base.html' %}
+{% load static %}
+{% block page_title %}{{page_title}}{% endblock page_title %}
+
+{% block content %}
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">{{page_title}}</h3>
+                        <div class="float-right">
+                            <a href="{% url 'export_students_excel' %}" class="btn btn-success btn-sm">
+                                <i class="fas fa-file-excel"></i> Export Excel
+                            </a>
+                            <a href="{% url 'export_students_pdf' %}" class="btn btn-danger btn-sm">
+                                <i class="fas fa-file-pdf"></i> Export PDF
+                            </a>
+                        </div>
+                    </div>
+
+
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <table id="example2" class="table table-bordered table-hover">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Full Name</th>
+                                    <th>Niveau</th>
+                                    <th>matricule</th>
+                                    <th>Gender</th>
+                                    <th>Numéro de téléphone</th>
+                                    <th>Avatar</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in students %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{student.last_name}}, {{student.first_name}}</td>
+                                    <td>{{student.student.niveau}}</td>
+                                    <td>{{student.student.matricule}}</td>
+                                    <td>{{student.gender}}</td>
+                                    <td>{{ student.student.phone_number|default:"Not provided" }}</td>
+                                  
+                                    <td>
+                                        {% if student.profile_pic == ""  %}
+                                        No Image
+                                        {% else %}
+                                        <img class="img img-fluid mb-2" height="56" width="56"
+                                            src="{{student.profile_pic}}" alt="">
+                                        {% endif %}
+                                    </td>
+                                    
+                                    <td>
+                                        {% if student.student and student.student.id %}
+                                            <a href="{% url 'edit_student' student.student.id %}" class="btn btn-outline-info btn-sm">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </a>
+                                            
+                                            <a href="#" class="btn btn-outline-danger btn-sm" onclick="confirmDelete('{% url 'delete_student' student.student.id %}')">
+                                                <i class="fas fa-trash-alt"></i> Delete
+                                            </a>
+                                
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                
+                                <script>
+                                    function confirmDelete(deleteUrl) {
+                                        Swal.fire({
+                                            title: 'Are you sure?',
+                                            text: "You won't be able to revert this!",
+                                            icon: 'warning',
+                                            showCancelButton: true,
+                                            confirmButtonText: 'Yes, delete it!',
+                                            cancelButtonText: 'Cancel',
+                                            reverseButtons: true
+                                        }).then((result) => {
+                                            if (result.isConfirmed) {
+                                                window.location.href = deleteUrl;  // Redirige vers l'URL de suppression
+                                            }
+                                        });
+                                    }
+                                </script>
+                                
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}
