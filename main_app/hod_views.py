@@ -1251,3 +1251,70 @@ def delete_session(request, session_id):
     return redirect(reverse('manage_session'))
 
 
+
+
+# fonction EMPLOI DU TEMPS
+
+
+
+def creer_emploi_temps(request):
+    if request.method == "POST":
+        niveau_id = request.POST.get("niveau")
+        matiere_id = request.POST.get("matiere")
+        professeur_id = request.POST.get("professeur")
+        jour = request.POST.get("jour")
+        horaire = request.POST.get("horaire")
+
+        # Récupérer les instances des objets liés
+        niveau = get_object_or_404(Student, id=niveau_id)
+        matiere = get_object_or_404(Subject, id=matiere_id)
+        professeur = get_object_or_404(Staff, id=professeur_id)
+
+        # Créer l'emploi du temps
+        EmploiTemps.objects.create(
+            niveau=niveau,
+            jour=jour,
+            horaire=horaire,
+            matiere=matiere,
+            professeur=professeur,
+        )
+        return redirect("liste_emplois")  # Redirection après la création
+    else:
+        context = {
+            "niveaux": Student.objects.all(),
+            "subjects": Subject.objects.all(),
+            "professeurs": Staff.objects.all(),
+        }
+        return render(request, "hod_template/creer_emploi_temps.html", context)
+
+def liste_emplois(request):
+    # Organiser les emplois du temps par jour et horaire
+    jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi']
+    horaires = ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00']
+    emplois = EmploiTemps.objects.all()
+
+    emploi_table = {jour: {horaire: None for horaire in horaires} for jour in jours}
+
+    for emploi in emplois:
+        if emploi.jour in emploi_table and emploi.horaire in emploi_table[emploi.jour]:
+            emploi_table[emploi.jour][emploi.horaire] = emploi
+
+    context = {
+        "emplois": emplois,
+        "emploi_table": emploi_table,
+        "jours": jours,
+        "horaires": horaires,
+    }
+    return render(request, "hod_template/liste_emplois.html", context)
+
+
+def mettre_a_jour_progression(request, emploi_id):
+    emploi = get_object_or_404(EmploiTemps, id=emploi_id)
+
+    if request.method == "POST":
+        progression = request.POST.get("progression")
+        emploi.progression = progression
+        emploi.save()
+        return redirect("liste_emplois")  # Redirection vers la liste des emplois
+
+    return render(request, "hod_template/mise_a_jour_progression.html", {"emploi": emploi})

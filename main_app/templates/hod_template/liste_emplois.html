@@ -1,0 +1,90 @@
+{% extends 'main_app/base.html' %}
+{% load static %}
+{% block page_title %}Liste des emplois du temps{% endblock page_title %}
+
+{% block content %}
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px auto;
+        text-align: center;
+        font-family: Arial, sans-serif;
+    }
+    th, td {
+        padding: 12px;
+        border: 1px solid #ddd;
+    }
+    th {
+        background-color: #4CAF50;
+        color: white;
+    }
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+    tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    /* Style pour le bouton centré avec fond noir et texte blanc */
+    .back-button-container {
+        text-align: center;
+        margin-top: 30px;
+    }
+
+    .back-button {
+        padding: 12px 20px;
+        background-color: black;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .back-button:hover {
+        background-color: #333;
+    }
+</style>
+
+<h2 style="text-align: center;">Emploi du Temps</h2>
+<div class="back-button-container">
+    <a href="{% url 'creer_emploi_temps' %}" class="back-button">Retour à la création de l'emploi du temps</a>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Jour</th>
+            {% for horaire in horaires %}
+            <th>{{ horaire }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for jour, horaires_dict in emploi_table.items %}
+        <tr>
+            <td><strong>{{ jour }}</strong></td>
+            {% for horaire, emploi in horaires_dict.items %}
+            <td>
+                {% if emploi %}
+                    <strong>{{ emploi.matiere.name }}</strong><br>
+                    {{ emploi.professeur }}<br>
+                    Niveau : {{ emploi.niveau.niveau }}<br>
+                    <em>Progression : {{ emploi.progression|default:"Non défini" }}</em>
+                    <br>
+                    <a href="{% url 'mettre_a_jour_progression' emploi.id %}">Mettre à jour</a>
+                {% else %}
+                    <em>Vide</em>
+                {% endif %}
+            </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Conteneur du bouton avec centrage -->
+
+{% endblock content %}

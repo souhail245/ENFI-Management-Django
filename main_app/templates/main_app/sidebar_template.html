@@ -53,6 +53,16 @@
                         </p>
                     </a>
                 </li>
+                <li class="nav-item">
+                    {% url 'creer_emploi_temps' as creer_emploi_temps %}
+                    <a href="{{ creer_emploi_temps }}"
+                        class="nav-link {% if manage_timetable == request.path %} active {% endif %}">
+                        <i class="far fa-calendar-alt nav-icon"></i>
+                        <p>
+                            Emploi du Temps
+                        </p>
+                    </a>
+                </li>
                 
 
 

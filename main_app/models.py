@@ -268,17 +268,8 @@ class SuiviCours(models.Model):
     def __str__(self):
         return f"{self.matiere.name} : {self.heures_effectuees}/{self.total_heures} heures"
 
-
-
+from datetime import date 
 class EmploiTemps(models.Model):
-    JOUR_CHOICES = [
-        ('Lundi', 'Lundi'),
-        ('Mardi', 'Mardi'),
-        ('Mercredi', 'Mercredi'),
-        ('Jeudi', 'Jeudi'),
-        ('Vendredi', 'Vendredi'),
-        ('Samedi', 'Samedi'),
-    ]
 
     HORAIRES_CHOICES = [
         ('08:00-10:00', '08:00-10:00'),
@@ -288,17 +279,27 @@ class EmploiTemps(models.Model):
         ('08:00-12:00', '08:00-12:00'),
         ('14:00-18:00', '14:00-18:00'),
     ]
-
-    niveau = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='emplois_temps')
-    jour = models.CharField(max_length=10, choices=JOUR_CHOICES)
-    horaire = models.CharField(max_length=20, choices=HORAIRES_CHOICES)
+    JOUR_CHOICES = [
+        ('Lundi', 'Lundi'),
+        ('Mardi', 'Mardi'),
+        ('Mercredi', 'Mercredi'),
+        ('Jeudi', 'Jeudi'),
+        ('Vendredi', 'Vendredi'),
+        ('Samedi', 'Samedi'),
+    ]
+    jour = models.CharField(max_length=10, choices=JOUR_CHOICES, default='Lundi')
+    # Remplacez `niveau` pour qu'il fasse référence à l'objet `Student`
+    niveau = models.ForeignKey(Student, on_delete=models.CASCADE)  # Référence au modèle Student
+    date = models.DateField(default=date.today) 
+    horaire = models.CharField(max_length=20, choices=HORAIRES_CHOICES, default='08:00-10:00')
     matiere = models.ForeignKey(Subject, on_delete=models.CASCADE)
     professeur = models.ForeignKey(Staff, on_delete=models.CASCADE)
-    suivi = models.ForeignKey(SuiviCours, on_delete=models.SET_NULL, null=True, blank=True)
+    progression = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Décrivez la progression, par exemple '50% terminé' ou 'Chapitre 3 terminé'."
+    )
 
     def __str__(self):
-        return f"{self.niveau} - {self.jour} - {self.horaire} : {self.matiere}"
-
-
-
-
+        return f"{self.niveau} - {self.date} - {self.horaire} : {self.matiere}"

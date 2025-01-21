@@ -1,0 +1,97 @@
+{% extends 'main_app/base.html' %}
+{% load static %}
+{% block page_title %}{{ page_title }}{% endblock page_title %}
+
+{% block content %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f9f9f9;
+        color: #333;
+        margin: 0;
+        padding: 0;
+    }
+    form {
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        max-width: 500px;
+        margin: 30px auto;
+        padding: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    form label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #000;
+    }
+    form select, form button {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        font-size: 14px;
+        background-color: #f8f8f8;
+    }
+    form button {
+        background-color: #000;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    form button:hover {
+        background-color: #444;
+    }
+</style>
+
+<form method="POST">
+    {% csrf_token %}
+    <label for="date">Date :</label>
+    <input type="date" name="date" id="date" required>
+    
+    <label for="niveau">niveau :</label>
+    <select name="niveau" id="niveau">
+        {% for niveau in niveaux %}
+        <option value="{{ niveau.id }}">{{ niveau.niveau }}</option>
+        {% endfor %}
+    </select>
+    
+    <label for="jour">Jour :</label>
+    <select name="jour" required>
+    <option value="Lundi">Lundi</option>
+    <option value="Mardi">Mardi</option>
+    <option value="Mercredi">Mercredi</option>
+    <option value="Jeudi">Jeudi</option>
+    <option value="Vendredi">Vendredi</option>
+    <option value="Samedi">Samedi</option>
+     </select>
+
+    <label for="horaire">Horaire :</label>
+    <select name="horaire">
+        <option value="08:00-10:00">08:00-10:00</option>
+        <option value="10:00-12:00">10:00-12:00</option>
+        <option value="14:00-16:00">14:00-16:00</option>
+        <option value="16:00-18:00">16:00-18:00</option>
+    </select>
+    
+    <label for="matiere">Matière :</label>
+    <select name="matiere">
+        {% for subject in subjects %}
+        <option value="{{ subject.id }}">{{ subject.name }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="professeur">Professeur :</label>
+    <select name="professeur">
+        {% for prof in professeurs %}
+        <option value="{{ prof.id }}">{{ prof }}</option>
+        {% endfor %}
+    </select>
+
+    <button type="submit">Créer</button>
+</form>
+
+{% endblock content %}

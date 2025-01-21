@@ -97,6 +97,13 @@ urlpatterns = [
     path('export-absences-excel/', hod_views.export_absences_excel, name='export_absences_excel'),
     path('export-absences-pdf/', hod_views.export_absences_pdf, name='export_absences_pdf'),
 
+    path('emploi/create/', hod_views.creer_emploi_temps, name='creer_emploi_temps'),  # Page pour créer un emploi du temps
+    # Page pour afficher les emplois du temps
+
+    path('emploi/list/', hod_views.liste_emplois, name='liste_emplois'),
+    
+     path("emploi/progression/<int:emploi_id>/", hod_views.mettre_a_jour_progression, name="mettre_a_jour_progression"),
+
     # Staff
     path("staff/home/", staff_views.staff_home, name='staff_home'),
     path("staff/apply/leave/", staff_views.staff_apply_leave,
@@ -124,7 +131,7 @@ urlpatterns = [
     path('staff/result/fetch/', staff_views.fetch_student_result,
          name='fetch_student_result'),
 
-
+    
 
     # Student
     path("student/home/", student_views.student_home, name='student_home'),
