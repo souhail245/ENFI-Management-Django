@@ -236,7 +236,7 @@ def export_students_excel(request):
 
     wb = xlwt.Workbook(encoding='utf-8')
     ws = wb.add_sheet('Students')
-
+    
     # Styles
     header_style = xlwt.easyxf('font: bold on; pattern: pattern solid, fore_colour gray25;')
     
@@ -254,9 +254,15 @@ def export_students_excel(request):
     for col_num, column_title in enumerate(columns):
         ws.write(row_num, col_num, column_title, header_style)
 
-    # Données
-    # Utilisez la même requête que dans votre template
-    students = CustomUser.objects.filter(user_type=3)  # Type 3 pour les étudiants
+    # Récupérer le niveau sélectionné
+    selected_niveau = request.GET.get('niveau')
+    
+    # Query de base
+    students = CustomUser.objects.filter(user_type=3).select_related('student')
+    
+    # Appliquer le filtre si un niveau est sélectionné
+    if selected_niveau:
+        students = students.filter(student__niveau=selected_niveau)
 
     for idx, student in enumerate(students, 1):
         row_num += 1
@@ -274,6 +280,7 @@ def export_students_excel(request):
 
     wb.save(response)
     return response
+
 
 def export_students_pdf(request):
     response = HttpResponse(content_type='application/pdf')
@@ -293,8 +300,15 @@ def export_students_pdf(request):
     
     data = [headers]
     
-    # Utilisez la même requête que dans votre template
-    students = CustomUser.objects.filter(user_type=3)  # Type 3 pour les étudiants
+    # Récupérer le niveau sélectionné
+    selected_niveau = request.GET.get('niveau')
+    
+    # Query de base
+    students = CustomUser.objects.filter(user_type=3).select_related('student')
+    
+    # Appliquer le filtre si un niveau est sélectionné
+    if selected_niveau:
+        students = students.filter(student__niveau=selected_niveau)
 
     for idx, student in enumerate(students, 1):
         data.append([
@@ -309,6 +323,7 @@ def export_students_pdf(request):
     col_widths = [0.5*inch, 2*inch, 1*inch, 1.5*inch, 1*inch, 1.5*inch]
     table = Table(data, colWidths=col_widths)
     
+    # Le reste du style de la table reste inchangé
     table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -328,7 +343,7 @@ def export_students_pdf(request):
     elements.append(table)
     doc.build(elements)
     return response
-
+    
 
 def admin_home(request):
     total_staff = Staff.objects.all().count()
@@ -537,10 +552,24 @@ def manage_staff(request):
 
 
 def manage_student(request):
+    # Récupérer tous les niveaux uniques
+    niveaux = CustomUser.objects.filter(user_type=3).select_related('student').values_list('student__niveau', flat=True).distinct()
+    
+    # Récupérer le niveau sélectionné
+    selected_niveau = request.GET.get('niveau')
+    
+    # Query de base
     students = CustomUser.objects.filter(user_type=3).select_related('student')
+    
+    # Appliquer le filtre si un niveau est sélectionné
+    if selected_niveau:
+        students = students.filter(student__niveau=selected_niveau)
+    
     context = {
         'students': students,
-        'page_title': 'Manage Students'
+        'page_title': 'Manage Students',
+        'niveaux': niveaux,
+        'selected_niveau': selected_niveau
     }
     return render(request, "hod_template/manage_student.html", context)
 
