@@ -23,7 +23,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for notification in notifications %}
+                                    {% for notification in notifications reversed %}
                                     <tr>
                                         <td>{{forloop.counter}}</td>
                                         <td>{{notification.created_at|date:"d/m/Y H:i"}}</td>
