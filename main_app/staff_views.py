@@ -1,11 +1,12 @@
 import json
-
+import os  # Ajout de l'import os
 from django.contrib import messages
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import (HttpResponseRedirect, get_object_or_404,redirect, render)
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings  # Ajout de l'import settings
 
 from .forms import *
 from .models import *
@@ -251,6 +252,39 @@ def staff_view_notification(request):
         'page_title': "View Notifications"
     }
     return render(request, "staff_template/staff_view_notification.html", context)
+
+
+@csrf_exempt
+def delete_staff_notification(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Méthode non autorisée'})
+    
+    try:
+        data = json.loads(request.body)
+        notification_id = data.get('notification_id')
+        
+        if not notification_id:
+            return JsonResponse({'success': False, 'error': 'ID de notification manquant'})
+
+        notification = NotificationStaff.objects.get(id=notification_id)
+        
+        # Vérifier que la notification appartient bien au staff connecté
+        if notification.staff.admin != request.user:
+            return JsonResponse({'success': False, 'error': 'Non autorisé'})
+            
+        # Supprimer le fichier associé s'il existe
+        if notification.file:
+            file_path = os.path.join(settings.MEDIA_ROOT, str(notification.file))
+            if os.path.exists(file_path):
+                os.remove(file_path)
+        
+        notification.delete()
+        return JsonResponse({'success': True})
+        
+    except NotificationStaff.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Notification non trouvée'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
 
 
 def staff_add_result(request):

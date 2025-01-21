@@ -6,6 +6,19 @@
 
 <section class="content">
     <div class="container-fluid">
+        <!-- Ajout de la barre de recherche -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" 
+                           id="searchStaff" 
+                           class="form-control" 
+                           placeholder="Rechercher un personnel (nom, prénom, email, cours)...">
+                </div>
+            </div>
+        </div>
+
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
@@ -28,12 +41,12 @@
                             </thead>
                             <tbody>
                                 {% for staff in allStaff %}
-                                <tr>
+                                <tr class="staff-row">
                                     <td>{{ forloop.counter }}</td>
-                                    <td>{{staff.last_name}}, {{staff.first_name}}</td>
-                                    <td>{{staff.email}}</td>
-                                    <td>{{staff.gender}}</td>
-                                    <td>{{staff.staff.course.name}}</td>
+                                    <td class="staff-data">{{staff.last_name}}, {{staff.first_name}}</td>
+                                    <td class="staff-data">{{staff.email}}</td>
+                                    <td class="staff-data">{{staff.gender}}</td>
+                                    <td class="staff-data">{{staff.staff.course.name}}</td>
                                     <td>
                                         {% if staff.profile_pic == ""  %}
                                         No Image
@@ -42,7 +55,21 @@
                                             src="{{staff.profile_pic}}" alt="">
                                         {% endif %}
                                     </td>
-                                    <td><button data-toggle = "modal" data-target = "#myModal"class="btn btn-primary show_notification" value="{{staff.id}}">Send Notification</button> 
+                                    <td>
+                                        <form class="staff-notification-form" method="POST" enctype="multipart/form-data" action="{% url 'send_staff_notification' %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="id" value="{{ staff.id }}">
+                                            <div class="form-group mb-2">
+                                                <textarea name="message" class="form-control" rows="2" placeholder="Entrez votre message" required></textarea>
+                                            </div>
+                                            <div class="form-group mb-2">
+                                                <label for="file_{{ staff.id }}" class="form-label">Joindre un fichier :</label>
+                                                <input type="file" id="file_{{ staff.id }}" name="file" class="form-control">
+                                            </div>
+                                            <button type="submit" class="btn btn-success btn-sm w-100">
+                                                <i class="fas fa-paper-plane me-1"></i> Envoyer
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -54,74 +81,75 @@
         </div>
     </div>
 </section>
-<div class = "modal fade" id = "myModal" tabindex = "-1" role = "dialog" 
-   aria-labelledby = "myModalLabel" aria-hidden = "true">
-   
-   <div class = "modal-dialog">
-      <div class = "modal-content">
-         
-         <div class = "modal-header">Send Notification
-            <button type = "button" class = "close" data-dismiss = "modal" aria-hidden = "true">
-                  &times;
-            </button>
-            
-           
-         </div>
-         
-         <div class = "modal-body">
-            <div class="form-group">
-                <input type="text" id="message" class='form-control'>
-                <input type="hidden"  id="staff_id" class='form-control'>
-            </div>
-         </div>
-         
-         <div class = "modal-footer">
-            <button type = "button" class = "btn btn-danger" data-dismiss = "modal">
-               Close
-            </button>
-            
-            <button type = "button" id='send' class = "btn btn-success send_notification">
-               Send Notification
-            </button>
-         </div>
-         
-      </div><!-- /.modal-content -->
-   </div><!-- /.modal-dialog -->
-  
-</div><!-- /.modal -->
 {% endblock content %}
 {% block custom_js %}
-  <script>
-      $(".show_notification").click(function(){
-          $("#staff_id").val($(this).val())
-      })
-      $(".send_notification").click(function(){
-          var id = $("#staff_id").val()
-          var message = $("#message").val()
-          sendNotification(id,message);
-      })
-    function sendNotification(id,message){
-        $.ajax({
-            url: "{% url 'send_staff_notification' %}",
-            type: 'POST',
-            data: {
-                id: id,
-                message:message
+<script>
+// Fonction pour éviter les soumissions multiples
+function handleFormSubmission(form, callback) {
+    let isSubmitting = false;
+    
+    return async function(e) {
+        e.preventDefault();
+        
+        if (isSubmitting) {
+            return false;
+        }
+        
+        isSubmitting = true;
+        const submitButton = form.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        
+        try {
+            await callback();
+        } catch (error) {
+            console.error('Erreur:', error);
+            alert('Une erreur est survenue lors de l\'envoi');
+        } finally {
+            isSubmitting = false;
+            submitButton.disabled = false;
+        }
+    };
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des formulaires de notification individuelle
+    document.querySelectorAll('.staff-notification-form').forEach(form => {
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
+        
+        newForm.addEventListener('submit', handleFormSubmission(newForm, async () => {
+            const formData = new FormData(newForm);
+            const response = await fetch(newForm.action, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                alert('Notification envoyée avec succès !');
+                newForm.reset();
+            } else {
+                alert(data.error || 'Erreur lors de l\'envoi de la notification');
             }
-        }).done(function (response) {
-           
-          if (response == 'True'){
-            alert("Notification Sent");
-            location.reload();
-          }else{
-            alert("Notification could not be saved. Please try again.");
-          }
-           
-        }).fail(function (response) {
-            alert("Error in saving token")
-        })
+        }));
+    });
 
+    // Fonction de recherche existante
+    const searchInput = document.getElementById('searchStaff');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function(e) {
+            const searchText = e.target.value.toLowerCase();
+            const allRows = document.querySelectorAll('.staff-row');
+            
+            allRows.forEach(row => {
+                const staffData = Array.from(row.querySelectorAll('.staff-data'))
+                    .map(cell => cell.textContent.toLowerCase());
+                
+                const matchFound = staffData.some(data => data.includes(searchText));
+                row.style.display = matchFound ? '' : 'none';
+            });
+        });
     }
-
-  </script>
+});
+</script>
 {% endblock custom_js %}
