@@ -49,7 +49,7 @@ class CustomUser(AbstractUser):
     gender = models.CharField(max_length=1, choices=GENDER)
     profile_pic = models.ImageField()
     address = models.TextField()
-    fcm_token = models.TextField(default="")  # For firebase notifications
+    fcm_token = models.TextField(max_length=255, blank=True, null=True, default="")  # For firebase notifications
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     USERNAME_FIELD = "email"
@@ -58,6 +58,10 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.last_name + ", " + self.first_name
+
+    def update_fcm_token(self, token):
+        self.fcm_token = token
+        self.save()
 
 
 class Admin(models.Model):
@@ -162,7 +166,7 @@ class LeaveReportStaff(models.Model):
     message = models.TextField()
     status = models.SmallIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
 
 class FeedbackStudent(models.Model):
@@ -178,14 +182,14 @@ class FeedbackStaff(models.Model):
     feedback = models.TextField()
     reply = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
 
 class NotificationStaff(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
 
 class NotificationStudent(models.Model):
@@ -206,13 +210,14 @@ class NotificationStudent(models.Model):
     def __str__(self):
         return f"Notification pour {self.student.admin.email} - {self.status}"
 
+
 class StudentResult(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     test = models.FloatField(default=0)
     exam = models.FloatField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
 class Absence(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="absences")

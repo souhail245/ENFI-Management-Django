@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
+from .student_views import update_fcm_token
 
 from main_app.EditResultView import EditResultView
 
@@ -33,8 +34,7 @@ urlpatterns = [
     path("admin/home/", hod_views.admin_home, name='admin_home'),
     path("staff/add", hod_views.add_staff, name='add_staff'),
     path("course/add", hod_views.add_course, name='add_course'),
-    path("send_student_notification/", hod_views.send_student_notification,
-         name='send_student_notification'),
+    path("send_student_notification/", hod_views.send_student_notification,name='send_student_notification'),
     path('send_promotion_notification/', hod_views.send_promotion_notification, name='send_promotion_notification'),
     path("send_staff_notification/", hod_views.send_staff_notification,
          name='send_staff_notification'),
@@ -143,8 +143,9 @@ urlpatterns = [
     path('student/view/result/', student_views.student_view_result,
          name='student_view_result'),
 
-      path('attestation-scolarite/', student_views.attestation_scolarite, name='attestation_scolarite'),
+     path('attestation-scolarite/', student_views.attestation_scolarite, name='attestation_scolarite'),
      # URL pour exporter l'attestation en PDF
      path('export-attestation/<int:student_id>/', student_views.export_attestation_pdf, name='export_attestation_pdf'),
 
+    path('update_fcm_token/', update_fcm_token, name='update_fcm_token'),
 ]

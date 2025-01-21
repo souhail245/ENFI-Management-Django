@@ -87,14 +87,14 @@
                                         <td>{{ student.admin.first_name }}</td>
                                         <td class="text-center">
                                             <img class="img-circle elevation-2" 
-                                                 src="{% if student.profile_pic %}{{ student.profile_pic.url }}{% else %}{% static 'dist/img/default-profile.png' %}{% endif %}" 
+                                                 src="{% if student.admin.profile_pic %}{{ student.admin.profile_pic.url }}{% else %}{% static 'dist/img/default-profile.png' %}{% endif %}" 
                                                  alt="Photo de profil" 
                                                  style="width: 50px; height: 50px; object-fit: cover;">
                                         </td>
                                         <td>
                                             <form class="student-notification-form" method="POST" enctype="multipart/form-data" action="{% url 'send_student_notification' %}">
                                                 {% csrf_token %}
-                                                <input type="hidden" name="student_id" value="{{ student.id }}">
+                                                <input type="hidden" name="id" value="{{ student.admin.id }}">
                                                 <div class="form-group mb-2">
                                                     <textarea name="message" class="form-control" rows="2" placeholder="Entrez votre message" required></textarea>
                                                 </div>
@@ -121,56 +121,79 @@
 <!-- Ajout du JavaScript pour gérer les formulaires -->
 {% block custom_js %}
 <script>
+// Fonction pour éviter les soumissions multiples
+function handleFormSubmission(form, callback) {
+    let isSubmitting = false;
+    
+    return async function(e) {
+        e.preventDefault();
+        
+        if (isSubmitting) {
+            return false;
+        }
+        
+        isSubmitting = true;
+        const submitButton = form.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        
+        try {
+            await callback();
+        } catch (error) {
+            console.error('Erreur:', error);
+            alert('Une erreur est survenue lors de l\'envoi');
+        } finally {
+            isSubmitting = false;
+            submitButton.disabled = false;
+        }
+    };
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Gestion du formulaire de notification par promotion
     const promotionForm = document.getElementById('promotionNotificationForm');
-    promotionForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
+    if (promotionForm) {
+        // Supprimer les gestionnaires d'événements existants
+        const newPromotionForm = promotionForm.cloneNode(true);
+        promotionForm.parentNode.replaceChild(newPromotionForm, promotionForm);
         
-        fetch(this.action, {
-            method: 'POST',
-            body: formData,
-        })
-        .then(response => response.json())
-        .then(data => {
+        newPromotionForm.addEventListener('submit', handleFormSubmission(newPromotionForm, async () => {
+            const formData = new FormData(newPromotionForm);
+            const response = await fetch(newPromotionForm.action, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
             if (data.success) {
                 alert('Notifications envoyées avec succès !');
-                this.reset();
+                newPromotionForm.reset();
             } else {
                 alert(data.error || 'Erreur lors de l\'envoi des notifications');
             }
-        })
-        .catch(error => {
-            console.error('Erreur:', error);
-            alert('Une erreur est survenue lors de l\'envoi des notifications');
-        });
-    });
+        }));
+    }
 
     // Gestion des formulaires de notification individuelle
     document.querySelectorAll('.student-notification-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            
-            fetch(this.action, {
+        // Supprimer les gestionnaires d'événements existants
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
+        
+        newForm.addEventListener('submit', handleFormSubmission(newForm, async () => {
+            const formData = new FormData(newForm);
+            const response = await fetch(newForm.action, {
                 method: 'POST',
-                body: formData,
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    alert('Notification envoyée avec succès !');
-                    this.reset();
-                } else {
-                    alert(data.message || 'Erreur lors de l\'envoi de la notification');
-                }
-            })
-            .catch(error => {
-                console.error('Erreur:', error);
-                alert('Une erreur est survenue lors de l\'envoi de la notification');
+                body: formData
             });
-        });
+            
+            const data = await response.json();
+            if (data.success) {
+                alert('Notification envoyée avec succès !');
+                newForm.reset();
+            } else {
+                alert(data.error || 'Erreur lors de l\'envoi de la notification');
+            }
+        }));
     });
 });
 </script>

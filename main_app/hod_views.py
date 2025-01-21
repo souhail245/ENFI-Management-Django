@@ -1011,7 +1011,7 @@ def admin_notify_student(request):
     students_by_niveau = {}
     for student in students:
         niveau = student.niveau
-        if niveau not in students_by_niveau:
+        if (niveau not in students_by_niveau):
             students_by_niveau[niveau] = []
         students_by_niveau[niveau].append(student)
     
@@ -1020,37 +1020,41 @@ def admin_notify_student(request):
     
     return render(request, "hod_template/student_notification.html", context)
 
-
 @csrf_exempt
 def send_student_notification(request):
-    student_id = request.POST.get('student_id')
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Méthode non autorisée.'}, status=405)
+    
+    # Récupérer les données
+    id = request.POST.get('id')
     message = request.POST.get('message')
     file = request.FILES.get('file')
 
-    try:
-        student = get_object_or_404(Student, id=student_id)
-        
-        # Gérer le fichier d'abord s'il existe
-        file_url = None
-        if file:
-            file_path = default_storage.save(f'notifications/{file.name}', file)
-            file_url = default_storage.url(file_path)
+    if not id or not message:
+        return JsonResponse({'success': False, 'error': 'Données manquantes'})
 
-        if not student.admin or not student.admin.fcm_token:
-            notification = NotificationStudent.objects.create(
-                student=student,
-                message=message,
-                status='pending'
-            )
-            if file:
-                notification.file.name = file_path
-                notification.save()
+    try:
+        # Récupérer l'étudiant
+        student = get_object_or_404(Student, admin_id=id)
+        
+        # Créer la notification dans la base de données
+        notification = NotificationStudent.objects.create(
+            student=student,
+            message=message,
+            file=file,
+            status='pending'
+        )
+
+        # Vérifier le token FCM
+        if not student.admin.fcm_token:
+            notification.status = 'pending'
+            notification.save()
             return JsonResponse({
-                "status": "warning",
-                "message": "Notification enregistrée mais non envoyée - Token FCM manquant"
+                'success': True,
+                'warning': "L'étudiant n'a pas de token FCM, la notification sera envoyée plus tard."
             })
 
-        # Préparer la notification FCM
+        # Envoyer la notification FCM
         url = "https://fcm.googleapis.com/fcm/send"
         body = {
             'notification': {
@@ -1061,67 +1065,34 @@ def send_student_notification(request):
             },
             'to': student.admin.fcm_token
         }
-
-        if file_url:
-            body['notification']['file_url'] = file_url
-
+        
         headers = {
             'Authorization': 'key=AAAA3Bm8j_M:APA91bElZlOLetwV696SoEtgzpJr2qbxBfxVBfDWFiopBWzfCfzQp2nRyC7_A2mlukZEHV4g1AmyC6P_HonvSkY2YyliKt5tT3fe_1lrKod2Daigzhb2xnYQMxUWjCAIQcUexAMPZePB',
             'Content-Type': 'application/json'
         }
-        
-        response = requests.post(url, data=json.dumps(body), headers=headers)
-        response_data = response.json()
 
-        if response.status_code == 200 and response_data.get('success', 0) > 0:
-            # Créer la notification en base de données
-            notification = NotificationStudent.objects.create(
-                student=student,
-                message=message,
-                status='success'
-            )
-            if file:
-                notification.file.name = file_path
-                notification.save()
+        response = requests.post(url, data=json.dumps(body), headers=headers)
+        
+        if response.status_code == 200:
+            notification.status = 'success'
+            notification.save()
             return JsonResponse({
-                "status": "success", 
-                "message": "Notification envoyée avec succès"
+                'success': True,
+                'message': 'Notification envoyée avec succès'
             })
         else:
-            # Créer la notification avec statut d'échec
-            notification = NotificationStudent.objects.create(
-                student=student,
-                message=message,
-                status='failed'
-            )
-            if file:
-                notification.file.name = file_path
-                notification.save()
-            error_detail = response_data.get('results', [{}])[0].get('error', 'Erreur inconnue')
+            notification.status = 'failed'
+            notification.save()
             return JsonResponse({
-                "status": "error",
-                "message": f"Erreur FCM: {error_detail}"
+                'success': False,
+                'error': f'Échec de l\'envoi: {response.text}'
             })
 
     except Exception as e:
-        print(f"Erreur générale: {str(e)}")
-        # Créer la notification avec statut d'échec même en cas d'erreur
-        try:
-            notification = NotificationStudent.objects.create(
-                student=student,
-                message=message,
-                status='failed'
-            )
-            if file:
-                notification.file.name = file_path
-                notification.save()
-        except:
-            pass
         return JsonResponse({
-            "status": "error",
-            "message": f"Erreur: {str(e)}"
+            'success': False,
+            'error': str(e)
         })
-
 
 @csrf_exempt
 def send_promotion_notification(request):

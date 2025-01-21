@@ -253,3 +253,18 @@ def student_view_result(request):
         'page_title': "View Results"
     }
     return render(request, "student_template/student_view_result.html", context)
+
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from .models import CustomUser
+
+@csrf_exempt
+def update_fcm_token(request):
+    if request.method == 'POST':
+        token = request.POST.get('token')
+        if token and request.user.is_authenticated:
+            user = CustomUser.objects.get(id=request.user.id)
+            user.update_fcm_token(token)
+            return JsonResponse({'success': True, 'message': 'Token FCM mis à jour avec succès.'})
+        return JsonResponse({'success': False, 'message': 'Token ou utilisateur non valide.'})
+    return JsonResponse({'success': False, 'message': 'Méthode non autorisée.'})
