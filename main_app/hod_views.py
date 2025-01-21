@@ -1273,7 +1273,7 @@ def delete_session(request, session_id):
 
 # fonction EMPLOI DU TEMPS
 
-
+from django.shortcuts import get_object_or_404
 
 def creer_emploi_temps(request):
     if request.method == "POST":

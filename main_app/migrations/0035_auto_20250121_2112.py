@@ -11,22 +11,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='emploitemps',
-            name='end_time',
-        ),
-        migrations.RemoveField(
-            model_name='emploitemps',
-            name='start_time',
-        ),
-        migrations.RemoveField(
-            model_name='suivicours',
-            name='heures_totales',
-        ),
-        migrations.RemoveField(
-            model_name='suivicours',
-            name='niveau',
-        ),
+   
+    
         migrations.RemoveField(
             model_name='suivicours',
             name='professeur',
