@@ -191,9 +191,20 @@ class NotificationStaff(models.Model):
 class NotificationStudent(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     message = models.TextField()
-    files = models.FileField(upload_to='ENFI-Management-Django\media', blank=True, null=True)  # Pour les fichiers
+    file = models.FileField(upload_to='notifications/', null=True, blank=True)
+    status = models.CharField(
+        max_length=20, 
+        default='pending',
+        choices=[
+            ('pending', 'En attente'),
+            ('success', 'Envoyée'),
+            ('failed', 'Échouée')
+        ]
+    )
     created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, choices=[('success', 'Success'), ('failed', 'Failed')], default='success')  # Nouveau champ pour le statut
+
+    def __str__(self):
+        return f"Notification pour {self.student.admin.email} - {self.status}"
 
 class StudentResult(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)

@@ -35,6 +35,7 @@ urlpatterns = [
     path("course/add", hod_views.add_course, name='add_course'),
     path("send_student_notification/", hod_views.send_student_notification,
          name='send_student_notification'),
+    path('send_promotion_notification/', hod_views.send_promotion_notification, name='send_promotion_notification'),
     path("send_staff_notification/", hod_views.send_staff_notification,
          name='send_staff_notification'),
     path("add_session/", hod_views.add_session, name='add_session'),
