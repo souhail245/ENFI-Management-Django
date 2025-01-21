@@ -131,7 +131,11 @@ urlpatterns = [
     path('staff/result/fetch/', staff_views.fetch_student_result,
          name='fetch_student_result'),
 
+<<<<<<< HEAD
     
+=======
+    path('staff/notification/delete/', staff_views.delete_staff_notification, name='delete_staff_notification'),
+>>>>>>> cbf02f3ea2a3b2416add0db9201ae1083c676d05
 
     # Student
     path("student/home/", student_views.student_home, name='student_home'),
@@ -155,4 +159,5 @@ urlpatterns = [
      path('export-attestation/<int:student_id>/', student_views.export_attestation_pdf, name='export_attestation_pdf'),
 
     path('update_fcm_token/', update_fcm_token, name='update_fcm_token'),
+    path('student/notification/delete/', student_views.delete_student_notification, name='delete_student_notification'),
 ]

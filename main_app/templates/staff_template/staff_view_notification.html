@@ -2,53 +2,127 @@
 {% load static %}
 {% block page_title %}{{page_title}}{% endblock page_title %}
 {% block content %}
-
+{% csrf_token %}
 <section class="content">
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-12">
-                <!-- general form elements -->
                 <div class="card card-dark">
                     <div class="card-header">
                         <h3 class="card-title">{{page_title}}</h3>
                     </div>
 
-
-                    <!-- /.card-header -->
-                    <!-- form start -->
                     <div class="card-body">
-
-
-
-                       
-
-
-                        <div class="form-group table">
-              <table class="table table-bordered">
-                  <tr>
-                      <th>#</th>
-                      <th>Date</th>
-                      <th>Message</th>
-                  </tr>
-                  {% for notification in  notifications %}
-                    <tr>
-                        <td>{{forloop.counter}}</td>
-                        <td>{{notification.created_at}}</td>
-                        <td>{{notification.message}}</td>
-                    </tr>
-                  {% endfor %}
-              </table>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Date</th>
+                                        <th>Message</th>
+                                        <th>Fichier joint</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for notification in notifications reversed %}
+                                    <tr>
+                                        <td>{{forloop.counter}}</td>
+                                        <td>{{notification.created_at|date:"d/m/Y H:i"}}</td>
+                                        <td>{{notification.message}}</td>
+                                        <td>
+                                            {% if notification.file %}
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div class="d-flex align-items-center" style="gap: 10px;">
+                                                        <a href="{{ notification.file.url }}" class="btn btn-info btn-sm" download>
+                                                            <i class="fas fa-download mr-2"></i>Télécharger
+                                                        </a>
+                                                        <span class="text-muted">
+                                                            {{ notification.file.name|cut:"staff_notifications/"|truncatechars:30 }}
+                                                        </span>
+                                                    </div>
+                                                    <button class="btn btn-danger btn-sm delete-notification" data-id="{{ notification.id }}">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            {% else %}
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span class="text-muted">Aucun fichier</span>
+                                                    <button class="btn btn-danger btn-sm delete-notification" data-id="{{ notification.id }}">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">Aucune notification</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
-                   
                     </div>
-    
                 </div>
-                <!-- /.card -->
-
             </div>
         </div>
     </div>
 </section>
 {% endblock content %}
+
+{% block custom_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Récupérer le token CSRF
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    // Gestionnaire pour les boutons de suppression
+    document.querySelectorAll('.delete-notification').forEach(button => {
+        button.addEventListener('click', async function(e) {
+            e.preventDefault();
+            const notificationId = this.getAttribute('data-id');
+            const row = this.closest('tr');
+            
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette notification ?')) {
+                try {
+                    const response = await fetch("{% url 'delete_staff_notification' %}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: JSON.stringify({
+                            notification_id: notificationId
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // Supprimer la ligne avec une animation
+                        row.style.transition = 'opacity 0.5s';
+                        row.style.opacity = '0';
+                        setTimeout(() => {
+                            row.remove();
+                            // Vérifier s'il reste des notifications
+                            const remainingRows = document.querySelectorAll('tbody tr').length;
+                            if (remainingRows === 0) {
+                                const tbody = document.querySelector('tbody');
+                                tbody.innerHTML = '<tr><td colspan="4" class="text-center">Aucune notification</td></tr>';
+                            }
+                        }, 500);
+                    } else {
+                        alert('Erreur lors de la suppression : ' + data.error);
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    alert('Une erreur est survenue lors de la suppression');
+                }
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
 
 

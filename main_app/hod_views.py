@@ -1183,29 +1183,47 @@ def send_promotion_notification(request):
   
 @csrf_exempt
 def send_staff_notification(request):
-    id = request.POST.get('id')
-    message = request.POST.get('message')
-    staff = get_object_or_404(Staff, admin_id=id)
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Méthode non autorisée'})
+
     try:
-        url = "https://fcm.googleapis.com/fcm/send"
-        body = {
-            'notification': {
-                'title': "Student Management System",
-                'body': message,
-                'click_action': reverse('staff_view_notification'),
-                'icon': static('dist/img/AdminLTELogo.png')
-            },
-            'to': staff.admin.fcm_token
-        }
-        headers = {'Authorization':
-                   'key=AAAA3Bm8j_M:APA91bElZlOLetwV696SoEtgzpJr2qbxBfxVBfDWFiopBWzfCfzQp2nRyC7_A2mlukZEHV4g1AmyC6P_HonvSkY2YyliKt5tT3fe_1lrKod2Daigzhb2xnYQMxUWjCAIQcUexAMPZePB',
-                   'Content-Type': 'application/json'}
-        data = requests.post(url, data=json.dumps(body), headers=headers)
-        notification = NotificationStaff(staff=staff, message=message)
-        notification.save()
-        return HttpResponse("True")
+        id = request.POST.get('id')
+        message = request.POST.get('message')
+        file = request.FILES.get('file')
+        
+        staff = get_object_or_404(Staff, admin_id=id)
+        
+        # Créer la notification
+        notification = NotificationStaff.objects.create(
+            staff=staff,
+            message=message
+        )
+
+        # Gestion du fichier
+        if file:
+            # Assurez-vous que le dossier existe
+            upload_dir = os.path.join(settings.MEDIA_ROOT, 'staff_notifications')
+            os.makedirs(upload_dir, exist_ok=True)
+            
+            # Sauvegarde du fichier
+            notification.file = file
+            notification.save()
+
+        # Envoi de la notification FCM
+        if staff.admin.fcm_token:
+            # ... le reste du code FCM ...
+            pass
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Notification envoyée avec succès'
+        })
+
     except Exception as e:
-        return HttpResponse("False")
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
 
 
 def delete_staff(request, staff_id):

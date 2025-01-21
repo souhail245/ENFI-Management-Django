@@ -1,6 +1,8 @@
 import json
 import math
 from datetime import datetime
+import os
+from django.conf import settings
 
 from django.contrib import messages
 from django.core.files.storage import FileSystemStorage
@@ -268,3 +270,35 @@ def update_fcm_token(request):
             return JsonResponse({'success': True, 'message': 'Token FCM mis à jour avec succès.'})
         return JsonResponse({'success': False, 'message': 'Token ou utilisateur non valide.'})
     return JsonResponse({'success': False, 'message': 'Méthode non autorisée.'})
+
+@csrf_exempt
+def delete_student_notification(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Méthode non autorisée'})
+    
+    try:
+        data = json.loads(request.body)
+        notification_id = data.get('notification_id')
+        
+        if not notification_id:
+            return JsonResponse({'success': False, 'error': 'ID de notification manquant'})
+
+        notification = NotificationStudent.objects.get(id=notification_id)
+        
+        # Vérifier que la notification appartient bien à l'étudiant connecté
+        if notification.student.admin != request.user:
+            return JsonResponse({'success': False, 'error': 'Non autorisé'})
+            
+        # Supprimer le fichier associé s'il existe
+        if notification.file:
+            file_path = os.path.join(settings.MEDIA_ROOT, str(notification.file))
+            if os.path.exists(file_path):
+                os.remove(file_path)
+        
+        notification.delete()
+        return JsonResponse({'success': True})
+        
+    except NotificationStudent.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Notification non trouvée'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})

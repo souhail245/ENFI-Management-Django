@@ -174,7 +174,7 @@ class FeedbackStudent(models.Model):
     feedback = models.TextField()
     reply = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
 
 class FeedbackStaff(models.Model):
@@ -188,8 +188,13 @@ class FeedbackStaff(models.Model):
 class NotificationStaff(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
     message = models.TextField()
+    # Modifier le chemin d'upload pour éviter le doublon de 'media'
+    file = models.FileField(upload_to='staff_notifications', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Notification pour {self.staff.admin.email}"
 
 
 class NotificationStudent(models.Model):
@@ -279,6 +284,7 @@ class EmploiTemps(models.Model):
         ('08:00-12:00', '08:00-12:00'),
         ('14:00-18:00', '14:00-18:00'),
     ]
+<<<<<<< HEAD
     JOUR_CHOICES = [
         ('Lundi', 'Lundi'),
         ('Mardi', 'Mardi'),
@@ -292,6 +298,12 @@ class EmploiTemps(models.Model):
     niveau = models.ForeignKey(Student, on_delete=models.CASCADE)  # Référence au modèle Student
     date = models.DateField(default=date.today) 
     horaire = models.CharField(max_length=20, choices=HORAIRES_CHOICES, default='08:00-10:00')
+=======
+
+    niveau = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='emplois_temps')
+    jour = models.CharField(max_length=10, choices=JOUR_CHOICES, default='Lundi')  # Ajout d'une valeur par défaut
+    horaire = models.CharField(max_length=20, choices=HORAIRES_CHOICES, default='08:00-10:00')  # Ajout d'une valeur par défaut
+>>>>>>> cbf02f3ea2a3b2416add0db9201ae1083c676d05
     matiere = models.ForeignKey(Subject, on_delete=models.CASCADE)
     professeur = models.ForeignKey(Staff, on_delete=models.CASCADE)
     progression = models.CharField(
