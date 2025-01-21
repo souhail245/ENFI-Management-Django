@@ -1,0 +1,48 @@
+{% extends 'main_app/base.html' %}
+{% load static %}
+{% block page_title %}Programmer l'Emploi du Temps{% endblock page_title %}
+
+{% block content %}
+<h2>Programmer une session</h2>
+
+<form method="post">
+    {% csrf_token %}
+    <div>
+        <label>Niveau :</label>
+        <select name="niveau">
+            <option value="">-- Sélectionner un niveau --</option>
+            {% for niveau, label in Student.NIVEAU_CHOICES %}
+            <option value="{{ niveau }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label>Jour :</label>
+        <select name="jour">
+            <option value="Lundi">Lundi</option>
+            <option value="Mardi">Mardi</option>
+            <option value="Mercredi">Mercredi</option>
+            <option value="Jeudi">Jeudi</option>
+            <option value="Vendredi">Vendredi</option>
+        </select>
+    </div>
+    <div>
+        <label>Heure de début :</label>
+        <input type="time" name="start_time" required>
+    </div>
+    <div>
+        <label>Heure de fin :</label>
+        <input type="time" name="end_time" required>
+    </div>
+    <div>
+        <label>Matière :</label>
+        <select name="matiere">
+            {% for matiere in matieres %}
+            <option value="{{ matiere.id }}">{{ matiere.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit">Programmer</button>
+</form>
+
+{% endblock %}

@@ -251,3 +251,54 @@ def save_user_profile(sender, instance, **kwargs):
         instance.staff.save()
     if instance.user_type == 3:
         instance.student.save()
+
+
+
+
+class SuiviCours(models.Model):
+    matiere = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='suivis')
+    total_heures = models.IntegerField(default=0)  # Total d'heures prévues pour la matière
+    heures_effectuees = models.IntegerField(default=0)  # Heures déjà effectuées
+
+    def progression(self):
+        if self.total_heures > 0:
+            return round((self.heures_effectuees / self.total_heures) * 100, 2)
+        return 0
+
+    def __str__(self):
+        return f"{self.matiere.name} : {self.heures_effectuees}/{self.total_heures} heures"
+
+
+
+class EmploiTemps(models.Model):
+    JOUR_CHOICES = [
+        ('Lundi', 'Lundi'),
+        ('Mardi', 'Mardi'),
+        ('Mercredi', 'Mercredi'),
+        ('Jeudi', 'Jeudi'),
+        ('Vendredi', 'Vendredi'),
+        ('Samedi', 'Samedi'),
+    ]
+
+    HORAIRES_CHOICES = [
+        ('08:00-10:00', '08:00-10:00'),
+        ('10:00-12:00', '10:00-12:00'),
+        ('14:00-16:00', '14:00-16:00'),
+        ('16:00-18:00', '16:00-18:00'),
+        ('08:00-12:00', '08:00-12:00'),
+        ('14:00-18:00', '14:00-18:00'),
+    ]
+
+    niveau = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='emplois_temps')
+    jour = models.CharField(max_length=10, choices=JOUR_CHOICES)
+    horaire = models.CharField(max_length=20, choices=HORAIRES_CHOICES)
+    matiere = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    professeur = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    suivi = models.ForeignKey(SuiviCours, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.niveau} - {self.jour} - {self.horaire} : {self.matiere}"
+
+
+
+
