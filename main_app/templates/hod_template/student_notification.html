@@ -98,17 +98,12 @@
                                         <td class="student-data">{{ student.matricule }}</td>
                                         <td class="student-data">{{ student.admin.last_name }}</td>
                                         <td class="student-data">{{ student.admin.first_name }}</td>
-                                        <td class="text-center">
-                                            {% if student.admin.profile_pic and student.admin.profile_pic.url %}
-                                                <img class="img-circle elevation-2" 
-                                                     src="{{ student.admin.profile_pic.url }}" 
-                                                     alt="Photo de profil de {{ student.admin.first_name }}" 
-                                                     style="width: 50px; height: 50px; object-fit: cover; border: 2px solid #ddd;">
+                                        <td>
+                                            {% if student.profile_pic == ""  %}
+                                            No Image
                                             {% else %}
-                                                <img class="img-circle elevation-2" 
-                                                     src="{% static 'dist/img/avatar5.png' %}" 
-                                                     alt="Photo par défaut" 
-                                                     style="width: 50px; height: 50px; object-fit: cover; border: 2px solid #ddd;">
+                                            <img class="img img-fluid mb-2" height="56" width="56"
+                                                src="{{student.admin.profile_pic}}" alt="">
                                             {% endif %}
                                         </td>
                                         <td>
