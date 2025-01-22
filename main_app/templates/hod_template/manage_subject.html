@@ -6,11 +6,40 @@
 
 <section class="content">
     <div class="container-fluid">
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <form method="get" class="form-inline">
+                                <div class="form-group w-100">
+                                    <label for="niveau" class="mr-2">Sélectionner une promotion:</label>
+                                    <select name="niveau" id="niveau" class="form-control w-100" onchange="this.form.submit()">
+                                        <option value="">Toutes les promotions</option>
+                                        {% for niveau in niveaux %}
+                                            <option value="{{ niveau.0 }}" {% if selected_niveau == niveau.0 %}selected{% endif %}>
+                                                {{ niveau.1 }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">{{ page_title }}</h3>
+                        <div class="card-tools">
+                            <a href="{% url 'add_subject' %}" class="btn btn-primary float-right">
+                                <i class="fas fa-plus"></i> Ajouter une matière
+                            </a>
+                        </div>
                     </div>
                     <!-- /.card-header -->
                     <div class="card-body">
@@ -21,37 +50,64 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
-                        {% if sujets_par_niveau %}
-                            {% for niveau, subjects in sujets_par_niveau.items %}
-                                <h4> Matières pour la promotion  {{ niveau }} :</h4>
-                                <table class="table table-bordered table-hover">
+
+                        {% if sujets %}
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped table-hover">
                                     <thead class="thead-dark">
                                         <tr>
-                                            <th></th>
-                                            <th>Matière</th>
-                                            <th>Professeur</th>
-                                            <th>Cours</th>
-                                            <th>Actions</th>
+                                            <th class="text-center" style="width: 5%">#</th>
+                                            <th style="width: 25%">Matière</th>
+                                            <th style="width: 20%">Professeur</th>
+                                            <th class="text-center" style="width: 15%">Volume horaire</th>
+                                            <th class="text-center" style="width: 15%">Niveau</th>
+                                            <th class="text-center" style="width: 20%">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for subject in subjects %}
+                                        {% for subject in sujets %}
                                         <tr>
-                                            <td>{{ forloop.counter }}</td>
-                                            <td>{{ subject.name }}</td>
-                                            <td>{{ subject.staff.admin }}</td>
-                                            <td>{{ subject.course.name }}</td>
+                                            <td class="text-center">{{ forloop.counter }}</td>
+                                            <td><strong>{{ subject.name }}</strong></td>
                                             <td>
-                                                <a href="{% url 'edit_subject' subject.id %}" class="btn btn-info">Edit</a>
-                                                <a href="{% url 'delete_subject' subject.id %}" onclick="return confirm('Are you sure you want to delete this?')" class="btn btn-danger">Delete</a>
+                                                <i class="fas fa-user-tie mr-1"></i>
+                                                {{ subject.staff.admin }}
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-info">
+                                                    {{ subject.volume_horaire_total }} heures
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-primary">
+                                                    {{ subject.niveau }}
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group">
+                                                    <a href="{% url 'edit_subject' subject.id %}" class="btn btn-info btn-sm">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a href="{% url 'delete_subject' subject.id %}" class="btn btn-danger btn-sm"
+                                                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette matière ?')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+                                                </div>
                                             </td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
                                 </table>
-                            {% endfor %}
+                            </div>
                         {% else %}
-                            <p>Aucun sujet ajouté.</p>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> 
+                                {% if selected_niveau %}
+                                    Aucune matière trouvée pour cette promotion.
+                                {% else %}
+                                    Aucune matière n'a été ajoutée.
+                                {% endif %}
+                            </div>
                         {% endif %}
                     </div>
                 </div>
@@ -59,5 +115,24 @@
         </div>
     </div>
 </section>
+
+<style>
+/* ...existing styles... */
+.niveau-section {
+    display: block;
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+}
+
+#niveau {
+    max-width: 300px;
+    margin: 0 auto;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    font-size: 16px;
+}
+</style>
 
 {% endblock content %}

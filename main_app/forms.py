@@ -102,13 +102,15 @@ class CourseForm(FormSettings):
 
 
 class SubjectForm(FormSettings):
-
-    def __init__(self, *args, **kwargs):
-        super(SubjectForm, self).__init__(*args, **kwargs)
-
     class Meta:
         model = Subject
-        fields = ['name', 'staff','volume_horaire_total', 'niveau']  # Ajout du champ 'niveau'
+        fields = ['name', 'staff', 'niveau', 'volume_horaire_total']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'staff': forms.Select(attrs={'class': 'form-control'}),
+            'niveau': forms.Select(attrs={'class': 'form-control'}),
+            'volume_horaire_total': forms.NumberInput(attrs={'class': 'form-control'})
+        }
 
 
 class SessionForm(FormSettings):

@@ -11,50 +11,106 @@
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">{{page_title}}</h3>
+                        <div class="card-tools">
+                            <a href="{% url 'add_staff' %}" class="btn btn-primary float-right">
+                                <i class="fas fa-plus"></i> Ajouter un membre du personnel
+                            </a>
+                        </div>
                     </div>
                     <!-- /.card-header -->
                     <div class="card-body">
-                        <table id="example2" class="table table-bordered table-hover">
-                            <thead class="thead-dark">
-                                <tr>
-                                    <th>#</th>
-                                    <th>Full Name</th>
-                                    <th>Email</th>
-                                    <th>Gender</th>
-                                    <th>Course</th>
-                                    <th>Avatar</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for staff in allStaff %}
-                                <tr>
-                                    <td>{{ forloop.counter }}</td>
-                                    <td>{{staff.last_name}}, {{staff.first_name}}</td>
-                                    <td>{{staff.email}}</td>
-                                    <td>{{staff.gender}}</td>
-                                    <td>{{staff.staff.course.name}}</td>
-                                    <td>
-                                        {% if staff.profile_pic == ""  %}
-                                        No Image
-                                        {% else %}
-                                        <img class="img img-fluid mb-2" height="56" width="56"
-                                            src="{{staff.profile_pic}}" alt="">
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <a href="{% url 'edit_staff' staff.staff.id %}" class="btn btn-info">Edit</a> - 
-                                        <a href="{% url 'delete_staff' staff.staff.id %}" class="btn btn-danger" onclick="return confirm('Are you sure about this ?')">Delete</a>
-                                    
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <form method="get" class="form-inline">
+                                    <div class="input-group w-100">
+                                        <input type="text" id="searchInput" name="search" class="form-control" placeholder="Rechercher par nom ou matière" value="{{ search_query }}">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary" type="submit">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="staffTable" class="table table-bordered table-hover">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Nom complet</th>
+                                        <th>Email</th>
+                                        <th>Genre</th>
+                                        <th>Matière</th>
+                                        <th>Avatar</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for staff in allStaff %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{staff.last_name}}, {{staff.first_name}}</td>
+                                        <td>{{staff.email}}</td>
+                                        <td>{{staff.gender}}</td>
+                                        <td>
+                                            {% for subject in staff.staff.subject_set.all %}
+                                                {{ subject.name }}{% if not forloop.last %}, {% endif %}
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% if staff.profile_pic == "" %}
+                                            <span class="badge badge-secondary">No Image</span>
+                                            {% else %}
+                                            <img class="img img-fluid rounded-circle" height="56" width="56"
+                                                src="{{staff.profile_pic}}" alt="">
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{% url 'edit_staff' staff.staff.id %}" class="btn btn-info btn-sm">
+                                                    <i class="fas fa-edit"></i> Modifier
+                                                </a>
+                                                <a href="{% url 'delete_staff' staff.staff.id %}" class="btn btn-danger btn-sm"
+                                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce membre du personnel ?')">
+                                                    <i class="fas fa-trash"></i> Supprimer
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
+                    <!-- /.card-body -->
                 </div>
+                <!-- /.card -->
             </div>
         </div>
     </div>
 </section>
+
+<script>
+$(document).ready(function() {
+    var table = $('#staffTable').DataTable({
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.21/i18n/French.json"
+        },
+        "paging": true,
+        "lengthChange": true,
+        "searching": true,  // Activer la recherche par DataTables
+        "ordering": true,
+        "info": true,
+        "autoWidth": false,
+        "responsive": true,
+    });
+
+    // Filtrage en temps réel
+    $('#searchInput').on('keyup', function() {
+        table.search(this.value).draw();
+    });
+});
+</script>
+
 {% endblock content %}

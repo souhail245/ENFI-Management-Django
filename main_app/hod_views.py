@@ -64,16 +64,16 @@ def view_absences(request):
     niveau = request.GET.get('niveau')
 
     # Application des filtres
-    if matricule:
+    if (matricule):
         absences = absences.filter(student__matricule__icontains=matricule)
     
-    if date_debut:
+    if (date_debut):
         absences = absences.filter(date__gte=date_debut)
     
-    if date_fin:
+    if (date_fin):
         absences = absences.filter(date__lte=date_fin)
     
-    if niveau:
+    if (niveau):
         absences = absences.filter(student__niveau=niveau)
 
     # Récupération de la liste des niveaux pour le formulaire
@@ -109,13 +109,13 @@ def export_absences_excel(request):
     date_fin = request.GET.get('date_fin')
     niveau = request.GET.get('niveau')
 
-    if matricule:
+    if (matricule):
         absences = absences.filter(student__matricule__icontains=matricule)
-    if date_debut:
+    if (date_debut):
         absences = absences.filter(date__gte=date_debut)
-    if date_fin:
+    if (date_fin):
         absences = absences.filter(date__lte=date_fin)
-    if niveau:
+    if (niveau):
         absences = absences.filter(student__niveau=niveau)
 
     # Créer le fichier Excel en mémoire
@@ -159,13 +159,13 @@ def export_absences_pdf(request):
     date_fin = request.GET.get('date_fin')
     niveau = request.GET.get('niveau')
 
-    if matricule:
+    if (matricule):
         absences = absences.filter(student__matricule__icontains=matricule)
-    if date_debut:
+    if (date_debut):
         absences = absences.filter(date__gte=date_debut)
-    if date_fin:
+    if (date_fin):
         absences = absences.filter(date__lte=date_fin)
-    if niveau:
+    if (niveau):
         absences = absences.filter(student__niveau=niveau)
 
     # Créer le PDF
@@ -261,7 +261,7 @@ def export_students_excel(request):
     students = CustomUser.objects.filter(user_type=3).select_related('student')
     
     # Appliquer le filtre si un niveau est sélectionné
-    if selected_niveau:
+    if (selected_niveau):
         students = students.filter(student__niveau=selected_niveau)
 
     for idx, student in enumerate(students, 1):
@@ -307,7 +307,7 @@ def export_students_pdf(request):
     students = CustomUser.objects.filter(user_type=3).select_related('student')
     
     # Appliquer le filtre si un niveau est sélectionné
-    if selected_niveau:
+    if (selected_niveau):
         students = students.filter(student__niveau=selected_niveau)
 
     for idx, student in enumerate(students, 1):
@@ -514,39 +514,46 @@ def add_course(request):
 
 def add_subject(request):
     form = SubjectForm(request.POST or None)
-    context = {
-        'form': form,
-        'page_title': 'Add Subject'
-    }
     if request.method == 'POST':
         if form.is_valid():
             name = form.cleaned_data.get('name')
             course = form.cleaned_data.get('course')
             staff = form.cleaned_data.get('staff')
-            niveau = form.cleaned_data.get('niveau')  # Récupérer le niveau
+            niveau = form.cleaned_data.get('niveau')
+            volume_horaire_total = form.cleaned_data.get('volume_horaire_total')
             try:
                 subject = Subject()
                 subject.name = name
                 subject.staff = staff
                 subject.course = course
-                subject.niveau = niveau  # Ajouter le niveau
+                subject.niveau = niveau
+                subject.volume_horaire_total = volume_horaire_total
                 subject.save()
                 messages.success(request, "Successfully Added")
                 return redirect(reverse('add_subject'))
-
             except Exception as e:
                 messages.error(request, "Could Not Add " + str(e))
-        else:
-            messages.error(request, "Fill Form Properly")
-
+    context = {'form': form, 'page_title': 'Add Subject'}
     return render(request, 'hod_template/add_subject_template.html', context)
 
 
+from django.db.models import Q
+
 def manage_staff(request):
+    search_query = request.GET.get('search', '')
     allStaff = CustomUser.objects.filter(user_type=2)
+
+    if search_query:
+        allStaff = allStaff.filter(
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(staff__subject__name__icontains=search_query)
+        ).distinct()
+
     context = {
         'allStaff': allStaff,
-        'page_title': 'Manage Staff'
+        'page_title': 'Manage Staff',
+        'search_query': search_query
     }
     return render(request, "hod_template/manage_staff.html", context)
 
@@ -562,7 +569,7 @@ def manage_student(request):
     students = CustomUser.objects.filter(user_type=3).select_related('student')
     
     # Appliquer le filtre si un niveau est sélectionné
-    if selected_niveau:
+    if (selected_niveau):
         students = students.filter(student__niveau=selected_niveau)
     
     context = {
@@ -594,23 +601,26 @@ def manage_course(request):
 
 
 def manage_subject(request):
-    # Récupérer tous les sujets
-    subjects = Subject.objects.all()
-
-    # Regrouper les sujets par niveau
-    niveaux = Subject._meta.get_field('niveau').choices  # Récupérer les choix de niveau
-    sujets_par_niveau = {}
-
-    for niveau in niveaux:
-        sujets = Subject.objects.filter(niveau=niveau[0])  # Filtrer les sujets par niveau
-        sujets_par_niveau[niveau[1]] = sujets  # Stocker les sujets dans un dictionnaire
-
+    selected_niveau = request.GET.get('niveau')
+    
+    # Récupérer les choix de niveau pour le select
+    niveaux = Subject._meta.get_field('niveau').choices
+    
+    # Récupérer les sujets
+    subjects = Subject.objects.select_related('staff__admin')
+    
+    # Filtrer par niveau si sélectionné
+    if selected_niveau:
+        subjects = subjects.filter(niveau=selected_niveau)
+    
     context = {
-        'sujets_par_niveau': sujets_par_niveau,  # Passer les sujets groupés par niveau
-        'page_title': 'Manage Subjects'
+        'sujets': subjects,
+        'niveaux': niveaux,
+        'selected_niveau': selected_niveau,
+        'page_title': 'Gérer les Matières'
     }
+    
     return render(request, "hod_template/manage_subject.html", context)
-
 
 def edit_staff(request, staff_id):
     staff = get_object_or_404(Staff, id=staff_id)
@@ -747,23 +757,18 @@ def edit_subject(request, subject_id):
     }
     if request.method == 'POST':
         if form.is_valid():
-            name = form.cleaned_data.get('name')
-            course = form.cleaned_data.get('course')
-            staff = form.cleaned_data.get('staff')
             try:
-                subject = Subject.objects.get(id=subject_id)
-                subject.name = name
-                subject.staff = staff
-                subject.course = course
-                subject.save()
+                # Utiliser form.save() au lieu de créer un nouvel objet
+                subject = form.save()
                 messages.success(request, "Successfully Updated")
                 return redirect(reverse('edit_subject', args=[subject_id]))
             except Exception as e:
-                messages.error(request, "Could Not Add " + str(e))
+                messages.error(request, "Could Not Update " + str(e))
         else:
             messages.error(request, "Fill Form Properly")
+    
+    # Toujours retourner un render pour la méthode GET
     return render(request, 'hod_template/edit_subject_template.html', context)
-
 
 def add_session(request):
     form = SessionForm(request.POST or None)
@@ -815,7 +820,7 @@ def check_email_availability(request):
     email = request.POST.get("email")
     try:
         user = CustomUser.objects.filter(email=email).exists()
-        if user:
+        if (user):
             return HttpResponse(True)
         return HttpResponse(False)
     except Exception as e:
@@ -891,7 +896,7 @@ def view_staff_leave(request):
 
 @csrf_exempt
 def view_student_leave(request):
-    if request.method != 'POST':
+    if request.method != 'POST':  # Suppression de la parenthèse en trop
         allLeave = LeaveReportStudent.objects.all()
         context = {
             'allLeave': allLeave,
@@ -1425,14 +1430,6 @@ def get_matieres_by_niveau(request):
     niveau = request.GET.get('niveau')
     matieres = Subject.objects.filter(niveau=niveau).values('id', 'name')
     return JsonResponse({'matieres': list(matieres)})
-
-def mettre_a_jour_progression(request, emploi_id):
-    emploi = get_object_or_404(EmploiTemps, id=emploi_id)
-
-    if request.method == "POST":
-        progression = request.POST.get("progression")
-        emploi.progression = progression
-        emploi.save()
-        return redirect("liste_emplois")  # Redirection vers la liste des emplois
-
-    return render(request, "hod_template/mise_a_jour_progression.html", {"emploi": emploi})
+    niveau = request.GET.get('niveau')
+    matieres = Subject.objects.filter(niveau=niveau).values('id', 'name')
+    return JsonResponse({'matieres': list(matieres)})
