@@ -101,6 +101,7 @@ urlpatterns = [
     # Page pour afficher les emplois du temps
 
     path('emploi/list/', hod_views.liste_emplois, name='liste_emplois'),
+    path('emploi/choisir_promotion/', hod_views.choisir_promotion, name='choisir_promotion'),
     
      path("emploi/progression/<int:emploi_id>/", hod_views.mettre_a_jour_progression, name="mettre_a_jour_progression"),
 
@@ -159,4 +160,5 @@ urlpatterns = [
 
     path('update_fcm_token/', update_fcm_token, name='update_fcm_token'),
     path('student/notification/delete/', student_views.delete_student_notification, name='delete_student_notification'),
+    path('get-matieres-by-niveau/', hod_views.get_matieres_by_niveau, name='get_matieres_by_niveau'),
 ]

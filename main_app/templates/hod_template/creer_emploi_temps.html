@@ -1,97 +1,311 @@
 {% extends 'main_app/base.html' %}
 {% load static %}
+{% load custom_filters %}
+
 {% block page_title %}{{ page_title }}{% endblock page_title %}
 
 {% block content %}
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #f9f9f9;
-        color: #333;
-        margin: 0;
-        padding: 0;
-    }
-    form {
-        background-color: #fff;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        max-width: 500px;
-        margin: 30px auto;
+    .main-container {
         padding: 20px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
-    form label {
+
+    .creation-form {
+        background: white;
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
         display: block;
-        font-weight: bold;
-        margin-bottom: 5px;
-        color: #000;
     }
-    form select, form button {
-        width: 100%;
+
+    .form-control {
+        border: 1px solid #dde2e6;
+        border-radius: 4px;
         padding: 10px;
-        margin-bottom: 15px;
-        border: 1px solid #ccc;
-        border-radius: 3px;
+        width: 100%;
         font-size: 14px;
-        background-color: #f8f8f8;
     }
-    form button {
-        background-color: #000;
-        color: #fff;
+
+    .timetable-section {
+        background: white;
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .calendar-header {
+        background: #4CAF50;
+        color: white;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+
+    .calendar {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .calendar th {
+        background: #f8f9fa;
+        padding: 12px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .calendar td {
+        padding: 12px;
+        border: 1px solid #eee;
+        vertical-align: top;
+        height: 100px;
+    }
+
+    .session-card {
+        background: #f8f9fa;
+        padding: 8px;
+        border-radius: 4px;
+        margin-bottom: 5px;
+        font-size: 12px;
+    }
+
+    .session-card strong {
+        color: #2c3e50;
+    }
+
+    .btn-create {
+        background: #4CAF50;
+        color: white;
+        padding: 12px 25px;
         border: none;
+        border-radius: 4px;
         cursor: pointer;
-        font-weight: bold;
+        font-weight: 500;
+        width: 100%;
+        margin-bottom: 10px;
     }
-    form button:hover {
-        background-color: #444;
+
+    .btn-create:hover {
+        background: #45a049;
+    }
+
+    .btn-view-progress {
+        background: #007bff;
+        color: white;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        width: 100%;
+    }
+
+    .btn-view-progress:hover {
+        background: #0056b3;
+    }
+
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+    }
+
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .alert-error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
     }
 </style>
 
-<form method="POST">
-    {% csrf_token %}
-    <label for="date">Date :</label>
-    <input type="date" name="date" id="date" required>
-    
-    <label for="niveau">niveau :</label>
-    <select name="niveau" id="niveau">
-        {% for niveau in niveaux %}
-        <option value="{{ niveau.id }}">{{ niveau.niveau }}</option>
+<div class="main-container">
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
         {% endfor %}
-    </select>
+    {% endif %}
+
+    <!-- Formulaire de création -->
+    <div class="creation-form">
+        <h3>Créer une nouvelle session</h3>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="promotion">Promotion :</label>
+                        <select name="promotion" id="promotion" class="form-control" required>
+                            {% for promotion in promotions %}
+                                <option value="{{ promotion }}" {% if promotion == promotion_selected %}selected{% endif %}>
+                                    {{ promotion }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="date">Date :</label>
+                        <input type="date" name="date" id="date" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="jour">Jour :</label>
+                        <select name="jour" class="form-control" required>
+                            <option value="Lundi">Lundi</option>
+                            <option value="Mardi">Mardi</option>
+                            <option value="Mercredi">Mercredi</option>
+                            <option value="Jeudi">Jeudi</option>
+                            <option value="Vendredi">Vendredi</option>
+                            <option value="Samedi">Samedi</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="horaire">Horaire :</label>
+                        <select name="horaire" class="form-control">
+                            {% for horaire in horaires %}
+                                <option value="{{ horaire }}">{{ horaire }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="matiere">Matière :</label>
+                        <select name="matiere" class="form-control">
+                            {% for subject in subjects %}
+                                <option value="{{ subject.id }}">{{ subject.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="professeur">Professeur :</label>
+                        <select name="professeur" class="form-control">
+                            {% for prof in professeurs %}
+                                <option value="{{ prof.id }}">{{ prof }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-create">Créer la session</button>
+        </form>
+        <a href="{% url 'liste_emplois' %}" class="btn-view-progress">Voir la progression</a>
+    </div>
+
+    <!-- Liste déroulante pour choisir la promotion -->
+    <div class="form-group">
+        <label for="promotion-select">Changer de promotion :</label>
+        <select name="promotion" id="promotion-select" class="form-control" onchange="window.location.href='?promotion=' + this.value;">
+            {% for promotion in promotions %}
+                <option value="{{ promotion }}" {% if promotion == promotion_selected %}selected{% endif %}>
+                    {{ promotion }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Aperçu du calendrier -->
+    <div class="timetable-section">
+        <div class="calendar-header">
+            <h4>Planning des 14 prochains jours - {{ promotion_selected }}</h4>
+            <small>Du {{ date_debut|date:"d/m/Y" }} au {{ date_fin|date:"d/m/Y" }}</small>
+        </div>
+
+        <div class="table-responsive">
+            <table class="calendar">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        {% for horaire in horaires %}
+                            <th>{{ horaire }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for date in dates %}
+                    <tr>
+                        <td>
+                            <strong>{{ date|date:"d/m/Y" }}</strong><br>
+                            <small>{{ date|date:"l"|capfirst }}</small>
+                        </td>
+                        {% for horaire in horaires %}
+                            <td>
+                                {% with session=sessions_by_date|get_dict_item:date|get_dict_item:horaire %}
+                                    {% if session %}
+                                        <div class="session-card">
+                                            <strong>{{ session.matiere.name }}</strong><br>
+                                            <small>{{ session.professeur.admin.get_full_name }}</small><br>
+                                            <small class="text-muted">{{ session.niveau }}</small>
+                                        </div>
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialiser la date à aujourd'hui
+    const dateInput = document.getElementById('date');
+    dateInput.valueAsDate = new Date();
     
-    <label for="jour">Jour :</label>
-    <select name="jour" required>
-    <option value="Lundi">Lundi</option>
-    <option value="Mardi">Mardi</option>
-    <option value="Mercredi">Mercredi</option>
-    <option value="Jeudi">Jeudi</option>
-    <option value="Vendredi">Vendredi</option>
-    <option value="Samedi">Samedi</option>
-     </select>
+    // Mettre à jour automatiquement le jour en fonction de la date
+    dateInput.addEventListener('change', function() {
+        const date = new Date(this.value);
+        const jourSelect = document.querySelector('select[name="jour"]');
+        const jours = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+        jourSelect.value = jours[date.getDay()];
+    });
+});
 
-    <label for="horaire">Horaire :</label>
-    <select name="horaire">
-        <option value="08:00-10:00">08:00-10:00</option>
-        <option value="10:00-12:00">10:00-12:00</option>
-        <option value="14:00-16:00">14:00-16:00</option>
-        <option value="16:00-18:00">16:00-18:00</option>
-    </select>
+document.getElementById('promotion').addEventListener('change', function() {
+    // Mettre à jour le formulaire de création avec les matières de la promotion sélectionnée
+    const promotion = this.value;
+    const matiereSelect = document.getElementById('matiere');
     
-    <label for="matiere">Matière :</label>
-    <select name="matiere">
-        {% for subject in subjects %}
-        <option value="{{ subject.id }}">{{ subject.name }}</option>
-        {% endfor %}
-    </select>
+    // Vider les options actuelles
+    matiereSelect.innerHTML = '';
+    
+    // Charger les nouvelles matières via AJAX
+    fetch(`/get-matieres-by-niveau/?niveau=${promotion}`)
+        .then(response => response.json())
+        .then(data => {
+            data.matieres.forEach(matiere => {
+                const option = new Option(matiere.name, matiere.id);
+                matiereSelect.add(option);
+            });
+        });
 
-    <label for="professeur">Professeur :</label>
-    <select name="professeur">
-        {% for prof in professeurs %}
-        <option value="{{ prof.id }}">{{ prof }}</option>
-        {% endfor %}
-    </select>
-
-    <button type="submit">Créer</button>
-</form>
-
+    // Recharger la page pour mettre à jour le planning
+    window.location.href = `?promotion=${promotion}`;
+});
+</script>
 {% endblock content %}

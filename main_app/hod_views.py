@@ -1274,42 +1274,122 @@ def delete_session(request, session_id):
 # fonction EMPLOI DU TEMPS
 
 from django.shortcuts import get_object_or_404
+from datetime import datetime, timedelta
+from collections import defaultdict
 
 def creer_emploi_temps(request):
     if request.method == "POST":
-        niveau_id = request.POST.get("niveau")
-        matiere_id = request.POST.get("matiere")
-        professeur_id = request.POST.get("professeur")
-        jour = request.POST.get("jour")
-        horaire = request.POST.get("horaire")
+        try:
+            # Récupérer la promotion au lieu du niveau
+            promotion = request.POST.get("promotion")  # Changement ici
+            matiere_id = request.POST.get("matiere")
+            professeur_id = request.POST.get("professeur")
+            jour = request.POST.get("jour")
+            horaire = request.POST.get("horaire")
+            date = request.POST.get("date")
 
-        # Récupérer les instances des objets liés
-        niveau = get_object_or_404(Student, id=niveau_id)
-        matiere = get_object_or_404(Subject, id=matiere_id)
-        professeur = get_object_or_404(Staff, id=professeur_id)
+            # Validation des données
+            if not all([promotion, matiere_id, professeur_id, jour, horaire, date]):
+                messages.error(request, "Tous les champs sont requis")
+                return redirect("creer_emploi_temps")
 
-        # Créer l'emploi du temps
-        EmploiTemps.objects.create(
-            niveau=niveau,
-            jour=jour,
-            horaire=horaire,
-            matiere=matiere,
-            professeur=professeur,
-        )
-        return redirect("liste_emplois")  # Redirection après la création
+            # Vérifier s'il existe déjà un cours à cet horaire pour cette promotion
+            if EmploiTemps.objects.filter(date=date, horaire=horaire, niveau=promotion).exists():
+                messages.warning(request, "Il existe déjà un cours programmé à cet horaire pour cette promotion")
+                return redirect("creer_emploi_temps")
+
+            matiere = get_object_or_404(Subject, id=matiere_id)
+            professeur = get_object_or_404(Staff, id=professeur_id)
+
+            # Créer l'emploi du temps avec la promotion
+            EmploiTemps.objects.create(
+                niveau=promotion,  # Utilisation directe de la promotion
+                jour=jour,
+                horaire=horaire,
+                matiere=matiere,
+                professeur=professeur,
+                date=date
+            )
+            messages.success(request, "Session de cours créée avec succès")
+            return redirect("creer_emploi_temps")
+
+        except Exception as e:
+            messages.error(request, f"Une erreur s'est produite: {str(e)}")
+            return redirect("creer_emploi_temps")
     else:
+        # Récupérer la promotion sélectionnée
+        promotion_selected = request.GET.get('promotion', '3ème année')
+        
+        # Liste des promotions disponibles
+        promotions = [
+            '3ème année',
+            '4ème année',
+            '5ème année'
+        ]
+        
+        date_debut = request.GET.get('date_debut', datetime.now().date())
+        if isinstance(date_debut, str):
+            date_debut = datetime.strptime(date_debut, '%Y-%m-%d').date()
+        
+        date_fin = date_debut + timedelta(days=14)
+        
+        # Filtrer les sessions par promotion
+        sessions = EmploiTemps.objects.filter(
+            date__range=[date_debut, date_fin],
+            niveau=promotion_selected
+        ).select_related('matiere', 'professeur')
+        
+        # Organisation des sessions par date
+        sessions_by_date = defaultdict(dict)
+        dates = []
+        current_date = date_debut
+        while current_date <= date_fin:
+            dates.append(current_date)
+            current_date += timedelta(days=1)
+
+        horaires = ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00']
+        
+        for session in sessions:
+            sessions_by_date[session.date][session.horaire] = session
+
         context = {
-            "niveaux": Student.objects.all(),
-            "subjects": Subject.objects.all(),
-            "professeurs": Staff.objects.all(),
+            "promotions": promotions,  # Liste des promotions
+            "promotion_selected": promotion_selected,  # Promotion sélectionnée
+            "subjects": Subject.objects.filter(niveau=promotion_selected).order_by('name'),
+            "professeurs": Staff.objects.all().order_by('admin__last_name'),
+            "sessions_by_date": dict(sessions_by_date),
+            "dates": dates,
+            "horaires": horaires,
+            "date_debut": date_debut,
+            "date_fin": date_fin,
+            'page_title': f'Emploi du temps - {promotion_selected}'
         }
         return render(request, "hod_template/creer_emploi_temps.html", context)
 
+def choisir_promotion(request):
+    promotions = [
+        '3ème année',
+        '4ème année',
+        '5ème année'
+    ]
+    context = {
+        'promotions': promotions,
+        'page_title': 'Choisir une promotion'
+    }
+    return render(request, 'hod_template/choisir_promotion.html', context)
+
 def liste_emplois(request):
-    # Organiser les emplois du temps par jour et horaire
+    promotion_selected = request.GET.get('promotion', '3ème année')
+    
+    promotions = [
+        '3ème année',
+        '4ème année',
+        '5ème année'
+    ]
+    
     jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi']
     horaires = ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00']
-    emplois = EmploiTemps.objects.all()
+    emplois = EmploiTemps.objects.filter(niveau=promotion_selected)
 
     emploi_table = {jour: {horaire: None for horaire in horaires} for jour in jours}
 
@@ -1322,9 +1402,29 @@ def liste_emplois(request):
         "emploi_table": emploi_table,
         "jours": jours,
         "horaires": horaires,
+        "promotion_selected": promotion_selected,
+        "promotions": promotions,
+        'page_title': f'Emploi du temps - {promotion_selected}'
     }
     return render(request, "hod_template/liste_emplois.html", context)
 
+def mettre_a_jour_progression(request, emploi_id):
+    emploi = get_object_or_404(EmploiTemps, id=emploi_id)
+
+    if request.method == "POST":
+        progression = request.POST.get("progression")
+        emploi.progression = progression
+        emploi.save()
+        return redirect("liste_emplois")  # Redirection vers la liste des emplois
+
+    return render(request, "hod_template/mise_a_jour_progression.html", {"emploi": emploi})
+
+
+@csrf_exempt
+def get_matieres_by_niveau(request):
+    niveau = request.GET.get('niveau')
+    matieres = Subject.objects.filter(niveau=niveau).values('id', 'name')
+    return JsonResponse({'matieres': list(matieres)})
 
 def mettre_a_jour_progression(request, emploi_id):
     emploi = get_object_or_404(EmploiTemps, id=emploi_id)

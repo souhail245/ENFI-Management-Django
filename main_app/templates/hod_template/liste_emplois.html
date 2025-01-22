@@ -1,90 +1,158 @@
 {% extends 'main_app/base.html' %}
 {% load static %}
+{% load custom_filters %}
+
 {% block page_title %}Liste des emplois du temps{% endblock page_title %}
 
 {% block content %}
 <style>
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 20px auto;
-        text-align: center;
-        font-family: Arial, sans-serif;
-    }
-    th, td {
-        padding: 12px;
-        border: 1px solid #ddd;
-    }
-    th {
-        background-color: #4CAF50;
-        color: white;
-    }
-    tr:nth-child(even) {
-        background-color: #f9f9f9;
-    }
-    tr:hover {
-        background-color: #f1f1f1;
-    }
-
-    /* Style pour le bouton centré avec fond noir et texte blanc */
-    .back-button-container {
-        text-align: center;
-        margin-top: 30px;
-    }
-
-    .back-button {
-        padding: 12px 20px;
-        background-color: black;
-        color: white;
-        border: none;
+    .page-header {
+        background: #fff;
+        padding: 20px;
+        margin-bottom: 20px;
         border-radius: 5px;
-        font-size: 16px;
-        text-decoration: none;
-        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    .back-button:hover {
-        background-color: #333;
+    .timetable-wrapper {
+        background: #fff;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .timetable {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .timetable th {
+        background: #4CAF50;
+        color: white;
+        padding: 15px;
+        font-weight: 500;
+    }
+
+    .timetable td {
+        padding: 15px;
+        border: 1px solid #eee;
+    }
+
+    .session-card {
+        background: #f8f9fa;
+        padding: 12px;
+        border-radius: 4px;
+        margin-bottom: 5px;
+    }
+
+    .session-card strong {
+        color: #2c3e50;
+    }
+
+    .progress-container {
+        margin: 10px 0;
+    }
+
+    .progress {
+        height: 8px;
+        background: #e9ecef;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        background: linear-gradient(to right, #4CAF50, #45a049);
+        height: 100%;
+        transition: width 0.3s ease;
+    }
+
+    .action-btn {
+        background: #4CAF50;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.9em;
+        transition: background-color 0.3s;
+    }
+
+    .action-btn:hover {
+        background: #45a049;
+        color: white;
     }
 </style>
 
-<h2 style="text-align: center;">Emploi du Temps</h2>
-<div class="back-button-container">
-    <a href="{% url 'creer_emploi_temps' %}" class="back-button">Retour à la création de l'emploi du temps</a>
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2>Emploi du temps</h2>
+        <a href="{% url 'creer_emploi_temps' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Créer une nouvelle session
+        </a>
+    </div>
+    <form method="GET" class="mt-3">
+        <div class="form-group">
+            <label for="promotion-select">Promotion :</label>
+            <select name="promotion" id="promotion-select" class="form-control" onchange="this.form.submit()">
+                {% for promotion in promotions %}
+                    <option value="{{ promotion }}" {% if promotion == promotion_selected %}selected{% endif %}>
+                        {{ promotion }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
 </div>
 
-<table>
-    <thead>
-        <tr>
-            <th>Jour</th>
-            {% for horaire in horaires %}
-            <th>{{ horaire }}</th>
+<div class="timetable-wrapper">
+    <table class="timetable">
+        <thead>
+            <tr>
+                <th>Jour</th>
+                {% for horaire in horaires %}
+                <th>{{ horaire }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for jour in jours %}
+            <tr>
+                <td class="font-weight-bold">{{ jour }}</td>
+                {% for horaire in horaires %}
+                <td>
+                    {% with session=emploi_table|get_dict_item:jour|get_dict_item:horaire %}
+                    {% if session %}
+                    <div class="session-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong>{{ session.matiere.name }}</strong>
+                            <span class="badge badge-info">{{ session.niveau }}</span>
+                        </div>
+                        <small class="text-muted d-block">{{ session.professeur.admin.get_full_name }}</small>
+                        
+                        <div class="progress-container">
+                            <div class="progress">
+                                <div class="progress-bar" 
+                                     style="width: {{ session.get_progression_percentage }}%"
+                                     role="progressbar"
+                                     aria-valuenow="{{ session.get_progression_percentage }}"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100">
+                                </div>
+                            </div>
+                            <small class="text-muted">Progression: {{ session.get_progression_percentage }}%</small>
+                        </div>
+                        
+                        <a href="{% url 'mettre_a_jour_progression' session.id %}" class="action-btn">
+                            <i class="fas fa-edit"></i> Mettre à jour
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                </td>
+                {% endfor %}
+            </tr>
             {% endfor %}
-        </tr>
-    </thead>
-    <tbody>
-        {% for jour, horaires_dict in emploi_table.items %}
-        <tr>
-            <td><strong>{{ jour }}</strong></td>
-            {% for horaire, emploi in horaires_dict.items %}
-            <td>
-                {% if emploi %}
-                    <strong>{{ emploi.matiere.name }}</strong><br>
-                    {{ emploi.professeur }}<br>
-                    Niveau : {{ emploi.niveau.niveau }}<br>
-                    <em>Progression : {{ emploi.progression|default:"Non défini" }}</em>
-                    <br>
-                    <a href="{% url 'mettre_a_jour_progression' emploi.id %}">Mettre à jour</a>
-                {% else %}
-                    <em>Vide</em>
-                {% endif %}
-            </td>
-            {% endfor %}
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-<!-- Conteneur du bouton avec centrage -->
-
+        </tbody>
+    </table>
+</div>
 {% endblock content %}

@@ -2,7 +2,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import UserManager
 from django.dispatch import receiver
 from django.db.models.signals import post_save
-from django.db import models
+from django.db import models  # Correction ici : importer models directement de django.db
 from django.contrib.auth.models import AbstractUser
 
 
@@ -191,7 +191,7 @@ class NotificationStaff(models.Model):
     # Modifier le chemin d'upload pour éviter le doublon de 'media'
     file = models.FileField(upload_to='staff_notifications', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Notification pour {self.staff.admin.email}"
@@ -295,11 +295,19 @@ class EmploiTemps(models.Model):
         ('Samedi', 'Samedi'),
     ]
     jour = models.CharField(max_length=10, choices=JOUR_CHOICES, default='Lundi')
-    # Remplacez `niveau` pour qu'il fasse référence à l'objet `Student`
-    niveau = models.ForeignKey(Student, on_delete=models.CASCADE)  # Référence au modèle Student
+    # Supprimer l'ancien champ niveau qui référence Student
+    # niveau = models.ForeignKey(Student, on_delete=models.CASCADE)
+    
+    niveau = models.CharField(
+        max_length=20,
+        choices=[
+            ('3ème année', '3ème année'),
+            ('4ème année', '4ème année'),
+            ('5ème année', '5ème année'),
+        ],
+        default='3ème année'
+    )
     date = models.DateField(default=date.today) 
-
-    niveau = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='emplois_temps')
     jour = models.CharField(max_length=10, choices=JOUR_CHOICES, default='Lundi')  # Ajout d'une valeur par défaut
     horaire = models.CharField(max_length=20, choices=HORAIRES_CHOICES, default='08:00-10:00')  # Ajout d'une valeur par défaut
 
@@ -311,6 +319,13 @@ class EmploiTemps(models.Model):
         null=True,
         help_text="Décrivez la progression, par exemple '50% terminé' ou 'Chapitre 3 terminé'."
     )
+
+    def get_progression_percentage(self):
+        """Retourne la progression en pourcentage"""
+        try:
+            return int(self.progression or 0)
+        except ValueError:
+            return 0
 
     def __str__(self):
         return f"{self.niveau} - {self.date} - {self.horaire} : {self.matiere}"
