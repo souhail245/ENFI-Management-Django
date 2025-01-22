@@ -42,17 +42,7 @@
                         </p>
                     </a>
                 </li>
-                <li class="nav-item">
-                    {% url 'admin_view_profile' as admin_view_profile %}
-                    <a href="{{admin_view_profile}}"
-                        class="nav-link {% if admin_view_profile == request.path %} active {% endif %}">
-                        <i class="nav-icon fas fa-address-card"></i>
-                        <p>
-                            Mettre à jour le profil
-
-                        </p>
-                    </a>
-                </li>
+            
                 <li class="nav-item">
                     {% url 'creer_emploi_temps' as creer_emploi_temps %}
                     <a href="{{ creer_emploi_temps }}"
@@ -68,47 +58,9 @@
 
                 <li class="nav-item has-treeview">
                     <a href="#" class="nav-link">
-                        <i class="nav-icon fas fa-bookmark"></i>
-                        <p>
-                            Cours
-                            <i class="fas fa-angle-left right"></i>
-                        </p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            {% url 'add_course' as add_course %}
-                            <a href="{{add_course}}"
-                                class="nav-link  {% if add_course == request.path %} active {% endif %}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>
-                                    Ajouter un Cours
-
-                                </p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            {% url 'manage_course' as manage_course %}
-                            {% url 'edit_course' course_id as edit_course %}
-                            <a href="{{manage_course}}"
-                                class="nav-link  {% if edit_course == request.path or manage_course == request.path %} active {% endif %}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>
-                                    Gérer les Cours
-
-                                </p>
-                            </a>
-                        </li>
-
-
-                    </ul>
-                </li>
-
-
-                <li class="nav-item has-treeview">
-                    <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-book"></i>
                         <p>
-                            Matière
+                            Les Matières :
                             <i class="fas fa-angle-left right"></i>
                         </p>
                     </a>
@@ -143,51 +95,12 @@
 
 
 
-
-                <li class="nav-item has-treeview">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon fas fa-clock"></i>
-                        <p>
-                            Session
-                            <i class="fas fa-angle-left right"></i>
-                        </p>
-                    </a>
-                    <ul class="nav nav-treeview">
-
-                        <li class="nav-item">
-                            {% url 'add_session' as add_session %}
-                            <a href="{{add_session}}"
-                                class="nav-link  {% if add_session == request.path %} active {% endif %}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>
-                                    Ajouter une Session
-
-                                </p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            {% url 'manage_session' as manage_session %}
-                            {% url 'edit_session' session_id as edit_session %}
-                            <a href="{{manage_session}}"
-                                class="nav-link  {% if edit_session == request.path or manage_session == request.path %} active {% endif %}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>
-                                    Gérer les Sessions
-
-                                </p>
-                            </a>
-                        </li>
-
-                    </ul>
-                </li>
-
-
                 <li class="nav-item">
                     {% url 'add_staff' as add_staff %}
                     <a href="{{add_staff}}" class="nav-link {% if add_staff == request.path %} active {% endif %}">
                         <i class="nav-icon fas fa-user-plus"></i>
                         <p>
-                            Ajouter un membre du personnel
+                            Ajouter un personnel
 
                         </p>
                     </a>
@@ -252,18 +165,6 @@
                     </a>
                 </li>
 
-                <li class="nav-item">
-                    {% url 'admin_view_attendance' as admin_view_attendance %}
-
-                <li class="nav-item">
-                    <a href="{{admin_view_attendance}}"
-                        class="nav-link  {% if admin_view_attendance == request.path %} active {% endif %}">
-                        <i class="nav-icon fas fa-calendar-alt"></i>
-                        <p>
-                            Voir la présence
-                        </p>
-                    </a>
-                </li>
                 
                 <li class="nav-item">
                     <a href="{% url 'add_absence' %}" class="nav-link">
@@ -325,6 +226,17 @@
                         <i class="nav-icon fas fa-check-double"></i>
                         <p>
                             Congés des étudiants
+
+                        </p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    {% url 'admin_view_profile' as admin_view_profile %}
+                    <a href="{{admin_view_profile}}"
+                        class="nav-link {% if admin_view_profile == request.path %} active {% endif %}">
+                        <i class="nav-icon fas fa-address-card"></i>
+                        <p>
+                            Mettre à jour le profil
 
                         </p>
                     </a>

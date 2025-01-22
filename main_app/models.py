@@ -108,7 +108,6 @@ class Student(models.Model):
 
 
 class Staff(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.DO_NOTHING, null=True, blank=False)
     admin = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -124,10 +123,11 @@ class Subject(models.Model):
             ('3ème année', '3ème année'),
             ('4ème année', '4ème année'),
             ('5ème année', '5ème année'),
+             ('6ème année', '6ème année'),
         ],
         default='3ème année'
     )
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    volume_horaire_total = models.IntegerField(default=40)  # 30-40 heures
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

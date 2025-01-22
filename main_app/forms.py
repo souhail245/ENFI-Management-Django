@@ -88,8 +88,8 @@ class StaffForm(CustomUserForm):
 
     class Meta(CustomUserForm.Meta):
         model = Staff
-        fields = CustomUserForm.Meta.fields + \
-            ['course' ]
+        fields = CustomUserForm.Meta.fields
+            
 
 
 class CourseForm(FormSettings):
@@ -108,7 +108,7 @@ class SubjectForm(FormSettings):
 
     class Meta:
         model = Subject
-        fields = ['name', 'staff', 'course', 'niveau']  # Ajout du champ 'niveau'
+        fields = ['name', 'staff','volume_horaire_total', 'niveau']  # Ajout du champ 'niveau'
 
 
 class SessionForm(FormSettings):
