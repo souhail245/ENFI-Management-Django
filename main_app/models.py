@@ -130,9 +130,33 @@ class Subject(models.Model):
     volume_horaire_total = models.IntegerField(default=40)  # 30-40 heures
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    heures_ajoutees = models.IntegerField(default=0, null=True, blank=True)
+    progression_cours = models.IntegerField(default=0)  # Progression en %
+    volume_horaire_restant = models.IntegerField(default=40, null=True, blank=True)  # Initialisé avec le total
 
     def __str__(self):
         return self.name
+    
+    
+    def save(self, *args, **kwargs):
+            # Si heures_ajoutees n'est pas défini, initialise-le à 0
+        if self.heures_ajoutees is None:
+            self.heures_ajoutees = 0
+    
+         # Si volume_horaire_restant n'est pas défini, initialise-le
+        if self.volume_horaire_restant is None:
+            self.volume_horaire_restant = self.volume_horaire_total
+
+       # Assure-toi de mettre à jour la progression correctement
+        self.mettre_a_jour_progression()
+
+        super().save(*args, **kwargs)
+
+
+    def mettre_a_jour_progression(self):
+         """Met à jour la progression du cours en %."""
+         if self.volume_horaire_total > 0:  # Évite une division par zéro
+             self.progression_cours = int((self.heures_ajoutees / self.volume_horaire_total) * 100)
 
 
 class Attendance(models.Model):
@@ -356,9 +380,16 @@ class EmploiTemps(models.Model):
     date_fin = models.DateField(null=True, blank=True)
     
     def save(self, *args, **kwargs):
-        if not self.date_fin and self.date_debut:
-            self.date_fin = self.date_debut
-        super().save(*args, **kwargs)
+      
+       if self.type_evenement == 'COURS' and self.matiere:
+        # Réduire le volume horaire restant de la matière associée
+          if self.matiere.volume_horaire_restant >= 2:  # Chaque cours réduit de 2 heures
+             self.matiere.volume_horaire_restant -= 2
+             self.matiere.heures_ajoutees += 2  # Ajoute 2 heures au total des heures ajoutées
+             self.matiere.mettre_a_jour_progression()  # Mets à jour la progression
+             self.matiere.save()
+       super().save(*args, **kwargs)
+
 
     def get_progression_percentage(self):
         """Retourne la progression en pourcentage"""

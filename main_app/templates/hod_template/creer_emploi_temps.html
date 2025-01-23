@@ -151,7 +151,13 @@
     .session-card.default {
         background-color: #e9ecef;
         border-color: #ddd;
-    }
+
+    .progress-bar {
+    background-color: #0a0a0a;
+    height: 20px;
+    border-radius: 5px;
+      }
+
 </style>
 
 <div class="main-container">
@@ -325,8 +331,16 @@
                                             {% if session.type_evenement == 'JOUR_FERIE' %}jour-ferie{% elif session.type_evenement == 'VACANCES' %}vacances{% elif session.type_evenement == 'EXAMEN_PARTIEL' or session.type_evenement == 'EXAMEN_FINAL' %}examen{% else %}default{% endif %}">
                                             
                                             {% if session.type_evenement == 'COURS' %}
+                                            <div class="session-card">
                                                 <strong>{{ session.matiere.name }}</strong><br>
                                                 <small>{{ session.professeur.admin.get_full_name }}</small>
+                                                <div class="progress">
+                                                    <div class="progress-bar" role="progressbar" style="width: {{ session.matiere.progression_cours }}%;" 
+                                                         aria-valuenow="{{ session.matiere.progression_cours }}" aria-valuemin="0" aria-valuemax="100">
+                                                        {{ session.matiere.progression_cours }}%
+                                                    </div>
+                                                </div>
+                                            </div>
                                             {% elif session.type_evenement == 'EXAMEN_PARTIEL' %}
                                                 <strong style="color: #856404;">Examen Partiel</strong><br>
                                                 <strong>{{ session.matiere.name }}</strong>

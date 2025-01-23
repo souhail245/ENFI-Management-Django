@@ -521,6 +521,7 @@ def add_subject(request):
             staff = form.cleaned_data.get('staff')
             niveau = form.cleaned_data.get('niveau')
             volume_horaire_total = form.cleaned_data.get('volume_horaire_total')
+            heures_ajoutees = form.cleaned_data.get('heures_ajoutees')
             try:
                 subject = Subject()
                 subject.name = name
@@ -528,6 +529,7 @@ def add_subject(request):
                 subject.course = course
                 subject.niveau = niveau
                 subject.volume_horaire_total = volume_horaire_total
+                subject.heures_ajoutees = heures_ajoutees
                 subject.save()
                 messages.success(request, "Successfully Added")
                 return redirect(reverse('add_subject'))
@@ -1310,8 +1312,16 @@ def creer_emploi_temps(request):
 
             # Pour les cours et examens
             if type_evenement in ['COURS', 'EXAMEN_PARTIEL', 'EXAMEN_FINAL']:
+
+                matiere = get_object_or_404(Subject, id=request.POST.get("matiere"))
+                
+                # Incrémenter le nombre total d'heures ajoutées
+                matiere.heures_ajoutees += 2 
+                matiere.mettre_a_jour_progression() 
+                    
+                    
                 emploi_data.update({
-                    'matiere': get_object_or_404(Subject, id=request.POST.get("matiere")),
+                    'matiere': matiere,
                     'professeur': get_object_or_404(Staff, id=request.POST.get("professeur")),
                     'horaire': request.POST.get("horaire"),
                     'date': date_debut
