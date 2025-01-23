@@ -87,25 +87,29 @@
         padding: 15px;
         border-radius: 8px;
         margin-bottom: 20px;
+        text-align: center;
     }
 
     .calendar {
         width: 100%;
         border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    .calendar th, .calendar td {
+        padding: 15px;
+        border: 1px solid #ddd;
+        vertical-align: top;
+        text-align: center;
     }
 
     .calendar th {
         background: #f8f9fa;
-        padding: 15px;
         font-weight: 600;
         color: #333;
-        border: 1px solid #ddd;
     }
 
     .calendar td {
-        padding: 15px;
-        border: 1px solid #ddd;
-        vertical-align: top;
         height: 100px;
     }
 
@@ -127,6 +131,26 @@
 
     .session-card strong {
         color: #333;
+    }
+
+    .session-card.jour-ferie {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+    }
+
+    .session-card.vacances {
+        background-color: #cce5ff;
+        border-color: #b8daff;
+    }
+
+    .session-card.examen {
+        background-color: #fff3cd;
+        border-color: #ffeeba;
+    }
+
+    .session-card.default {
+        background-color: #e9ecef;
+        border-color: #ddd;
     }
 </style>
 
@@ -156,101 +180,101 @@
 
     <!-- Formulaire de création -->
     <div class="creation-form">
-    <h3>Programmer un événement</h3>
-    <form method="POST">
-        {% csrf_token %}
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="type_evenement">Type d'événement :</label>
-                    <select name="type_evenement" id="type_evenement" class="form-control" required onchange="toggleFields()">
-                        <option value="COURS">Cours</option>
-                        <option value="EXAMEN_PARTIEL">Examen Partiel</option>
-                        <option value="EXAMEN_FINAL">Examen Final</option>
-                        <option value="JOUR_FERIE">Jour Férié</option>
-                        <option value="VACANCES">Vacances</option>
-                    </select>
-                </div>
-
-                <!-- Champs communs -->
-                <div class="form-group">
-                    <label for="promotion">Promotion :</label>
-                    <select name="promotion" id="promotion" class="form-control" required>
-                        {% for promotion in promotions %}
-                            <option value="{{ promotion }}" {% if promotion == promotion_selected %}selected{% endif %}>
-                                {{ promotion }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <!-- Champs pour cours et examens -->
-                <div id="cours_examens_fields">
+        <h3>Programmer un événement</h3>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6">
                     <div class="form-group">
-                        <label for="matiere">Matière :</label>
-                        <select name="matiere" class="form-control">
-                            {% for subject in subjects %}
-                                <option value="{{ subject.id }}">{{ subject.name }}</option>
+                        <label for="type_evenement">Type d'événement :</label>
+                        <select name="type_evenement" id="type_evenement" class="form-control" required onchange="toggleFields()">
+                            <option value="COURS">Cours</option>
+                            <option value="EXAMEN_PARTIEL">Examen Partiel</option>
+                            <option value="EXAMEN_FINAL">Examen Final</option>
+                            <option value="JOUR_FERIE">Jour Férié</option>
+                            <option value="VACANCES">Vacances</option>
+                        </select>
+                    </div>
+
+                    <!-- Champs communs -->
+                    <div class="form-group">
+                        <label for="promotion">Promotion :</label>
+                        <select name="promotion" id="promotion" class="form-control" required>
+                            {% for promotion in promotions %}
+                                <option value="{{ promotion }}" {% if promotion == promotion_selected %}selected{% endif %}>
+                                    {{ promotion }}
+                                </option>
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label for="professeur">Professeur :</label>
-                        <select name="professeur" class="form-control">
-                            {% for prof in professeurs %}
-                                <option value="{{ prof.id }}">{{ prof }}</option>
-                            {% endfor %}
-                        </select>
+
+                    <!-- Champs pour cours et examens -->
+                    <div id="cours_examens_fields">
+                        <div class="form-group">
+                            <label for="matiere">Matière :</label>
+                            <select name="matiere" class="form-control">
+                                {% for subject in subjects %}
+                                    <option value="{{ subject.id }}">{{ subject.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="professeur">Professeur :</label>
+                            <select name="professeur" class="form-control">
+                                {% for prof in professeurs %}
+                                    <option value="{{ prof.id }}">{{ prof }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Champs pour jour férié -->
+                    <div id="ferie_fields" style="display:none;">
+                        <div class="form-group">
+                            <label for="titre_evenement">Nom du jour férié :</label>
+                            <input type="text" name="titre_evenement" class="form-control" placeholder="Ex: Fête du Trône">
+                        </div>
                     </div>
                 </div>
 
-                <!-- Champs pour jour férié -->
-                <div id="ferie_fields" style="display:none;">
+                <div class="col-md-6">
                     <div class="form-group">
-                        <label for="titre_evenement">Nom du jour férié :</label>
-                        <input type="text" name="titre_evenement" class="form-control" placeholder="Ex: Fête du Trône">
+                        <label for="date_debut">Date début :</label>
+                        <input type="date" name="date_debut" id="date_debut" class="form-control" required>
+                    </div>
+                    
+                    <!-- Champs pour les vacances -->
+                    <div id="vacances_fields" style="display:none;"></div>
+                        <div class="form-group">
+                            <label for="date_fin">Date fin :</label>
+                            <input type="date" name="date_fin" id="date_fin" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="titre_vacances">Type de vacances :</label>
+                            <input type="text" name="titre_evenement" class="form-control" placeholder="Ex: Vacances d'hiver">
+                        </div>
+                    </div>
+
+                    <!-- Champs pour cours et examens -->
+                    <div id="horaire_fields">
+                        <div class="form-group">
+                            <label for="horaire">Horaire :</label>
+                            <select name="horaire" class="form-control">
+                                {% for horaire in horaires %}
+                                    <option value="{{ horaire }}">{{ horaire }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="date_debut">Date début :</label>
-                    <input type="date" name="date_debut" id="date_debut" class="form-control" required>
-                </div>
-                
-                <!-- Champs pour les vacances -->
-                <div id="vacances_fields" style="display:none;">
-                    <div class="form-group">
-                        <label for="date_fin">Date fin :</label>
-                        <input type="date" name="date_fin" id="date_fin" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="titre_vacances">Type de vacances :</label>
-                        <input type="text" name="titre_evenement" class="form-control" placeholder="Ex: Vacances d'hiver">
-                    </div>
-                </div>
-
-                <!-- Champs pour cours et examens -->
-                <div id="horaire_fields">
-                    <div class="form-group">
-                        <label for="horaire">Horaire :</label>
-                        <select name="horaire" class="form-control">
-                            {% for horaire in horaires %}
-                                <option value="{{ horaire }}">{{ horaire }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn-create">Programmer l'événement</button>
+                <a href="{% url 'liste_emplois' %}" class="btn-view-progress">Voir la progression</a>
             </div>
-        </div>
-
-        <div class="d-flex justify-content-end">
-            <button type="submit" class="btn-create">Programmer l'événement</button>
-            <a href="{% url 'liste_emplois' %}" class="btn-view-progress">Voir la progression</a>
-        </div>
-    </form>
-</div>
+        </form>
+    </div>
 
     <!-- Aperçu du calendrier -->
     <div class="timetable-section">
@@ -297,11 +321,8 @@
                             <td>
                                 {% with session=sessions_by_date|get_dict_item:date|get_dict_item:horaire %}
                                     {% if session %}
-                                        <div class="session-card" 
-                                             style="{% if session.type_evenement == 'JOUR_FERIE' %}background-color: #d4edda; border-color: #c3e6cb;
-                                                    {% elif session.type_evenement == 'VACANCES' %}background-color: #cce5ff; border-color: #b8daff;
-                                                    {% elif session.type_evenement == 'EXAMEN_PARTIEL' or session.type_evenement == 'EXAMEN_FINAL' %}background-color: #fff3cd; border-color: #ffeeba;
-                                                    {% endif %}">
+                                        <div class="session-card 
+                                            {% if session.type_evenement == 'JOUR_FERIE' %}jour-ferie{% elif session.type_evenement == 'VACANCES' %}vacances{% elif session.type_evenement == 'EXAMEN_PARTIEL' or session.type_evenement == 'EXAMEN_FINAL' %}examen{% else %}default{% endif %}">
                                             
                                             {% if session.type_evenement == 'COURS' %}
                                                 <strong>{{ session.matiere.name }}</strong><br>
