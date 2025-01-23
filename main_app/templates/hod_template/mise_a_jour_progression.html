@@ -85,13 +85,13 @@
     <div class="session-details">
         <p><strong>Matière:</strong> {{ emploi.matiere.name }}</p>
         <p><strong>Professeur:</strong> {{ emploi.professeur.admin.get_full_name }}</p>
-        <p><strong>Niveau:</strong> {{ emploi.niveau.niveau }}</p>
+        <p><strong>Niveau:</strong> {{ emploi.niveau }}</p>
         <p><strong>Jour:</strong> {{ emploi.jour }} - {{ emploi.horaire }}</p>
         
         <div class="current-progress">
-            <div class="progress-bar" style="width: {{ emploi.progression|default:0 }}%"></div>
+            <div class="progress-bar" style="width: {{ emploi.get_progression_percentage }}%"></div>
         </div>
-        <p class="text-center">Progression actuelle: {{ emploi.progression|default:0 }}%</p>
+        <p class="text-center">Progression actuelle: {{ emploi.get_progression_percentage }}%</p>
     </div>
 
     <form method="POST">
@@ -102,7 +102,7 @@
                    name="progression" 
                    id="progression" 
                    class="form-control"
-                   value="{{ emploi.progression|default:0 }}"
+                   value="{{ emploi.get_progression_percentage }}"
                    min="0" 
                    max="100" 
                    required>

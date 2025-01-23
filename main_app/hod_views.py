@@ -1285,8 +1285,7 @@ from collections import defaultdict
 def creer_emploi_temps(request):
     if request.method == "POST":
         try:
-            # Récupérer la promotion au lieu du niveau
-            promotion = request.POST.get("promotion")  # Changement ici
+            promotion = request.POST.get("promotion")
             matiere_id = request.POST.get("matiere")
             professeur_id = request.POST.get("professeur")
             jour = request.POST.get("jour")
@@ -1299,28 +1298,39 @@ def creer_emploi_temps(request):
                 return redirect("creer_emploi_temps")
 
             # Vérifier s'il existe déjà un cours à cet horaire pour cette promotion
-            if EmploiTemps.objects.filter(date=date, horaire=horaire, niveau=promotion).exists():
+            existing_session = EmploiTemps.objects.filter(
+                date=date, 
+                horaire=horaire, 
+                niveau=promotion
+            ).first()
+            
+            if existing_session:
                 messages.warning(request, "Il existe déjà un cours programmé à cet horaire pour cette promotion")
                 return redirect("creer_emploi_temps")
 
             matiere = get_object_or_404(Subject, id=matiere_id)
             professeur = get_object_or_404(Staff, id=professeur_id)
 
-            # Créer l'emploi du temps avec la promotion
+            # Créer l'emploi du temps
             EmploiTemps.objects.create(
-                niveau=promotion,  # Utilisation directe de la promotion
+                niveau=promotion,
                 jour=jour,
                 horaire=horaire,
                 matiere=matiere,
                 professeur=professeur,
                 date=date
             )
+            
+            # Utiliser success au lieu de warning pour le message de succès
             messages.success(request, "Session de cours créée avec succès")
-            return redirect("creer_emploi_temps")
+            
+            # Rediriger avec les paramètres de la promotion
+            return redirect(f"{reverse('creer_emploi_temps')}?promotion={promotion}")
 
         except Exception as e:
             messages.error(request, f"Une erreur s'est produite: {str(e)}")
             return redirect("creer_emploi_temps")
+
     else:
         # Récupérer la promotion sélectionnée
         promotion_selected = request.GET.get('promotion', '3ème année')

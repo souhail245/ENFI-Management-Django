@@ -52,6 +52,7 @@
         cursor: pointer;
         font-weight: 500;
         font-size: 16px;
+        margin-right: 10px;
     }
 
     .btn-create:hover {
@@ -128,26 +129,30 @@
         color: #333;
     }
 </style>
-   <!-- Liste déroulante pour choisir la promotion -->
-   <div class="form-group">
-    <label for="promotion-select">Changer de promotion :</label>
-    <select name="promotion" id="promotion-select" class="form-control" onchange="window.location.href='?promotion=' + this.value;">
-        {% for promotion in promotions %}
-            <option value="{{ promotion }}" {% if promotion == promotion_selected %}selected{% endif %}>
-                {{ promotion }}
-            </option>
-        {% endfor %}
-    </select>
-</div>
+
 <div class="main-container">
     <!-- Messages -->
     {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %}">
-                {{ message }}
-            </div>
-        {% endfor %}
+        <div class="alert-container">
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
     {% endif %}
+
+    <!-- Liste déroulante pour choisir la promotion -->
+    <div class="form-group">
+        <label for="promotion-select">Changer de promotion :</label>
+        <select name="promotion" id="promotion-select" class="form-control" onchange="window.location.href='?promotion=' + this.value;">
+            {% for promotion in promotions %}
+                <option value="{{ promotion }}" {% if promotion == promotion_selected %}selected{% endif %}>
+                    {{ promotion }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
 
     <!-- Formulaire de création -->
     <div class="creation-form">
@@ -211,12 +216,12 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn-create">Programmer la sceance</button>
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn-create">Programmer la séance</button>
+                <a href="{% url 'liste_emplois' %}" class="btn-view-progress">Voir la progression</a>
+            </div>
         </form>
-        <a href="{% url 'liste_emplois' %}" class="btn-view-progress">Voir la progression</a>
     </div>
-
- 
 
     <!-- Aperçu du calendrier -->
     <div class="timetable-section">
