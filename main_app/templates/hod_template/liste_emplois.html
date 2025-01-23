@@ -142,6 +142,9 @@
                             <small class="text-muted">Progression: {{ session.get_progression_percentage }}%</small>
                         </div>
                         
+                            <small class="text-muted">Progression: {{ session.get_progression_percentage }}%</small>
+                        </div>
+                        
                         <a href="{% url 'mettre_a_jour_progression' session.id %}" class="action-btn">
                             <i class="fas fa-edit"></i> Mettre à jour
                         </a>

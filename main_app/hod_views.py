@@ -1466,46 +1466,39 @@ def historique_emploi(request):
     if date_debut:
         date_debut = datetime.strptime(date_debut, '%Y-%m-%d').date()
     else:
-        # Par défaut, commencer au début du mois courant
         date_debut = datetime.now().date().replace(day=1)
     
     if date_fin:
         date_fin = datetime.strptime(date_fin, '%Y-%m-%d').date()
     else:
-        # Par défaut, fin du mois courant
         date_fin = (date_debut + timedelta(days=32)).replace(day=1) - timedelta(days=1)
 
-    # Récupérer les emplois du temps
+    # Récupérer TOUS les types d'événements
     emplois = EmploiTemps.objects.filter(
         niveau=promotion_selected,
         date__range=[date_debut, date_fin]
-    ).order_by('date', 'horaire')
+    ).select_related('matiere', 'professeur').order_by('date', 'horaire')
 
-    # Générer tous les jours de la période
     dates = []
     current_date = date_debut
     while current_date <= date_fin:
         dates.append(current_date)
         current_date += timedelta(days=1)
 
-    # Organiser les sessions par date
+    # Organiser les sessions par date avec tous les types d'événements
     sessions_by_date = defaultdict(dict)
     for emploi in emplois:
+        # Stocker tous les types d'événements, pas seulement les cours
         sessions_by_date[emploi.date][emploi.horaire] = emploi
 
-    # S'assurer que toutes les dates sont présentes dans sessions_by_date
-    for date in dates:
-        if date not in sessions_by_date:
-            sessions_by_date[date] = {}
-
     context = {
-        'sessions_by_date': dict(sorted(sessions_by_date.items())),  # Trier par date
+        'sessions_by_date': dict(sorted(sessions_by_date.items())),
         'promotions': promotions,
         'horaires': horaires,
         'promotion_selected': promotion_selected,
         'date_debut': date_debut,
         'date_fin': date_fin,
-        'dates': dates,  # Ajouter la liste complète des dates
+        'dates': dates,
         'page_title': 'Historique des emplois'
     }
     return render(request, 'hod_template/historique_emploi.html', context)

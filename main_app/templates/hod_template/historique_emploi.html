@@ -122,10 +122,27 @@
                             <td>
                                 {% with session=sessions_by_date|get_dict_item:date|get_dict_item:horaire %}
                                     {% if session %}
-                                        <div class="session-card">
-                                            <strong>{{ session.matiere.name }}</strong><br>
-                                            <small>{{ session.professeur.admin.get_full_name }}</small><br>
-                                            <small class="text-muted">{{ session.niveau }}</small>
+                                        <div class="session-card {% if session.type_evenement == 'JOUR_FERIE' %}jour-ferie{% elif session.type_evenement == 'VACANCES' %}vacances{% elif session.type_evenement == 'EXAMEN_PARTIEL' or session.type_evenement == 'EXAMEN_FINAL' %}examen{% else %}default{% endif %}">
+                                            {% if session.type_evenement == 'COURS' %}
+                                                <strong>{{ session.matiere.name }}</strong><br>
+                                                <small>{{ session.professeur.admin.get_full_name }}</small>
+                                            {% elif session.type_evenement == 'EXAMEN_PARTIEL' %}
+                                                <strong style="color: #856404;">Examen Partiel</strong><br>
+                                                <strong>{{ session.matiere.name }}</strong>
+                                            {% elif session.type_evenement == 'EXAMEN_FINAL' %}
+                                                <strong style="color: #721c24;">Examen Final</strong><br>
+                                                <strong>{{ session.matiere.name }}</strong>
+                                            {% elif session.type_evenement == 'JOUR_FERIE' %}
+                                                <div style="text-align: center;">
+                                                    <strong style="color: #155724;">JOUR FÉRIÉ</strong><br>
+                                                    <small>{{ session.titre_evenement }}</small>
+                                                </div>
+                                            {% elif session.type_evenement == 'VACANCES' %}
+                                                <div style="text-align: center;">
+                                                    <strong style="color: #004085;">VACANCES</strong><br>
+                                                    <small>{{ session.titre_evenement }}</small>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     {% endif %}
                                 {% endwith %}
