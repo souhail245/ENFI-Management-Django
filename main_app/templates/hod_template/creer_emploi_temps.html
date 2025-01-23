@@ -156,47 +156,36 @@
 
     <!-- Formulaire de création -->
     <div class="creation-form">
-        <h3>Créer une nouvelle programmation</h3>
-        <form method="POST">
-            {% csrf_token %}
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="promotion">Promotion :</label>
-                        <select name="promotion" id="promotion" class="form-control" required>
-                            {% for promotion in promotions %}
-                                <option value="{{ promotion }}" {% if promotion == promotion_selected %}selected{% endif %}>
-                                    {{ promotion }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="date">Date :</label>
-                        <input type="date" name="date" id="date" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="jour">Jour :</label>
-                        <select name="jour" class="form-control" required>
-                            <option value="Lundi">Lundi</option>
-                            <option value="Mardi">Mardi</option>
-                            <option value="Mercredi">Mercredi</option>
-                            <option value="Jeudi">Jeudi</option>
-                            <option value="Vendredi">Vendredi</option>
-                            <option value="Samedi">Samedi</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="horaire">Horaire :</label>
-                        <select name="horaire" class="form-control">
-                            {% for horaire in horaires %}
-                                <option value="{{ horaire }}">{{ horaire }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
+    <h3>Programmer un événement</h3>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="type_evenement">Type d'événement :</label>
+                    <select name="type_evenement" id="type_evenement" class="form-control" required onchange="toggleFields()">
+                        <option value="COURS">Cours</option>
+                        <option value="EXAMEN_PARTIEL">Examen Partiel</option>
+                        <option value="EXAMEN_FINAL">Examen Final</option>
+                        <option value="JOUR_FERIE">Jour Férié</option>
+                        <option value="VACANCES">Vacances</option>
+                    </select>
                 </div>
 
-                <div class="col-md-6">
+                <!-- Champs communs -->
+                <div class="form-group">
+                    <label for="promotion">Promotion :</label>
+                    <select name="promotion" id="promotion" class="form-control" required>
+                        {% for promotion in promotions %}
+                            <option value="{{ promotion }}" {% if promotion == promotion_selected %}selected{% endif %}>
+                                {{ promotion }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Champs pour cours et examens -->
+                <div id="cours_examens_fields">
                     <div class="form-group">
                         <label for="matiere">Matière :</label>
                         <select name="matiere" class="form-control">
@@ -214,17 +203,74 @@
                         </select>
                     </div>
                 </div>
+
+                <!-- Champs pour jour férié -->
+                <div id="ferie_fields" style="display:none;">
+                    <div class="form-group">
+                        <label for="titre_evenement">Nom du jour férié :</label>
+                        <input type="text" name="titre_evenement" class="form-control" placeholder="Ex: Fête du Trône">
+                    </div>
+                </div>
             </div>
 
-            <div class="d-flex justify-content-end">
-                <button type="submit" class="btn-create">Programmer la séance</button>
-                <a href="{% url 'liste_emplois' %}" class="btn-view-progress">Voir la progression</a>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="date_debut">Date début :</label>
+                    <input type="date" name="date_debut" id="date_debut" class="form-control" required>
+                </div>
+                
+                <!-- Champs pour les vacances -->
+                <div id="vacances_fields" style="display:none;">
+                    <div class="form-group">
+                        <label for="date_fin">Date fin :</label>
+                        <input type="date" name="date_fin" id="date_fin" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="titre_vacances">Type de vacances :</label>
+                        <input type="text" name="titre_evenement" class="form-control" placeholder="Ex: Vacances d'hiver">
+                    </div>
+                </div>
+
+                <!-- Champs pour cours et examens -->
+                <div id="horaire_fields">
+                    <div class="form-group">
+                        <label for="horaire">Horaire :</label>
+                        <select name="horaire" class="form-control">
+                            {% for horaire in horaires %}
+                                <option value="{{ horaire }}">{{ horaire }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
             </div>
-        </form>
-    </div>
+        </div>
+
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn-create">Programmer l'événement</button>
+            <a href="{% url 'liste_emplois' %}" class="btn-view-progress">Voir la progression</a>
+        </div>
+    </form>
+</div>
 
     <!-- Aperçu du calendrier -->
     <div class="timetable-section">
+        <!-- Ajouter ce bloc de code juste avant calendar-header -->
+        <div class="history-button-section" style="margin-bottom: 20px; text-align: right;">
+            <a href="{% url 'historique_emploi' %}?promotion={{ promotion_selected }}" 
+               class="btn-history" 
+               style="
+                display: inline-block;
+                background: #6c757d;
+                color: white;
+                padding: 10px 20px;
+                border-radius: 5px;
+                text-decoration: none;
+                margin-right: 10px;
+               ">
+                <i class="fas fa-history"></i> Voir l'historique des emplois
+            </a>
+        </div>
+
         <div class="calendar-header">
             <h4>Planning des 14 prochains jours - {{ promotion_selected }}</h4>
             <strong>Du {{ date_debut|date:"d/m/Y" }} au {{ date_fin|date:"d/m/Y" }}</strong>
@@ -251,10 +297,32 @@
                             <td>
                                 {% with session=sessions_by_date|get_dict_item:date|get_dict_item:horaire %}
                                     {% if session %}
-                                        <div class="session-card">
-                                            <strong>{{ session.matiere.name }}</strong><br>
-                                            <small>{{ session.professeur.admin.get_full_name }}</small><br>
-                                            <small class="text-muted">{{ session.niveau }}</small>
+                                        <div class="session-card" 
+                                             style="{% if session.type_evenement == 'JOUR_FERIE' %}background-color: #d4edda; border-color: #c3e6cb;
+                                                    {% elif session.type_evenement == 'VACANCES' %}background-color: #cce5ff; border-color: #b8daff;
+                                                    {% elif session.type_evenement == 'EXAMEN_PARTIEL' or session.type_evenement == 'EXAMEN_FINAL' %}background-color: #fff3cd; border-color: #ffeeba;
+                                                    {% endif %}">
+                                            
+                                            {% if session.type_evenement == 'COURS' %}
+                                                <strong>{{ session.matiere.name }}</strong><br>
+                                                <small>{{ session.professeur.admin.get_full_name }}</small>
+                                            {% elif session.type_evenement == 'EXAMEN_PARTIEL' %}
+                                                <strong style="color: #856404;">Examen Partiel</strong><br>
+                                                <strong>{{ session.matiere.name }}</strong>
+                                            {% elif session.type_evenement == 'EXAMEN_FINAL' %}
+                                                <strong style="color: #721c24;">Examen Final</strong><br>
+                                                <strong>{{ session.matiere.name }}</strong>
+                                            {% elif session.type_evenement == 'JOUR_FERIE' %}
+                                                <div style="text-align: center;">
+                                                    <strong style="color: #155724; display: block;">JOUR FÉRIÉ</strong>
+                                                    <strong style="color: #155724; font-size: 1.1em;">{{ session.titre_evenement }}</strong>
+                                                </div>
+                                            {% elif session.type_evenement == 'VACANCES' %}
+                                                <div style="text-align: center;">
+                                                    <strong style="color: #004085; display: block;">VACANCES</strong>
+                                                    <strong style="color: #004085; font-size: 1.1em;">{{ session.titre_evenement }}</strong>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     {% endif %}
                                 {% endwith %}
@@ -303,6 +371,42 @@ document.getElementById('promotion').addEventListener('change', function() {
 
     // Recharger la page pour mettre à jour le planning
     window.location.href = `?promotion=${promotion}`;
+});
+
+function toggleFields() {
+    const type = document.getElementById('type_evenement').value;
+    const coursExamensFields = document.getElementById('cours_examens_fields');
+    const ferieFields = document.getElementById('ferie_fields');
+    const vacancesFields = document.getElementById('vacances_fields');
+    const horaireFields = document.getElementById('horaire_fields');
+
+    // Cacher tous les champs d'abord
+    coursExamensFields.style.display = 'none';
+    ferieFields.style.display = 'none';
+    vacancesFields.style.display = 'none';
+    horaireFields.style.display = 'none';
+
+    // Afficher les champs appropriés selon le type
+    switch(type) {
+        case 'COURS':
+        case 'EXAMEN_PARTIEL':
+        case 'EXAMEN_FINAL':
+            coursExamensFields.style.display = 'block';
+            horaireFields.style.display = 'block';
+            break;
+        case 'JOUR_FERIE':
+            ferieFields.style.display = 'block';
+            break;
+        case 'VACANCES':
+            vacancesFields.style.display = 'block';
+            break;
+    }
+}
+
+// Initialiser l'affichage au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    toggleFields();
+    // ...rest of existing DOMContentLoaded code...
 });
 </script>
 {% endblock content %}

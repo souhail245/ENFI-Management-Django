@@ -1,0 +1,147 @@
+{% extends 'main_app/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+<style>
+    .historique-container {
+        padding: 20px;
+    }
+    .filter-section {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .timetable-section {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .calendar-header {
+        background: #343a40;
+        color: white;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .calendar {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .calendar th {
+        background: #f8f9fa;
+        padding: 15px;
+        font-weight: 600;
+        color: #333;
+        border: 1px solid #ddd;
+    }
+    .calendar td {
+        padding: 15px;
+        border: 1px solid #ddd;
+        vertical-align: top;
+        height: 100px;
+    }
+    .session-card {
+        background: #e9ecef;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+    .session-card strong {
+        color: #333;
+    }
+</style>
+
+<div class="historique-container">
+    <div class="filter-section">
+        <h3>Historique des emplois du temps - {{ promotion_selected }}</h3>
+        <form method="GET" class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label>Promotion</label>
+                    <select name="promotion" class="form-control" onchange="this.form.submit()">
+                        {% for promo in promotions %}
+                            <option value="{{ promo }}" {% if promo == promotion_selected %}selected{% endif %}>
+                                {{ promo }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label>Date début</label>
+                    <input type="date" name="date_debut" class="form-control" value="{{ date_debut|date:'Y-m-d' }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label>Date fin</label>
+                    <input type="date" name="date_fin" class="form-control" value="{{ date_fin|date:'Y-m-d' }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <button type="submit" class="btn btn-primary form-control">Filtrer</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="timetable-section">
+        <div class="calendar-header">
+            <h4>Emploi du temps - {{ promotion_selected }}</h4>
+            {% if date_debut and date_fin %}
+                <strong>Du {{ date_debut|date:"d/m/Y" }} au {{ date_fin|date:"d/m/Y" }}</strong>
+            {% endif %}
+        </div>
+
+        <div class="table-responsive">
+            <table class="calendar">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        {% for horaire in horaires %}
+                            <th>{{ horaire }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for date in dates %}
+                    <tr>
+                        <td>
+                            <strong>{{ date|date:"d/m/Y" }}</strong><br>
+                            <small>{{ date|date:"l"|capfirst }}</small>
+                        </td>
+                        {% for horaire in horaires %}
+                            <td>
+                                {% with session=sessions_by_date|get_dict_item:date|get_dict_item:horaire %}
+                                    {% if session %}
+                                        <div class="session-card">
+                                            <strong>{{ session.matiere.name }}</strong><br>
+                                            <small>{{ session.professeur.admin.get_full_name }}</small><br>
+                                            <small class="text-muted">{{ session.niveau }}</small>
+                                        </div>
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="{{ horaires|length|add:1 }}" class="text-center">
+                            Aucun emploi du temps trouvé pour cette période
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

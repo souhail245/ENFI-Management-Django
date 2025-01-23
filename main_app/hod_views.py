@@ -1285,51 +1285,60 @@ from collections import defaultdict
 def creer_emploi_temps(request):
     if request.method == "POST":
         try:
+            type_evenement = request.POST.get("type_evenement")
             promotion = request.POST.get("promotion")
-            matiere_id = request.POST.get("matiere")
-            professeur_id = request.POST.get("professeur")
-            jour = request.POST.get("jour")
-            horaire = request.POST.get("horaire")
-            date = request.POST.get("date")
-
-            # Validation des données
-            if not all([promotion, matiere_id, professeur_id, jour, horaire, date]):
-                messages.error(request, "Tous les champs sont requis")
-                return redirect("creer_emploi_temps")
-
-            # Vérifier s'il existe déjà un cours à cet horaire pour cette promotion
-            existing_session = EmploiTemps.objects.filter(
-                date=date, 
-                horaire=horaire, 
-                niveau=promotion
-            ).first()
+            date_debut = request.POST.get("date_debut")
+            date_fin = request.POST.get("date_fin", date_debut)
+            titre_evenement = request.POST.get("titre_evenement", "")  # Récupérer le titre
             
-            if existing_session:
-                messages.warning(request, "Il existe déjà un cours programmé à cet horaire pour cette promotion")
-                return redirect("creer_emploi_temps")
+            # Vérifier et convertir les dates
+            if date_debut:
+                date_debut = datetime.strptime(date_debut, '%Y-%m-%d').date()
+            if date_fin:
+                date_fin = datetime.strptime(date_fin, '%Y-%m-%d').date()
+            else:
+                date_fin = date_debut
 
-            matiere = get_object_or_404(Subject, id=matiere_id)
-            professeur = get_object_or_404(Staff, id=professeur_id)
+            # Données de base pour l'emploi du temps
+            emploi_data = {
+                'niveau': promotion,
+                'type_evenement': type_evenement,
+                'titre_evenement': titre_evenement,  # Ajouter le titre
+                'date_debut': date_debut,
+                'date_fin': date_fin
+            }
 
-            # Créer l'emploi du temps
-            EmploiTemps.objects.create(
-                niveau=promotion,
-                jour=jour,
-                horaire=horaire,
-                matiere=matiere,
-                professeur=professeur,
-                date=date
-            )
-            
-            # Utiliser success au lieu de warning pour le message de succès
-            messages.success(request, "Session de cours créée avec succès")
-            
-            # Rediriger avec les paramètres de la promotion
+            # Pour les cours et examens
+            if type_evenement in ['COURS', 'EXAMEN_PARTIEL', 'EXAMEN_FINAL']:
+                emploi_data.update({
+                    'matiere': get_object_or_404(Subject, id=request.POST.get("matiere")),
+                    'professeur': get_object_or_404(Staff, id=request.POST.get("professeur")),
+                    'horaire': request.POST.get("horaire"),
+                    'date': date_debut
+                })
+                EmploiTemps.objects.create(**emploi_data)
+
+            # Pour les vacances et jours fériés
+            elif type_evenement in ['JOUR_FERIE', 'VACANCES']:
+                current_date = date_debut
+                while current_date <= date_fin:
+                    for horaire in ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00']:
+                        event_data = emploi_data.copy()
+                        event_data.update({
+                            'date': current_date,
+                            'horaire': horaire
+                        })
+                        EmploiTemps.objects.create(**event_data)
+                    current_date += timedelta(days=1)
+
+            messages.success(request, "Événement programmé avec succès")
             return redirect(f"{reverse('creer_emploi_temps')}?promotion={promotion}")
 
         except Exception as e:
             messages.error(request, f"Une erreur s'est produite: {str(e)}")
             return redirect("creer_emploi_temps")
+            
+    # ... reste du code de la vue ...
 
     else:
         # Récupérer la promotion sélectionnée
@@ -1443,3 +1452,60 @@ def get_matieres_by_niveau(request):
     niveau = request.GET.get('niveau')
     matieres = Subject.objects.filter(niveau=niveau).values('id', 'name')
     return JsonResponse({'matieres': list(matieres)})
+
+# Ajouter cette nouvelle fonction
+def historique_emploi(request):
+    promotion_selected = request.GET.get('promotion', '3ème année')
+    date_debut = request.GET.get('date_debut')
+    date_fin = request.GET.get('date_fin')
+    
+    promotions = ['3ème année', '4ème année', '5ème année']
+    horaires = ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00']
+
+    # Convertir les dates
+    if date_debut:
+        date_debut = datetime.strptime(date_debut, '%Y-%m-%d').date()
+    else:
+        # Par défaut, commencer au début du mois courant
+        date_debut = datetime.now().date().replace(day=1)
+    
+    if date_fin:
+        date_fin = datetime.strptime(date_fin, '%Y-%m-%d').date()
+    else:
+        # Par défaut, fin du mois courant
+        date_fin = (date_debut + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+
+    # Récupérer les emplois du temps
+    emplois = EmploiTemps.objects.filter(
+        niveau=promotion_selected,
+        date__range=[date_debut, date_fin]
+    ).order_by('date', 'horaire')
+
+    # Générer tous les jours de la période
+    dates = []
+    current_date = date_debut
+    while current_date <= date_fin:
+        dates.append(current_date)
+        current_date += timedelta(days=1)
+
+    # Organiser les sessions par date
+    sessions_by_date = defaultdict(dict)
+    for emploi in emplois:
+        sessions_by_date[emploi.date][emploi.horaire] = emploi
+
+    # S'assurer que toutes les dates sont présentes dans sessions_by_date
+    for date in dates:
+        if date not in sessions_by_date:
+            sessions_by_date[date] = {}
+
+    context = {
+        'sessions_by_date': dict(sorted(sessions_by_date.items())),  # Trier par date
+        'promotions': promotions,
+        'horaires': horaires,
+        'promotion_selected': promotion_selected,
+        'date_debut': date_debut,
+        'date_fin': date_fin,
+        'dates': dates,  # Ajouter la liste complète des dates
+        'page_title': 'Historique des emplois'
+    }
+    return render(request, 'hod_template/historique_emploi.html', context)

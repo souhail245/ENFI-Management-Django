@@ -104,6 +104,7 @@ urlpatterns = [
     path('emploi/choisir_promotion/', hod_views.choisir_promotion, name='choisir_promotion'),
     
      path("emploi/progression/<int:emploi_id>/", hod_views.mettre_a_jour_progression, name="mettre_a_jour_progression"),
+     path('emploi/historique/', hod_views.historique_emploi, name='historique_emploi'),
 
     # Staff
     path("staff/home/", staff_views.staff_home, name='staff_home'),

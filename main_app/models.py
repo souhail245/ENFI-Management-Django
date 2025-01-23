@@ -311,14 +311,54 @@ class EmploiTemps(models.Model):
     jour = models.CharField(max_length=10, choices=JOUR_CHOICES, default='Lundi')  # Ajout d'une valeur par défaut
     horaire = models.CharField(max_length=20, choices=HORAIRES_CHOICES, default='08:00-10:00')  # Ajout d'une valeur par défaut
 
-    matiere = models.ForeignKey(Subject, on_delete=models.CASCADE)
-    professeur = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    matiere = models.ForeignKey(
+        Subject, 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    professeur = models.ForeignKey(
+        Staff, 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    
     progression = models.CharField(
         max_length=255,
         blank=True,
         null=True,
         help_text="Décrivez la progression, par exemple '50% terminé' ou 'Chapitre 3 terminé'."
     )
+
+    TYPE_CHOICES = [
+        ('COURS', 'Cours'),
+        ('EXAMEN_PARTIEL', 'Examen Partiel'),
+        ('EXAMEN_FINAL', 'Examen Final'),
+        ('JOUR_FERIE', 'Jour Férié'),
+        ('VACANCES', 'Vacances'),
+    ]
+    
+    type_evenement = models.CharField(
+        max_length=20,
+        choices=TYPE_CHOICES,
+        default='COURS'
+    )
+    
+    titre_evenement = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Nom du jour férié ou type de vacances"
+    )
+    
+    date_debut = models.DateField(null=True, blank=True)
+    date_fin = models.DateField(null=True, blank=True)
+    
+    def save(self, *args, **kwargs):
+        if not self.date_fin and self.date_debut:
+            self.date_fin = self.date_debut
+        super().save(*args, **kwargs)
 
     def get_progression_percentage(self):
         """Retourne la progression en pourcentage"""
