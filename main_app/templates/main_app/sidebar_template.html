@@ -9,104 +9,167 @@
     </a>
 
     <style>
-        .nav-item .nav-link {
-            transition: all 0.3s ease;
-            color: #ffffff !important;
-            padding: 12px 15px;
-            margin: 2px 0;
-        }
-        .nav-item .nav-link i {
-            color: #ffffff;
-            margin-right: 10px;
-            width: 20px;
-            text-align: center;
-        }
-        .nav-item .nav-link:hover {
-            background-color: #3498db;
-            color: #ffffff !important;
-            border-radius: 4px;
-        }
         .main-sidebar {
-            background-color: #2c3e50;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(165deg, #1a2236 0%, #2c3e50 100%);
+            box-shadow: 4px 0 8px rgba(0, 0, 0, 0.2);
         }
+
         .brand-link {
-            padding: 15px !important;
-            background: #1a2226;
+            background: rgba(0, 0, 0, 0.2) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            height: 65px;
             display: flex;
             align-items: center;
-            justify-content: flex-start;
-            gap: 10px;
-            height: 60px;
+            padding: 1rem 1.2rem !important;
         }
-        .user-panel {
-            border-bottom: 1px solid #4f5962;
+
+        .brand-image {
+            max-height: 35px;
+            transition: transform 0.3s;
         }
-        .nav-sidebar .nav-item .nav-link.active {
-            background-color: #3498db !important;
-            color: #ffffff !important;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        
+        .brand-image:hover {
+            transform: scale(1.05);
         }
-        .nav-treeview > .nav-item > .nav-link {
-            padding-left: 40px;
-            background-color: rgba(255,255,255,0.05);
-        }
+
         .brand-text {
-            font-size: 0.9rem !important;
-            font-weight: 600 !important;
-            color: #fff !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            white-space: nowrap !important;
-            overflow: hidden !important;
-            text-overflow: ellipsis !important;
-            flex: 1;
+            font-size: 1.1rem !important;
+            font-weight: 500 !important;
+            letter-spacing: 0.5px;
         }
+
+        .user-panel {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1rem;
+            min-height: 70px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .user-panel .image {
+            padding: 0;
+            margin: 0;
+        }
+
+        .user-panel .image img {
+            width: 45px;
+            height: 45px;
+            object-fit: cover;
+            border: 2px solid #3498db;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .user-panel .image img:hover {
+            transform: scale(1.1);
+            border-color: #2980b9;
+        }
+
+        .user-panel .info {
+            padding: 0;
+            text-align: left;
+            flex: 1;
+            max-width: 150px;
+        }
+
         .user-panel .info a {
             color: #ffffff !important;
             font-weight: 500;
+            font-size: 0.95rem;
+            white-space: normal;
+            line-height: 1.2;
+            display: block;
+            word-break: break-word;
         }
+
+        .nav-sidebar .nav-item {
+            margin: 2px 10px;
+        }
+
+        .nav-sidebar .nav-link {
+            padding: 12px 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.85) !important;
+        }
+
+        .nav-sidebar .nav-link:hover {
+            background: linear-gradient(145deg, #3498db, #2980b9);
+            transform: translateX(4px);
+        }
+
+        .nav-sidebar .nav-link.active {
+            background: linear-gradient(145deg, #3498db, #2980b9) !important;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .nav-sidebar .nav-link i {
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
         .nav-header {
             color: #3498db !important;
+            font-size: 0.85rem;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 10px;
-        }
-        .brand-image {
-            max-height: 33px;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-        /* Amélioration du contraste et de la lisibilité */
-        .nav-item .nav-link {
-            color: #ecf0f1 !important;
-            font-weight: 500;
-            border-radius: 5px;
-            margin: 3px 10px;
+            letter-spacing: 1.5px;
+            padding: 1rem 1rem 0.5rem;
         }
 
-        .nav-item .nav-link:hover,
-        .nav-item .nav-link.active {
-            background: linear-gradient(145deg, #3498db, #2980b9) !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        .nav-treeview > .nav-item > .nav-link {
+            padding-left: 3.5rem;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.05);
+            margin: 1px 0;
         }
 
-        .main-sidebar {
-            background: linear-gradient(180deg, #2c3e50 0%, #2c3e50 100%);
+        .has-treeview > .nav-link:after {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Animation pour le hover */
+        .nav-link {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-link:after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            height: 2px;
+            width: 0;
+            background: #3498db;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover:after {
+            width: 100%;
         }
     </style>
 
     <!-- Sidebar -->
     <div class="sidebar">
         <!-- Sidebar user panel (optional) -->
-        <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+        <div class="user-panel mt-3 pb-3 mb-3">
             <div class="image">
                 <img src="{{ request.user.profile_pic}}" class="img-circle elevation-2" alt="User Image">
             </div>
             <div class="info">
-                <a href="#" class="d-block">{{user}}</a>
+                <a href="#" class="d-block">{{ request.user.first_name }} {{ request.user.last_name }}</a>
             </div>
         </div>
 
@@ -124,7 +187,17 @@
                         </p>
                     </a>
                 </li>
-            
+                <li class="nav-item">
+                    {% url 'admin_view_profile' as admin_view_profile %}
+                    <a href="{{admin_view_profile}}"
+                        class="nav-link {% if admin_view_profile == request.path %} active {% endif %}">
+                        <i class="nav-icon fas fa-address-card"></i>
+                        <p>
+                            Mettre à jour le profil
+
+                        </p>
+                    </a>
+                </li>
                 <li class="nav-item">
                     {% url 'creer_emploi_temps' as creer_emploi_temps %}
                     <a href="{{ creer_emploi_temps }}"
@@ -312,17 +385,6 @@
                         </p>
                     </a>
                 </li>
-                <li class="nav-item">
-                    {% url 'admin_view_profile' as admin_view_profile %}
-                    <a href="{{admin_view_profile}}"
-                        class="nav-link {% if admin_view_profile == request.path %} active {% endif %}">
-                        <i class="nav-icon fas fa-address-card"></i>
-                        <p>
-                            Mettre à jour le profil
-
-                        </p>
-                    </a>
-                </li>
 
                 {% elif request.user.user_type == '2' %}
                 <!-- Brand Logo -->
@@ -340,7 +402,7 @@
                             <img src="{{ request.user.profile_pic}}" class="img-circle elevation-2" alt="User Image">
                         </div>
                         <div class="info">
-                            <a href="#" class="d-block">{{ user}}</a>
+                            <a href="#" class="d-block">{{ user.first_name }} {{ user.last_name }}</a>
                         </div>
                     </div>
 
@@ -361,7 +423,6 @@
                                     </p>
                                 </a>
                             </li>
-
                             <li class="nav-item">
                                 {% url 'staff_view_profile' as staff_view_profile %}
                                 <a href="{{staff_view_profile}}"
@@ -472,7 +533,7 @@
                                             alt="User Image">
                                     </div>
                                     <div class="info">
-                                        <a href="#" class="d-block">{{user}}</a>
+                                        <a href="#" class="d-block">{{user.first_name}} {{user.last_name}}</a>
                                     </div>
                                 </div>
 
@@ -493,7 +554,6 @@
                                                 </p>
                                             </a>
                                         </li>
-
                                         <li class="nav-item">
                                             {% url 'student_view_profile' as student_view_profile %}
                                             <a href="{{student_view_profile}}"
