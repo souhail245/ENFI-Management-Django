@@ -111,83 +111,103 @@
                 </div>
             <!-- right col -->
         </div>
-        <!-- /.row (main row) -->
-        <div class="row">
-          <div class="col-lg-12">
-            <!-- BAR CHART -->
-            <div class="card card-dark">
+     
+        <div class="col-lg-12">
+          <div class="card card-dark">
               <div class="card-header">
-                <h3 class="card-title">Aperçu de la présence et des congés des étudiants</h3>
-
-                <div class="card-tools">
-                  <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i>
-                  </button>
-                  <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
-                </div>
+                  <h3 class="card-title">Progression des cours par matière</h3>
+                  <div class="card-tools">
+                      <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                      <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+                  </div>
               </div>
               <div class="card-body">
-                <div class="chart">
-                  <canvas id="barChart2" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
-                </div>
-              </div>
-              <!-- /.card-body -->
-            </div>
-            <!-- /.card -->
-          </div>
-
-
-          <div class="col-lg-6">
-            
-          </div>
-        
-        </div>
-
-        <div class="row">
-
-          <div class="col-lg-6">
-            <!-- PIE CHART -->
-            <div class="card card-dark">
-              <div class="card-header">
-                <h3 class="card-title">Total des étudiants par cours</h3>
-
-                <div class="card-tools">
-                  <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i>
-                  </button>
-                  <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
-                </div>
-              </div>
-              <div class="card-body">
-                <canvas id="pieChart2" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
-              </div>
-              <!-- /.card-body -->
+                  <!-- Canvas pour l'histogramme -->
+                  <canvas id="courseProgressChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
               </div>
           </div>
-
-          <div class="col-lg-6">
-            <!-- PIE CHART -->
-            <div class="card card-dark">
-              <div class="card-header">
-                <h3 class="card-title">Total des étudiants par matière</h3>
-
-                <div class="card-tools">
-                  <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i>
-                  </button>
-                  <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
-                </div>
-              </div>
-              <div class="card-body">
-                <canvas id="pieChart3" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
-              </div>
-              <!-- /.card-body -->
-          </div>
-          </div>
-        </div>
+      </div>
+      
+      <!-- Ajouter Chart.js -->
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      <!-- Ajouter Chart.js Data Labels -->
+      <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+      
+      <script>
+          // Données pour l'histogramme : vérifier que course_progress est bien passé en format JSON
+          var courseProgressData = {
+              labels: [{% for subject, progress in course_progress %}"{{ subject }}",{% endfor %}],  // Matières
+              datasets: [{
+                  label: 'Progression des cours',
+                  data: [{% for subject, progress in course_progress %}{{ progress }},{% endfor %}],  // Progrès
+                  backgroundColor: 'rgba(0, 0, 0, 1)',  // Barres noires
+                  borderColor: 'rgba(0, 0, 0, 1)',  // Bordures noires
+                  borderWidth: 1
+              }]
+          };
+      
+          // Initialisation du graphique
+          var ctx = document.getElementById('courseProgressChart').getContext('2d');
+          
+          var courseProgressChart = new Chart(ctx, {
+              type: 'bar',  // Type de graphique : histogramme
+              data: courseProgressData,
+              options: {
+                  responsive: true,
+                  plugins: {
+                      datalabels: {
+                          color: '#fff',  // Couleur des labels en blanc
+                          font: {
+                              weight: 'bold',
+                              size: 14
+                          },
+                          formatter: function(value, context) {
+                              return value + '%';  // Affiche le pourcentage sur chaque barre
+                          }
+                      }
+                  },
+                  scales: {
+                      y: {
+                          ticks: {
+                              beginAtZero: true,
+                              color: '#fff'  // Colorier les ticks de l'axe Y en blanc
+                          },
+                          grid: {
+                              color: 'rgba(255, 255, 255, 0.2)'  // Grille de l'axe Y en blanc léger
+                          }
+                      },
+                      x: {
+                          ticks: {
+                              color: '#000'  // Matières en noir sur l'axe X
+                          },
+                          grid: {
+                              color: 'rgba(255, 255, 255, 0.2)'  // Grille de l'axe X en blanc léger
+                          }
+                      }
+                  },
+                  plugins: {
+                      legend: {
+                          labels: {
+                              color: '#fff'  // Légende en blanc
+                          }
+                      }
+                  }
+              }
+          });
+      </script>
+      
+      
+      
+      
+      
     </div><!-- /.container-fluid -->
 </section>
 {% endblock content %}
 
 {% block custom_js %}
+
   <script>
+    
       $(document).ready(function(){
         var donutData        = {
             labels: ['Étudiants', 'Personnel'],
@@ -258,18 +278,7 @@
         })
        
 
-      // Total Students in Each Subject
-      var student_count_list_in_subject = {{ student_count_list_in_subject }}
-      var subject_list = {{ subject_list|safe }}
-      var pieData3 = {
-        labels: subject_list,
-        datasets: [
-          {
-            data: student_count_list_in_subject,
-            backgroundColor : ['#8f251f', '#00a65a', '#f39c12', '#00c0ef', '#3c8dbc', '#894e9c', '#0b523a', '#a1156d', '#9e4603'],
-          }
-        ]
-      }
+      
 
       //-------------
       //- PIE CHART -
@@ -343,6 +352,7 @@
         options: barChartOptions2
       })
       
+    
 
       // Total Students in Each Course
       //var donutChartCanvas = $('#pieChart2').get(0).getContext('2d')
@@ -377,5 +387,7 @@
       
       
       })
+      
   </script>
 {% endblock custom_js %}
+

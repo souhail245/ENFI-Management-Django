@@ -348,57 +348,58 @@ def export_students_pdf(request):
 def admin_home(request):
     total_staff = Staff.objects.all().count()
     total_students = Student.objects.all().count()
-    subjects = Subject.objects.all()
+    subjects = Subject.objects.all()  # Récupérer toutes les matières
     total_subject = subjects.count()
     total_course = Course.objects.all().count()
     attendance_list = Attendance.objects.filter(subject__in=subjects)
     total_attendance = attendance_list.count()
-    attendance_list = []
-    subject_list = []
-    for subject in subjects:
-        attendance_count = Attendance.objects.filter(subject=subject).count()
-        subject_list.append(subject.name[:7])
-        attendance_list.append(attendance_count)
 
-    # Total Subjects and students in Each Course
+    subject_list = []
+    attendance_list = []
+
+    # Liste pour stocker la progression des cours
+    course_progress = []
+
+    for subject in subjects:
+        attendance_count = Attendance.objects.filter(subject=subject).count()  # Nombre de présences pour chaque matière
+        subject_list.append(subject.name[:7])  # Prendre les 7 premiers caractères du nom de la matière
+        attendance_list.append(attendance_count)  # Ajouter le nombre de présences à la liste
+        
+        # Récupérer la progression du cours pour chaque matière
+        progression = subject.progression_cours if subject.progression_cours is not None else 0
+        course_progress.append(progression)  # Ajouter la progression à la liste
+
+    # Total des matières et des étudiants dans chaque cours
     course_all = Course.objects.all()
     course_name_list = []
     subject_count_list = []
     student_count_list_in_course = []
 
     for course in course_all:
-        subjects = Subject.objects.filter(course_id=course.id).count()
-        students = Student.objects.filter(course_id=course.id).count()
+        subjects_count = Subject.objects.filter(course_id=course.id).count()  # Nombre de matières pour chaque cours
+        students_count = Student.objects.filter(course_id=course.id).count()  # Nombre d'étudiants dans chaque cours
         course_name_list.append(course.name)
-        subject_count_list.append(subjects)
-        student_count_list_in_course.append(students)
-    
-    subject_all = Subject.objects.all()
-    subject_list = []
-    student_count_list_in_subject = []
-    
-    for subject in subject_all:
-        course = Course.objects.get(id=subject.course.id)
-        student_count = Student.objects.filter(course_id=course.id).count()
-        subject_list.append(subject.name)
-        student_count_list_in_subject.append(student_count)
+        subject_count_list.append(subjects_count)
+        student_count_list_in_course.append(students_count)
 
-
-    # For Students
-    student_attendance_present_list=[]
-    student_attendance_leave_list=[]
-    student_name_list=[]
+    # Pour les étudiants (présence et absence)
+    student_attendance_present_list = []
+    student_attendance_leave_list = []
+    student_name_list = []
 
     students = Student.objects.all()
     for student in students:
-        
-        attendance = AttendanceReport.objects.filter(student_id=student.id, status=True).count()
-        absent = AttendanceReport.objects.filter(student_id=student.id, status=False).count()
-        leave = LeaveReportStudent.objects.filter(student_id=student.id, status=1).count()
+        attendance = AttendanceReport.objects.filter(student_id=student.id, status=True).count()  # Présences de l'étudiant
+        absent = AttendanceReport.objects.filter(student_id=student.id, status=False).count()  # Absences
+        leave = LeaveReportStudent.objects.filter(student_id=student.id, status=1).count()  # Congés
         student_attendance_present_list.append(attendance)
-        student_attendance_leave_list.append(leave+absent)
-        student_name_list.append(student.admin.first_name)
+        student_attendance_leave_list.append(leave + absent)
+        student_name_list.append(student.admin.first_name)  # Prénom de l'étudiant
 
+    # Combinez les listes de matières et de progression des cours
+    course_progress = list(zip(subject_list, course_progress))
+
+    # Passer les données au template
     context = {
         'page_title': "Administrative Dashboard",
         'total_students': total_students,
@@ -410,11 +411,11 @@ def admin_home(request):
         'student_attendance_present_list': student_attendance_present_list,
         'student_attendance_leave_list': student_attendance_leave_list,
         "student_name_list": student_name_list,
-        "student_count_list_in_subject": student_count_list_in_subject,
         "student_count_list_in_course": student_count_list_in_course,
         "course_name_list": course_name_list,
-
+        "course_progress": course_progress,  # Nouvelle clé ajoutée
     }
+
     return render(request, 'hod_template/home_content.html', context)
 
 
