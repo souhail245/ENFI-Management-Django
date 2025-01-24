@@ -36,44 +36,61 @@
     }
 
     .form-control {
-        border: 1px solid #dde2e6;
-        border-radius: 5px;
-        padding: 8px;
-        font-size: 14px;
-        width: 100%;
-    }
+    background-color: #f8f9fa;
+    border: 2px solid #212529;
+    color: #212529;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
-    .btn-create {
-        background: #007bff;
-        color: white;
-        padding: 12px 30px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-weight: 500;
-        font-size: 16px;
-        margin-right: 10px;
-    }
+.form-control:focus {
+    background-color: #ffffff;
+    border-color: #000000;
+    box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.25);
+    outline: none;
+}
 
-    .btn-create:hover {
-        background: #0056b3;
-    }
+.form-control::placeholder {
+    color: #6c757d;
+}
 
-    .btn-view-progress {
-        background: #28a745;
-        color: white;
-        padding: 12px 30px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-weight: 500;
-        font-size: 16px;
-    }
+.btn-create, .btn-view-progress, .btn-history {
+    background-color: #000000;
+    color: #ffffff;
+    border: 2px solid #000000;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+}
 
-    .btn-view-progress:hover {
-        background: #218838;
-    }
+.btn-create:hover, .btn-view-progress:hover, .btn-history:hover {
+    background-color: #ffffff;
+    color: #000000;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
 
+.btn-create:focus, .btn-view-progress:focus, .btn-history:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.25);
+}
+
+/* Select dropdown styling */
+select.form-control {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M1 4 L6 9 L11 4' fill='none' stroke='%23212529' stroke-width='2'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 30px;
+}
+
+/* Hover and focus effects for select */
+select.form-control:hover {
+    cursor: pointer;
+}
     .timetable-section {
         background: white;
         padding: 30px;
@@ -82,7 +99,7 @@
     }
 
     .calendar-header {
-        background: #343a40;
+        background: #030303;
         color: white;
         padding: 15px;
         border-radius: 8px;
@@ -92,35 +109,37 @@
 
     .calendar {
         width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 20px;
+        border-collapse: separate;
+        border-spacing: 0;
+        border: 3px solid #000000; /* Bold outer border */
     }
 
     .calendar th, .calendar td {
+        border: 2px solid #000000; /* Bold internal borders */
         padding: 15px;
-        border: 1px solid #ddd;
         vertical-align: top;
         text-align: center;
     }
 
     .calendar th {
-        background: #f8f9fa;
+        background-color: #f1f1f1; /* Slightly darker background */
+        font-weight: 700;
+        color: #000000;
+    }
+
+    .calendar tr:nth-child(even) {
+        background-color: #f9f9f9; /* Subtle alternating row color */
+    }
+
+    .calendar tr:nth-child(odd) {
+        background-color: #ffffff;
+    }
+
+    /* Ensure date column has a distinct look */
+    .calendar td:first-child {
         font-weight: 600;
-        color: #333;
+        background-color: #f4f4f4;
     }
-
-    .calendar td {
-        height: 100px;
-    }
-
-    .calendar tr:nth-child(odd) td {
-        background: #f8f9fa;
-    }
-
-    .calendar tr:nth-child(even) td {
-        background: #ffffff;
-    }
-
     .session-card {
         background: #e9ecef;
         padding: 10px;
@@ -275,31 +294,79 @@
                 </div>
             </div>
 
-            <div class="d-flex justify-content-end">
-                <button type="submit" class="btn-create">Programmer l'événement</button>
-                <a href="{% url 'liste_emplois' %}" class="btn-view-progress">Voir la progression</a>
+            <div class="event-buttons-container text-center mt-4">
+                <div class="btn-group-custom">
+                    <button type="submit" class="btn-create">
+                        <i class="fas fa-calendar-plus"></i> Programmer l'événement
+                    </button>
+                    <a href="{% url 'liste_emplois' %}" class="btn-view-progress">
+                        <i class="fas fa-chart-line"></i> Voir la progression
+                    </a>
+                    <a href="{% url 'historique_emploi' %}?promotion={{ promotion_selected }}" class="btn-history">
+                        <i class="fas fa-history"></i> Voir l'historique des emplois
+                    </a>
+                </div>
             </div>
+            
+            <style>
+            .event-buttons-container {
+                margin-bottom: 20px;
+            }
+            
+            .btn-group-custom {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 15px;
+            }
+            
+            .btn-group-custom > * {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 12px 20px;
+                border-radius: 6px;
+                text-decoration: none;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                gap: 8px;
+            }
+            
+            .btn-create {
+                background-color: #000000;
+                color: white;
+                border: 2px solid #0c0c0c;
+            }
+            
+            .btn-view-progress {
+                background-color: #b81717;
+                color: white;
+                border: 2px solid #b81717;
+            }
+            
+            .btn-history {
+                background-color: #272525;
+                color: white;
+                border: 2px solid #272525;
+            }
+            
+            .btn-group-custom > *:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+            
+            .btn-group-custom i {
+                margin-right: 8px;
+            }
+            </style>
+            
         </form>
     </div>
 
     <!-- Aperçu du calendrier -->
     <div class="timetable-section">
         <!-- Ajouter ce bloc de code juste avant calendar-header -->
-        <div class="history-button-section" style="margin-bottom: 20px; text-align: right;">
-            <a href="{% url 'historique_emploi' %}?promotion={{ promotion_selected }}" 
-               class="btn-history" 
-               style="
-                display: inline-block;
-                background: #6c757d;
-                color: white;
-                padding: 10px 20px;
-                border-radius: 5px;
-                text-decoration: none;
-                margin-right: 10px;
-               ">
-                <i class="fas fa-history"></i> Voir l'historique des emplois
-            </a>
-        </div>
+        
 
         <div class="calendar-header">
             <h4>Planning des 14 prochains jours - {{ promotion_selected }}</h4>

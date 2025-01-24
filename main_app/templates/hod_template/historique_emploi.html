@@ -7,42 +7,108 @@
     .historique-container {
         padding: 20px;
     }
+    /* Filter Section Styling */
     .filter-section {
-        background: white;
+        background-color: #f8f9fa;
+        border: 2px solid #212529;
         padding: 20px;
         border-radius: 8px;
         margin-bottom: 20px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    .timetable-section {
-        background: white;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+    .filter-section h3 {
+        color: #212529;
+        text-align: center;
+        margin-bottom: 20px;
+        font-weight: 600;
     }
+
+    .filter-section .form-control {
+        background-color: #ffffff;
+        border: 2px solid #212529;
+        color: #212529;
+        transition: all 0.3s ease;
+    }
+
+    .filter-section .form-control:focus {
+        border-color: #000000;
+        box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.25);
+    }
+
+    .filter-section .btn-primary {
+        background-color: #000000;
+        border-color: #000000;
+        color: #ffffff;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+    }
+
+    .filter-section .btn-primary:hover {
+        background-color: #ffffff;
+        color: #000000;
+        border-color: #000000;
+    }
+
+    /* Calendar Header Styling */
     .calendar-header {
-        background: #343a40;
-        color: white;
-        padding: 15px;
+        background: #000000;
+        color: #ffffff;
+        padding: 20px;
         border-radius: 8px;
         margin-bottom: 20px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .calendar-header h4 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+        letter-spacing: 1px;
+    }
+
+    .calendar-header strong {
+        font-size: 1rem;
+        color: #e0e0e0;
     }
     .calendar {
         width: 100%;
-        border-collapse: collapse;
+        border-collapse: separate;
+        border-spacing: 0;
+        border: 3px solid #000000; /* Bold outer border */
     }
-    .calendar th {
-        background: #f8f9fa;
+
+    .calendar th, .calendar td {
+        border: 2px solid #000000; /* Bold internal borders */
         padding: 15px;
-        font-weight: 600;
-        color: #333;
-        border: 1px solid #ddd;
-    }
-    .calendar td {
-        padding: 15px;
-        border: 1px solid #ddd;
         vertical-align: top;
-        height: 100px;
+        text-align: center;
+    }
+
+    .calendar th {
+        background-color: #f1f1f1; /* Slightly darker background */
+        font-weight: 700;
+        color: #000000;
+    }
+
+    .calendar tr:nth-child(even) {
+        background-color: #f9f9f9; /* Subtle alternating row color */
+    }
+
+    .calendar tr:nth-child(odd) {
+        background-color: #ffffff;
+    }
+
+    /* Ensure date column has a distinct look */
+    .calendar td:first-child {
+        font-weight: 600;
+        background-color: #f4f4f4;
     }
     .session-card {
         background: #e9ecef;
