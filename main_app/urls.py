@@ -162,4 +162,6 @@ urlpatterns = [
     path('update_fcm_token/', update_fcm_token, name='update_fcm_token'),
     path('student/notification/delete/', student_views.delete_student_notification, name='delete_student_notification'),
     path('get-matieres-by-niveau/', hod_views.get_matieres_by_niveau, name='get_matieres_by_niveau'),
+   
+      path('emploi-du-temps/', student_views.emploi_du_temps, name='emploi_du_temps'),
 ]

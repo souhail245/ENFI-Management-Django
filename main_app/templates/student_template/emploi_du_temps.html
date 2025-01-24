@@ -1,0 +1,206 @@
+{% extends 'main_app/base.html' %}
+{% load static %}
+
+{% load custom_filters %}
+{% block page_title %}{{page_title}}{% endblock page_title %}
+
+{% block content %}
+
+<style>
+    .historique-container {
+        padding: 20px;
+    }
+    /* Filter Section Styling */
+    .filter-section {
+        background-color: #f8f9fa;
+        border: 2px solid #212529;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .filter-section h3 {
+        color: #212529;
+        text-align: center;
+        margin-bottom: 20px;
+        font-weight: 600;
+    }
+
+    .filter-section .form-control {
+        background-color: #ffffff;
+        border: 2px solid #212529;
+        color: #212529;
+        transition: all 0.3s ease;
+    }
+
+    .filter-section .form-control:focus {
+        border-color: #000000;
+        box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.25);
+    }
+
+    .filter-section .btn-primary {
+        background-color: #000000;
+        border-color: #000000;
+        color: #ffffff;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+    }
+
+    .filter-section .btn-primary:hover {
+        background-color: #ffffff;
+        color: #000000;
+        border-color: #000000;
+    }
+
+    /* Calendar Header Styling */
+    .calendar-header {
+        background: #000000;
+        color: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .calendar-header h4 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+        letter-spacing: 1px;
+    }
+
+    .calendar-header strong {
+        font-size: 1rem;
+        color: #e0e0e0;
+    }
+    .calendar {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        border: 3px solid #000000; /* Bold outer border */
+    }
+
+    .calendar th, .calendar td {
+        border: 2px solid #000000; /* Bold internal borders */
+        padding: 15px;
+        vertical-align: top;
+        text-align: center;
+    }
+
+    .calendar th {
+        background-color: #f1f1f1; /* Slightly darker background */
+        font-weight: 700;
+        color: #000000;
+    }
+
+    .calendar tr:nth-child(even) {
+        background-color: #f9f9f9; /* Subtle alternating row color */
+    }
+
+    .calendar tr:nth-child(odd) {
+        background-color: #ffffff;
+    }
+
+    /* Ensure date column has a distinct look */
+    .calendar td:first-child {
+        font-weight: 600;
+        background-color: #f4f4f4;
+    }
+    .session-card {
+        background: #e9ecef;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+    .session-card strong {
+        color: #333;
+    }
+</style>
+
+<div class="main-container">
+    <!-- Sélecteur de promotion -->
+    <div class="form-group mb-4">
+        <label for="promotion-select">Promotion :</label>
+        <select name="promotion" id="promotion-select" class="form-control" onchange="window.location.href='?promotion=' + this.value;">
+            {% for promotion in promotions %}
+                <option value="{{ promotion }}" {% if promotion == promotion_selected %}selected{% endif %}>
+                    {{ promotion }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="timetable-wrapper">
+        <div class="calendar-header">
+            <h4>Emploi du Temps - {{ promotion_selected }}</h4>
+        </div>
+
+        <div class="table-responsive">
+            <table class="calendar">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        {% for horaire in horaires %}
+                            <th>{{ horaire }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for date in dates %}
+                    <tr>
+                        <td>
+                            <strong>{{ date|date:"d/m/Y" }}</strong><br>
+                            <small>{{ date|date:"l"|capfirst }}</small>
+                        </td>
+                        {% for horaire in horaires %}
+                            <td>
+                                {% with session=sessions_by_date|get_dict_item:date|get_dict_item:horaire %}
+                                    {% if session %}
+                                        <div class="session-card {% if session.type_evenement == 'JOUR_FERIE' %}jour-ferie
+                                            {% elif session.type_evenement == 'VACANCES' %}vacances
+                                            {% elif session.type_evenement == 'EXAMEN_PARTIEL' or session.type_evenement == 'EXAMEN_FINAL' %}examen{% endif %}">
+                                            
+                                            {% if session.type_evenement == 'COURS' %}
+                                                <strong>{{ session.matiere.name }}</strong>
+                                                <small class="d-block">{{ session.professeur.admin.get_full_name }}</small>
+                                                <div class="progress">
+                                                    <div class="progress-bar" 
+                                                         role="progressbar" 
+                                                         style="width: {{ session.progression|default:0 }}%;"
+                                                         aria-valuenow="{{ session.progression|default:0 }}"
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                                <small class="d-block mt-1">
+                                                    Progression: {{ session.progression|default:0 }}%
+                                                    <br>
+                                                    Séance {{ session.numero_seance }}/{{ session.matiere.volume_horaire_total|divided_by:2|floatformat:"0" }}
+                                                </small>
+                                            {% else %}
+                                                <strong>{{ session.type_evenement|title }}</strong><br>
+                                                {% if session.titre_evenement %}
+                                                    <span>{{ session.titre_evenement }}</span>
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

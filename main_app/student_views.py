@@ -92,6 +92,7 @@ def student_home(request):
     return render(request, 'student_template/home_content.html', context)
 
 
+
 @ csrf_exempt
 def student_view_attendance(request):
     student = get_object_or_404(Student, admin=request.user)
@@ -294,3 +295,47 @@ def delete_student_notification(request):
         return JsonResponse({'success': False, 'error': 'Notification non trouvée'})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
+
+
+
+
+from django.shortcuts import render
+from datetime import date, timedelta
+from .models import EmploiTemps
+
+def emploi_du_temps(request):
+    # Niveau sélectionné
+    promotions = ['3ème année', '4ème année', '5ème année']  # Ajoutez d'autres niveaux si nécessaire
+    promotion_selected = request.GET.get('promotion', promotions[0])  # Valeur par défaut : '3ème année'
+
+    # Dates sélectionnées
+    date_debut = request.GET.get('date_debut', date.today())
+    date_fin = request.GET.get('date_fin', date.today() + timedelta(days=14))
+
+    # Récupérer les données
+    emplois = EmploiTemps.objects.filter(
+        niveau=promotion_selected,
+        date__range=[date_debut, date_fin]
+    ).order_by('date', 'horaire')
+
+    # Organiser les données par date et horaire pour le tableau
+    sessions_by_date = {}
+    horaires = ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00']
+    dates = [date.fromordinal(d) for d in range(date.fromisoformat(str(date_debut)).toordinal(),
+                                                date.fromisoformat(str(date_fin)).toordinal() + 1)]
+
+    for emploi in emplois:
+        if emploi.date not in sessions_by_date:
+            sessions_by_date[emploi.date] = {}
+        sessions_by_date[emploi.date][emploi.horaire] = emploi
+
+    context = {
+        'page_title': 'Emploi du Temps',
+        'promotions': promotions,
+        'promotion_selected': promotion_selected,
+        'horaires': horaires,
+        'dates': dates,
+        'sessions_by_date': sessions_by_date,
+    }
+
+    return render(request, 'student_template/emploi_du_temps.html', context)

@@ -25,3 +25,10 @@ def stringformat(value, arg):
     Formats the value like a 'str' filter but with the specified format.
     """
     return str(value)
+
+@register.filter
+def get_dict_item(dictionary, key):
+    """Retourne l'élément d'un dictionnaire pour une clé donnée."""
+    if dictionary is None:
+        return None  # Retourne None si le dictionnaire est vide
+    return dictionary.get(key)
