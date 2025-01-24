@@ -516,25 +516,13 @@ def add_subject(request):
     form = SubjectForm(request.POST or None)
     if request.method == 'POST':
         if form.is_valid():
-            name = form.cleaned_data.get('name')
-            course = form.cleaned_data.get('course')
-            staff = form.cleaned_data.get('staff')
-            niveau = form.cleaned_data.get('niveau')
-            volume_horaire_total = form.cleaned_data.get('volume_horaire_total')
-            heures_ajoutees = form.cleaned_data.get('heures_ajoutees')
             try:
-                subject = Subject()
-                subject.name = name
-                subject.staff = staff
-                subject.course = course
-                subject.niveau = niveau
-                subject.volume_horaire_total = volume_horaire_total
-                subject.heures_ajoutees = heures_ajoutees
-                subject.save()
-                messages.success(request, "Successfully Added")
-                return redirect(reverse('add_subject'))
+                # Utiliser directement form.save() au lieu de créer manuellement
+                subject = form.save()
+                messages.success(request, "Matière ajoutée avec succès")
+                return redirect('add_subject')
             except Exception as e:
-                messages.error(request, "Could Not Add " + str(e))
+                messages.error(request, f"Erreur lors de l'ajout : {str(e)}")
     context = {'form': form, 'page_title': 'Add Subject'}
     return render(request, 'hod_template/add_subject_template.html', context)
 
@@ -1331,7 +1319,7 @@ def creer_emploi_temps(request):
             # Pour les vacances et jours fériés
             elif type_evenement in ['JOUR_FERIE', 'VACANCES']:
                 current_date = date_debut
-                while current_date <= date_fin:
+                while (current_date <= date_fin):
                     for horaire in ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00']:
                         event_data = emploi_data.copy()
                         event_data.update({
@@ -1414,30 +1402,65 @@ def choisir_promotion(request):
 
 def liste_emplois(request):
     promotion_selected = request.GET.get('promotion', '3ème année')
+    date_debut = request.GET.get('date_debut')
+    date_fin = request.GET.get('date_fin')
     
-    promotions = [
-        '3ème année',
-        '4ème année',
-        '5ème année'
-    ]
-    
-    jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi']
+    promotions = ['3ème année', '4ème année', '5ème année']
     horaires = ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00']
-    emplois = EmploiTemps.objects.filter(niveau=promotion_selected)
 
-    emploi_table = {jour: {horaire: None for horaire in horaires} for jour in jours}
+    # Convertir les dates
+    if date_debut:
+        date_debut = datetime.strptime(date_debut, '%Y-%m-%d').date()
+    else:
+        date_debut = datetime.now().date()
+    
+    if date_fin:
+        date_fin = datetime.strptime(date_fin, '%Y-%m-%d').date()
+    else:
+        date_fin = date_debut + timedelta(days=14)
 
-    for emploi in emplois:
-        if emploi.jour in emploi_table and emploi.horaire in emploi_table[emploi.jour]:
-            emploi_table[emploi.jour][emploi.horaire] = emploi
+    # Récupérer les sessions
+    sessions = EmploiTemps.objects.filter(
+        niveau=promotion_selected,
+        date__range=[date_debut, date_fin]
+    ).select_related('matiere', 'professeur').order_by('date', 'horaire')
+
+    # Pour chaque matière, calculer le numéro de séance en fonction de la date
+    matiere_seances = {}
+    for session in sessions:
+        if session.matiere and session.type_evenement == 'COURS':
+            # Calculer le numéro de la séance en comptant les séances antérieures
+            seance_num = EmploiTemps.objects.filter(
+                matiere=session.matiere,
+                type_evenement='COURS',
+                date__lte=session.date
+            ).order_by('date', 'horaire').count()
+            
+            # Stocker le numéro de séance pour chaque cours
+            key = f"{session.matiere.id}_{session.date}_{session.horaire}"
+            matiere_seances[key] = seance_num
+
+    # Générer les dates
+    dates = []
+    current_date = date_debut
+    while current_date <= date_fin:
+        dates.append(current_date)
+        current_date += timedelta(days=1)
+
+    # Organiser les sessions par date
+    sessions_by_date = defaultdict(dict)
+    for session in sessions:
+        sessions_by_date[session.date][session.horaire] = session
 
     context = {
-        "emplois": emplois,
-        "emploi_table": emploi_table,
-        "jours": jours,
-        "horaires": horaires,
-        "promotion_selected": promotion_selected,
-        "promotions": promotions,
+        'sessions_by_date': dict(sessions_by_date),
+        'promotions': promotions,
+        'horaires': horaires,
+        'promotion_selected': promotion_selected,
+        'date_debut': date_debut,
+        'date_fin': date_fin,
+        'dates': dates,
+        'matiere_seances': matiere_seances,  # Ajouter au contexte
         'page_title': f'Emploi du temps - {promotion_selected}'
     }
     return render(request, "hod_template/liste_emplois.html", context)
