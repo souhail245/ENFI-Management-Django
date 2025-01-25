@@ -386,6 +386,13 @@ class EmploiTemps(models.Model):
         ('COURS', 'Cours'),
         ('EXAMEN_PARTIEL', 'Examen Partiel'),
         ('EXAMEN_FINAL', 'Examen Final'),
+        ('RATTRAPAGE', 'Rattrapage'),
+        ('FORMATION_MILITAIRE', 'Formation Militaire'),
+        ('TOURNEE', 'Tournée'),
+        ('SORTIE', 'Sortie'),
+        ('PROJET', 'Projet'),
+        ('VISITE_MILITAIRE', 'Visite Militaire'),
+        ('CONFERENCE', 'Conférence'),
         ('JOUR_FERIE', 'Jour Férié'),
         ('VACANCES', 'Vacances'),
     ]
@@ -400,7 +407,7 @@ class EmploiTemps(models.Model):
         max_length=255,
         blank=True,
         null=True,
-        help_text="Nom du jour férié ou type de vacances"
+        help_text="Titre de l'événement (conférence, tournée, etc.)"
     )
     
     date_debut = models.DateField(null=True, blank=True)

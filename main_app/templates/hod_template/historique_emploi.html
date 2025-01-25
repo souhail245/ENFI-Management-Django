@@ -188,26 +188,54 @@
                             <td>
                                 {% with session=sessions_by_date|get_dict_item:date|get_dict_item:horaire %}
                                     {% if session %}
-                                        <div class="session-card {% if session.type_evenement == 'JOUR_FERIE' %}jour-ferie{% elif session.type_evenement == 'VACANCES' %}vacances{% elif session.type_evenement == 'EXAMEN_PARTIEL' or session.type_evenement == 'EXAMEN_FINAL' %}examen{% else %}default{% endif %}">
+                                        <div class="session-card {% if session.type_evenement == 'JOUR_FERIE' %}jour-ferie
+                                            {% elif session.type_evenement == 'VACANCES' %}vacances
+                                            {% elif session.type_evenement == 'EXAMEN_PARTIEL' or session.type_evenement == 'EXAMEN_FINAL' %}examen{% endif %}">
+                                            
                                             {% if session.type_evenement == 'COURS' %}
                                                 <strong>{{ session.matiere.name }}</strong><br>
                                                 <small>{{ session.professeur.admin.get_full_name }}</small>
-                                            {% elif session.type_evenement == 'EXAMEN_PARTIEL' %}
-                                                <strong style="color: #856404;">Examen Partiel</strong><br>
-                                                <strong>{{ session.matiere.name }}</strong>
-                                            {% elif session.type_evenement == 'EXAMEN_FINAL' %}
-                                                <strong style="color: #721c24;">Examen Final</strong><br>
-                                                <strong>{{ session.matiere.name }}</strong>
-                                            {% elif session.type_evenement == 'JOUR_FERIE' %}
+                                            {% elif session.type_evenement == 'RATTRAPAGE' %}
                                                 <div style="text-align: center;">
-                                                    <strong style="color: #155724;">JOUR FÉRIÉ</strong><br>
+                                                    <strong style="color: #721c24;">RATTRAPAGE</strong><br>
+                                                    <strong>{{ session.matiere.name }}</strong><br>
+                                                    <small>{{ session.professeur.admin.get_full_name }}</small>
+                                                </div>
+                                            {% elif session.type_evenement == 'FORMATION_MILITAIRE' %}
+                                                <div style="text-align: center;">
+                                                    <strong style="color: #004085;">FORMATION MILITAIRE</strong><br>
                                                     <small>{{ session.titre_evenement }}</small>
                                                 </div>
-                                            {% elif session.type_evenement == 'VACANCES' %}
+                                            {% elif session.type_evenement == 'TOURNEE' %}
                                                 <div style="text-align: center;">
-                                                    <strong style="color: #004085;">VACANCES</strong><br>
+                                                    <strong style="color: #0c5460;">TOURNÉE</strong>
+                                                    {% if session.titre_evenement %}
+                                                        <br><small>{{ session.titre_evenement }}</small>
+                                                    {% endif %}
+                                                </div>
+                                            {% elif session.type_evenement == 'SORTIE' %}
+                                                <div style="text-align: center;">
+                                                    <strong style="color: #383d41;">SORTIE</strong><br>
+                                                    <small>{{ session.titre_evenement }}</small><br>
+                                                    <small>Matière: {{ session.matiere.name }}</small>
+                                                </div>
+                                            {% elif session.type_evenement == 'PROJET' %}
+                                                <div style="text-align: center;">
+                                                    <strong style="color: #155724;">PROJET</strong><br>
                                                     <small>{{ session.titre_evenement }}</small>
                                                 </div>
+                                            {% elif session.type_evenement == 'VISITE_MILITAIRE' %}
+                                                <div style="text-align: center;">
+                                                    <strong style="color: #1b1e21;">VISITE MILITAIRE</strong><br>
+                                                    <small>{{ session.titre_evenement }}</small>
+                                                </div>
+                                            {% elif session.type_evenement == 'CONFERENCE' %}
+                                                <div style="text-align: center;">
+                                                    <strong style="color: #856404;">CONFÉRENCE</strong><br>
+                                                    <small>{{ session.titre_evenement }}</small>
+                                                </div>
+                                            {% else %}
+                                                <!-- ...existing code for other event types... -->
                                             {% endif %}
                                         </div>
                                     {% endif %}

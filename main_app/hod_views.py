@@ -1273,71 +1273,65 @@ from django.shortcuts import get_object_or_404
 from datetime import datetime, timedelta
 from collections import defaultdict
 
+@csrf_exempt
 def creer_emploi_temps(request):
     if request.method == "POST":
         try:
-            type_evenement = request.POST.get("type_evenement")
+            type_evenement = request.POST.get("type_evenement", "COURS")
             promotion = request.POST.get("promotion")
-            date_debut = request.POST.get("date_debut")
-            date_fin = request.POST.get("date_fin", date_debut)
-            titre_evenement = request.POST.get("titre_evenement", "")  # Récupérer le titre
+            date = request.POST.get("date")
+            horaire = request.POST.get("horaire")
+            matiere_id = request.POST.get("matiere")
             
-            # Vérifier et convertir les dates
-            if date_debut:
-                date_debut = datetime.strptime(date_debut, '%Y-%m-%d').date()
-            if date_fin:
-                date_fin = datetime.strptime(date_fin, '%Y-%m-%d').date()
-            else:
-                date_fin = date_debut
+            if not all([promotion, date, horaire, matiere_id]):
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Tous les champs sont requis'
+                })
 
-            # Données de base pour l'emploi du temps
-            emploi_data = {
+            # Récupérer la matière et le professeur associé
+            matiere = get_object_or_404(Subject, id=matiere_id)
+            professeur = matiere.staff  # Le professeur est lié à la matière
+
+            # Vérifier si un événement existe déjà
+            existing_event = EmploiTemps.objects.filter(
+                date=date,
+                horaire=horaire,
+                niveau=promotion
+            ).first()
+
+            if existing_event:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Un événement existe déjà à cet horaire'
+                })
+
+            # Créer l'événement
+            event_data = {
                 'niveau': promotion,
                 'type_evenement': type_evenement,
-                'titre_evenement': titre_evenement,  # Ajouter le titre
-                'date_debut': date_debut,
-                'date_fin': date_fin
+                'date': date,
+                'date_debut': date,
+                'date_fin': date,
+                'horaire': horaire,
+                'matiere': matiere,
+                'professeur': professeur
             }
 
-            # Pour les cours et examens
-            if type_evenement in ['COURS', 'EXAMEN_PARTIEL', 'EXAMEN_FINAL']:
+            EmploiTemps.objects.create(**event_data)
 
-                matiere = get_object_or_404(Subject, id=request.POST.get("matiere"))
-                
-                # Incrémenter le nombre total d'heures ajoutées
-                matiere.heures_ajoutees += 2 
-                matiere.mettre_a_jour_progression() 
-                    
-                    
-                emploi_data.update({
-                    'matiere': matiere,
-                    'professeur': get_object_or_404(Staff, id=request.POST.get("professeur")),
-                    'horaire': request.POST.get("horaire"),
-                    'date': date_debut
-                })
-                EmploiTemps.objects.create(**emploi_data)
-
-            # Pour les vacances et jours fériés
-            elif type_evenement in ['JOUR_FERIE', 'VACANCES']:
-                current_date = date_debut
-                while (current_date <= date_fin):
-                    for horaire in ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00']:
-                        event_data = emploi_data.copy()
-                        event_data.update({
-                            'date': current_date,
-                            'horaire': horaire
-                        })
-                        EmploiTemps.objects.create(**event_data)
-                    current_date += timedelta(days=1)
-
-            messages.success(request, "Événement programmé avec succès")
-            return redirect(f"{reverse('creer_emploi_temps')}?promotion={promotion}")
+            return JsonResponse({
+                'success': True,
+                'message': 'Cours ajouté avec succès'
+            })
 
         except Exception as e:
-            messages.error(request, f"Une erreur s'est produite: {str(e)}")
-            return redirect("creer_emploi_temps")
-            
-    # ... reste du code de la vue ...
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            })
+
+    # ... reste du code existant ...
 
     else:
         # Récupérer la promotion sélectionnée
@@ -1536,3 +1530,33 @@ def historique_emploi(request):
         'page_title': 'Historique des emplois'
     }
     return render(request, 'hod_template/historique_emploi.html', context)
+
+def supprimer_evenement(request, evenement_id):
+    try:
+        # Récupérer l'événement initial
+        evenement = get_object_or_404(EmploiTemps, id=evenement_id)
+        niveau = evenement.niveau
+        
+        # Pour les événements qui s'étendent sur plusieurs jours
+        if evenement.type_evenement in ['VACANCES', 'PROJET', 'VISITE_MILITAIRE', 'TOURNEE', 'JOUR_FERIE']:  # Retrait de 'FORMATION_MILITAIRE'
+            # Supprimer tous les événements correspondants dans la période
+            evenements_periode = EmploiTemps.objects.filter(
+                niveau=evenement.niveau,
+                type_evenement=evenement.type_evenement,
+                titre_evenement=evenement.titre_evenement,
+                date_debut=evenement.date_debut,
+                date_fin=evenement.date_fin
+            )
+            nombre_supprime = evenements_periode.count()
+            evenements_periode.delete()
+            messages.success(request, f"{nombre_supprime} événements supprimés avec succès")
+        else:
+            # Pour les événements sur un seul créneau (y compris FORMATION_MILITAIRE maintenant)
+            evenement.delete()
+            messages.success(request, "Événement supprimé avec succès")
+            
+    except Exception as e:
+        messages.error(request, f"Erreur lors de la suppression : {str(e)}")
+    
+    # Rediriger vers la même page avec la même promotion sélectionnée
+    return redirect(f"{reverse('creer_emploi_temps')}?promotion={niveau}")

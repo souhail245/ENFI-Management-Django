@@ -164,4 +164,5 @@ urlpatterns = [
     path('get-matieres-by-niveau/', hod_views.get_matieres_by_niveau, name='get_matieres_by_niveau'),
    
       path('emploi-du-temps/', student_views.emploi_du_temps, name='emploi_du_temps'),
+    path('supprimer-evenement/<int:evenement_id>/', hod_views.supprimer_evenement, name='supprimer_evenement'),
 ]
