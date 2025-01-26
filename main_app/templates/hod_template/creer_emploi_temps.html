@@ -147,6 +147,8 @@
         margin-bottom: 8px;
         font-size: 14px;
         position: relative;
+        cursor: pointer;
+        transition: transform 0.2s;
     }
 
     .session-card strong {
@@ -171,6 +173,10 @@
     .session-card.default {
         background-color: #e9ecef;
         border-color: #ddd;
+    }
+
+    .session-card:hover {
+        transform: scale(1.02);
     }
 
     .progress-bar {
@@ -211,6 +217,17 @@
     .quick-add-form button {
         width: 100%;
         padding: 2px;
+    }
+
+    .error-message {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .loading-spinner {
+        display: none;
+        /* Ajouter styles pour le spinner */
     }
 </style>
 
@@ -581,7 +598,7 @@
                                             <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
                                             <input type="hidden" name="horaire" value="{{ horaire }}">
                                             
-                                            <select name="matiere" class="form-control form-control-sm">
+                                            <select name="matiere" class="form-control form-control-sm" required>
                                                 <option value="">-- Choisir matière --</option>
                                                 {% for subject in subjects %}
                                                     <option value="{{ subject.id }}" data-professeur="{{ subject.staff.id }}">
@@ -591,7 +608,7 @@
                                             </select>
                                             
                                             <button type="submit" class="btn btn-sm btn-primary mt-1">
-                                                <i class="fas fa-plus"></i>
+                                                <i class="fas fa-plus"></i> Ajouter
                                             </button>
                                         </form>
                                     {% endif %}
@@ -645,134 +662,252 @@ document.getElementById('promotion').addEventListener('change', function() {
 
 function toggleFields() {
     const type = document.getElementById('type_evenement').value;
-    const coursExamensFields = document.getElementById('cours_examens_fields');
-    const ferieFields = document.getElementById('ferie_fields');
-    const vacancesFields = document.getElementById('vacances_fields');
-    const rattrapageFields = document.getElementById('rattrapage_fields');
-    const tourneeFields = document.getElementById('tournee_fields');
-    const sortieFields = document.getElementById('sortie_fields');
-    const projetFields = document.getElementById('projet_fields');
-    const visiteMilitaireFields = document.getElementById('visite_militaire_fields');
-    const conferenceFields = document.getElementById('conference_fields');
-    const horaireFields = document.getElementById('horaire_fields');
-    const dateFinGroup = document.getElementById('date_fin_group');
+    const fields = {
+        cours_examens: document.getElementById('cours_examens_fields'),
+        horaire: document.getElementById('horaire_fields'),
+        date_fin: document.getElementById('date_fin_group'),
+        tournee: document.getElementById('tournee_fields'),
+        sortie: document.getElementById('sortie_fields'),
+        projet: document.getElementById('projet_fields'),
+        visite: document.getElementById('visite_militaire_fields'),
+        conference: document.getElementById('conference_fields')
+    };
 
-    // Cacher tous les champs d'abord
-    [coursExamensFields, ferieFields, vacancesFields, rattrapageFields, 
-     tourneeFields, sortieFields, projetFields, visiteMilitaireFields, 
-     conferenceFields].forEach(field => {
+    // Cacher tous les champs
+    Object.values(fields).forEach(field => {
         if (field) field.style.display = 'none';
     });
 
-    // Réinitialiser les champs requis
-    document.querySelectorAll('[required]').forEach(field => {
-        field.removeAttribute('required');
-    });
+    // Réinitialiser required
+    document.querySelectorAll('[required]').forEach(el => el.removeAttribute('required'));
 
-    // Configurer les champs selon le type d'événement
+    // Configuration selon le type
     switch(type) {
-        case 'COURS':
         case 'EXAMEN_PARTIEL':
         case 'EXAMEN_FINAL':
-            coursExamensFields.style.display = 'block';
-            document.querySelector('select[name="matiere"]').setAttribute('required', '');
-            document.querySelector('select[name="professeur"]').setAttribute('required', '');
-            break;
         case 'RATTRAPAGE':
-            coursExamensFields.style.display = 'block';
-            document.querySelector('select[name="matiere"]').setAttribute('required', '');
-            document.querySelector('select[name="professeur"]').setAttribute('required', '');
+            fields.cours_examens.style.display = 'block';
+            fields.horaire.style.display = 'block';
+            setRequired(['matiere', 'horaire']);
             break;
-        case 'CONFERENCE':
-            coursExamensFields.style.display = 'block';
-            conferenceFields.style.display = 'block';
-            document.querySelector('select[name="matiere"]').setAttribute('required', '');
-            document.querySelector('select[name="professeur"]').setAttribute('required', '');
-            document.querySelector('input[name="titre_evenement"]').setAttribute('required', '');
+            
+        case 'FORMATION_MILITAIRE':
+            fields.horaire.style.display = 'block';
+            setRequired(['horaire']);
             break;
-        case 'SORTIE':
-            sortieFields.style.display = 'block';
-            coursExamensFields.style.display = 'block';
-            dateFinGroup.style.display = 'block';
-            document.querySelector('select[name="matiere"]').setAttribute('required', '');
-            document.querySelector('select[name="professeur"]').setAttribute('required', '');
-            document.querySelector('input[name="titre_evenement"]').setAttribute('required', '');
-            break;
+            
         case 'TOURNEE':
+            fields.tournee.style.display = 'block';
+            fields.date_fin.style.display = 'block';
+            fields.horaire.style.display = 'none';
+            setRequired(['titre_evenement', 'date_debut', 'date_fin']);
+            break;
+            
+        case 'SORTIE':
+            fields.sortie.style.display = 'block';
+            fields.date_fin.style.display = 'block';
+            fields.horaire.style.display = 'none';
+            setRequired(['titre_evenement', 'matiere', 'date_debut', 'date_fin']);
+            break;
+            
         case 'PROJET':
+            fields.projet.style.display = 'block';
+            fields.date_fin.style.display = 'block';
+            fields.horaire.style.display = 'none';
+            setRequired(['titre_evenement', 'date_debut', 'date_fin']);
+            break;
+            
         case 'VISITE_MILITAIRE':
-        case 'JOUR_FERIE':
-        case 'VACANCES':
-            dateFinGroup.style.display = 'block';
-            document.getElementById(`${type.toLowerCase()}_fields`).style.display = 'block';
-            document.querySelector('input[name="titre_evenement"]').setAttribute('required', '');
+            fields.visite.style.display = 'block';
+            fields.date_fin.style.display = 'block';
+            fields.horaire.style.display = 'none';
+            setRequired(['titre_evenement', 'date_debut', 'date_fin']);
+            break;
+            
+        case 'CONFERENCE':
+            fields.conference.style.display = 'block';
+            fields.horaire.style.display = 'block';
+            setRequired(['titre_evenement', 'date_debut', 'horaire']);
             break;
     }
 
     // Toujours requis
-    document.querySelector('input[name="date_debut"]').setAttribute('required', '');
-    document.querySelector('select[name="promotion"]').setAttribute('required', '');
+    setRequired(['promotion']);
 }
 
-// Initialiser l'affichage au chargement
+// Mise à jour de l'envoi du formulaire
 document.addEventListener('DOMContentLoaded', function() {
-    toggleFields();
-});
-
-// Mettre à jour les champs quand le type d'événement change
-document.getElementById('type_evenement').addEventListener('change', toggleFields);
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Gérer la soumission des formulaires rapides
-    document.querySelectorAll('.quick-add-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
+    const mainForm = document.querySelector('form[action="{% url "creer_emploi_temps" %}"]');
+    
+    if (mainForm) {
+        mainForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const formData = new FormData(this);
-            const matiereSelect = this.querySelector('select[name="matiere"]');
+            const submitButton = this.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
             
-            if (!matiereSelect.value) {
-                alert('Veuillez sélectionner une matière');
-                return;
+            try {
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message || 'Événement créé avec succès');
+                    window.location.reload();
+                } else {
+                    alert(data.error || 'Une erreur est survenue');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Une erreur est survenue lors de la communication avec le serveur');
+            } finally {
+                submitButton.disabled = false;
             }
+        });
+    }
+});
+</script>
 
-            fetch(this.action, {
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const mainForm = document.querySelector('form[action="{% url "creer_emploi_temps" %}"]');
+    const quickAddForms = document.querySelectorAll('.quick-add-form');
+
+    if (mainForm) {
+        mainForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitButton = this.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            
+            try {
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Afficher un message de succès
+                    alert(data.message || 'Événement créé avec succès');
+                    // Recharger la page
+                    window.location.reload();
+                } else {
+                    // Afficher l'erreur
+                    alert(data.error || 'Une erreur est survenue');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Une erreur est survenue lors de la communication avec le serveur');
+            } finally {
+                submitButton.disabled = false;
+            }
+        });
+    }
+
+    // Gestion des formulaires rapides
+    quickAddForms.forEach(form => {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitButton = this.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            
+            try {
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.error || 'Une erreur est survenue');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Une erreur est survenue');
+            } finally {
+                submitButton.disabled = false;
+            }
+        });
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Afficher le spinner
+        document.querySelector('.loading-spinner').style.display = 'block';
+        
+        try {
+            const formData = new FormData(this);
+            const response = await fetch(this.action, {
                 method: 'POST',
                 body: formData,
                 headers: {
                     'X-CSRFToken': formData.get('csrfmiddlewaretoken')
                 }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Recharger la page pour afficher le nouvel événement
-                    window.location.reload();
-                } else {
-                    alert('Erreur: ' + (data.error || 'Erreur inconnue'));
-                }
-            })
-            .catch(error => {
-                console.error('Erreur:', error);
-                alert('Une erreur est survenue');
             });
-        });
-
-        // Mettre à jour automatiquement le professeur quand une matière est sélectionnée
-        const matiereSelect = form.querySelector('select[name="matiere"]');
-        matiereSelect.addEventListener('change', function() {
-            const selectedOption = this.options[this.selectedIndex];
-            const professeurId = selectedOption.dataset.professeur;
-            // Si vous avez besoin d'utiliser l'ID du professeur...
-            formData.set('professeur', professeurId);
-        });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Recharger le calendrier sans recharger la page
+                updateCalendar();
+                form.reset();
+            } else {
+                showError(data.error);
+            }
+        } catch (error) {
+            showError('Une erreur est survenue');
+        } finally {
+            // Cacher le spinner
+            document.querySelector('.loading-spinner').style.display = 'none';
+        }
     });
+    
+    function showError(message) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.textContent = message;
+        form.appendChild(errorDiv);
+        setTimeout(() => errorDiv.remove(), 5000);
+    }
+    
+    async function updateCalendar() {
+        // Logique pour mettre à jour le calendrier via AJAX
+    }
 });
 
+// Amélioration de la fonction filterByDate
 function filterByDate() {
     const dateFilter = document.getElementById('date-filter').value;
     if (dateFilter) {
-        window.location.href = `?promotion={{ promotion_selected }}&date_debut=${dateFilter}`;
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('date_debut', dateFilter);
+        window.location.href = currentUrl.toString();
     }
 }
 </script>

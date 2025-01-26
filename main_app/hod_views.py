@@ -1296,111 +1296,159 @@ from collections import defaultdict
 def creer_emploi_temps(request):
     if request.method == "POST":
         try:
-            type_evenement = request.POST.get("type_evenement", "COURS")
+            type_evenement = request.POST.get("type_evenement")
             promotion = request.POST.get("promotion")
-            date = request.POST.get("date")
-            horaire = request.POST.get("horaire")
-            matiere_id = request.POST.get("matiere")
+            date_debut = request.POST.get("date_debut") or request.POST.get("date")
             
-            if not all([promotion, date, horaire, matiere_id]):
+            # Vérification des champs requis de base
+            if not all([type_evenement, promotion, date_debut]):
                 return JsonResponse({
                     'success': False,
-                    'error': 'Tous les champs sont requis'
+                    'error': 'Veuillez remplir tous les champs obligatoires'
                 })
 
-            # Récupérer la matière et le professeur associé
-            matiere = get_object_or_404(Subject, id=matiere_id)
-            professeur = matiere.staff  # Le professeur est lié à la matière
-
-            # Vérifier si un événement existe déjà
-            existing_event = EmploiTemps.objects.filter(
-                date=date,
-                horaire=horaire,
-                niveau=promotion
-            ).first()
-
-            if existing_event:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Un événement existe déjà à cet horaire'
-                })
-
-            # Créer l'événement
             event_data = {
                 'niveau': promotion,
                 'type_evenement': type_evenement,
-                'date': date,
-                'date_debut': date,
-                'date_fin': date,
-                'horaire': horaire,
-                'matiere': matiere,
-                'professeur': professeur
+                'date': date_debut,
+                'date_debut': date_debut,
             }
 
-            EmploiTemps.objects.create(**event_data)
+            # Gestion spécifique selon le type d'événement
+            if type_evenement in ['EXAMEN_PARTIEL', 'EXAMEN_FINAL', 'RATTRAPAGE', 'CONFERENCE']:
+                horaire = request.POST.get("horaire")
+                if not horaire:
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Horaire requis pour ce type d\'événement'
+                    })
+                event_data['horaire'] = horaire
+                
+                matiere_id = request.POST.get("matiere")
+                if not matiere_id:
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Veuillez sélectionner une matière'
+                    })
+                matiere = Subject.objects.get(id=matiere_id)
+                event_data['matiere'] = matiere
+                event_data['professeur'] = matiere.staff
+
+            # Formation militaire (avec horaire, sans date fin)
+            elif type_evenement == 'FORMATION_MILITAIRE':
+                horaire = request.POST.get("horaire")
+                if not horaire:
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Horaire requis pour la formation militaire'
+                    })
+                event_data['horaire'] = horaire
+
+            # Visite militaire (avec date fin)
+            elif type_evenement == 'VISITE_MILITAIRE':
+                date_fin = request.POST.get("date_fin")
+                
+                if not date_fin:
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Date de fin requise pour une visite militaire'
+                    })
+                    
+                event_data['date_fin'] = date_fin
+            
+            # Événements sur plusieurs jours sans horaire spécifique
+            elif type_evenement in ['TOURNEE', 'SORTIE', 'PROJET']:
+                titre = request.POST.get("titre_evenement")
+                date_fin = request.POST.get("date_fin")
+                
+                if not all([titre, date_fin]):
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Titre et date de fin requis pour ce type d\'événement'
+                    })
+                    
+                event_data['titre_evenement'] = titre
+                event_data['date_fin'] = date_fin
+
+            # Conférence (avec horaire mais sans date de fin)
+            elif type_evenement == 'CONFERENCE':
+                titre = request.POST.get("titre_evenement")
+                horaire = request.POST.get("horaire")
+                
+                if not all([titre, horaire]):
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Titre et horaire requis pour une conférence'
+                    })
+                    
+                event_data['titre_evenement'] = titre
+                event_data['horaire'] = horaire
+
+            # Vérification des conflits pour les événements avec horaire
+            if 'horaire' in event_data:
+                existing = EmploiTemps.objects.filter(
+                    niveau=promotion,
+                    date=date_debut,
+                    horaire=event_data['horaire']
+                ).first()
+                
+                if existing:
+                    return JsonResponse({
+                        'success': False,
+                        'error': f'Créneau déjà occupé par: {existing.get_type_display()}'
+                    })
+
+            # Création de l'événement
+            emploi = EmploiTemps.objects.create(**event_data)
 
             return JsonResponse({
                 'success': True,
-                'message': 'Cours ajouté avec succès'
+                'message': 'Événement créé avec succès'
             })
 
         except Exception as e:
+            print(f"Erreur: {str(e)}")  # Debug
             return JsonResponse({
                 'success': False,
                 'error': str(e)
             })
 
-    # ... reste du code existant ...
-
+    # GET request - affichage de la page
+    promotion_selected = request.GET.get('promotion', '3ème année')
+    date_debut = request.GET.get('date_debut')
+    
+    if date_debut:
+        date_debut = datetime.strptime(date_debut, '%Y-%m-%d').date()
     else:
-        # Récupérer la promotion sélectionnée
-        promotion_selected = request.GET.get('promotion', '3ème année')
-        
-        # Liste des promotions disponibles
-        promotions = [
-            '3ème année',
-            '4ème année',
-            '5ème année'
-        ]
-        
-        date_debut = request.GET.get('date_debut', datetime.now().date())
-        if isinstance(date_debut, str):
-            date_debut = datetime.strptime(date_debut, '%Y-%m-%d').date()
-        
-        date_fin = date_debut + timedelta(days=14)
-        
-        # Filtrer les sessions par promotion
-        sessions = EmploiTemps.objects.filter(
-            date__range=[date_debut, date_fin],
-            niveau=promotion_selected
-        ).select_related('matiere', 'professeur')
-        
-        # Organisation des sessions par date
-        sessions_by_date = defaultdict(dict)
-        dates = []
-        current_date = date_debut
-        while current_date <= date_fin:
-            dates.append(current_date)
-            current_date += timedelta(days=1)
-
-        horaires = ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00']
-        
-        for session in sessions:
-            sessions_by_date[session.date][session.horaire] = session
-
-        context = {
-            "promotions": promotions,  # Liste des promotions
-            "promotion_selected": promotion_selected,  # Promotion sélectionnée
-            "subjects": Subject.objects.filter(niveau=promotion_selected).order_by('name'),
-            "professeurs": Staff.objects.all().order_by('admin__last_name'),
-            "sessions_by_date": dict(sessions_by_date),
-            "dates": dates,
-            "horaires": horaires,
-            "date_debut": date_debut,
-            "date_fin": date_fin,
-            'page_title': f'Emploi du temps - {promotion_selected}'
-        }
-        return render(request, "hod_template/creer_emploi_temps.html", context)
+        date_debut = datetime.now().date()
+    
+    date_fin = date_debut + timedelta(days=14)
+    
+    context = {
+        "promotions": ['3ème année', '4ème année', '5ème année'],
+        "promotion_selected": promotion_selected,
+        "subjects": Subject.objects.filter(niveau=promotion_selected).select_related('staff'),
+        "professeurs": Staff.objects.select_related('admin'),
+        "dates": [date_debut + timedelta(days=x) for x in range(15)],
+        "horaires": ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00'],
+        "date_debut": date_debut,
+        "date_fin": date_fin,
+        'page_title': f'Emploi du temps - {promotion_selected}'
+    }
+    
+    # Récupération optimisée des sessions
+    sessions = EmploiTemps.objects.filter(
+        date__range=[date_debut, date_fin],
+        niveau=promotion_selected
+    ).select_related('matiere', 'professeur', 'professeur__admin')
+    
+    sessions_by_date = defaultdict(dict)
+    for session in sessions:
+        sessions_by_date[session.date][session.horaire] = session
+    
+    context['sessions_by_date'] = dict(sessions_by_date)
+    
+    return render(request, "hod_template/creer_emploi_temps.html", context)
 
 def choisir_promotion(request):
     promotions = [

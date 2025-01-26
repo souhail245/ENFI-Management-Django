@@ -325,7 +325,9 @@ class SuiviCours(models.Model):
         return f"{self.matiere.name} : {self.heures_effectuees}/{self.total_heures} heures"
 
 
-from datetime import date 
+from datetime import date
+from django.core.exceptions import ValidationError
+
 class EmploiTemps(models.Model):
 
     HORAIRES_CHOICES = [
@@ -413,6 +415,24 @@ class EmploiTemps(models.Model):
     date_debut = models.DateField(null=True, blank=True)
     date_fin = models.DateField(null=True, blank=True)
     numero_seance = models.IntegerField(default=0)  # Ajouter ce champ
+    
+    class Meta:
+        unique_together = ['date', 'horaire', 'niveau']
+        
+    def clean(self):
+        # Validation personnalisée
+        if self.date_fin and self.date_debut and self.date_fin < self.date_debut:
+            raise ValidationError("La date de fin ne peut pas être antérieure à la date de début")
+        
+        # Vérifier les chevauchements
+        overlapping = EmploiTemps.objects.filter(
+            niveau=self.niveau,
+            date=self.date,
+            horaire=self.horaire
+        ).exclude(id=self.id)
+        
+        if overlapping.exists():
+            raise ValidationError("Un événement existe déjà à cet horaire pour cette promotion")
     
     def save(self, *args, **kwargs):
         is_new = self.pk is None
