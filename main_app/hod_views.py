@@ -344,6 +344,7 @@ def export_students_pdf(request):
     doc.build(elements)
     return response
     
+    # home graphes 
 
 def admin_home(request):
     total_staff = Staff.objects.all().count()
@@ -353,7 +354,22 @@ def admin_home(request):
     total_course = Course.objects.all().count()
     attendance_list = Attendance.objects.filter(subject__in=subjects)
     total_attendance = attendance_list.count()
+      # Récupérer le niveau/promotion sélectionné (par défaut 3ème année)
+    selected_niveau = request.GET.get('niveau', '3ème année')
 
+    subject_list = []
+    course_progress = []
+
+    for subject in subjects:
+        subject_list.append(subject.name[:15])  # Raccourcir les noms de matières
+        
+        # Convertir la progression en pourcentage
+        progression = subject.progression_cours if subject.progression_cours is not None else 0
+        progression_percentage = min(max(progression, 0), 100)  # Forcer entre 0 et 100
+        course_progress.append(progression_percentage)
+
+    # Récupérer tous les niveaux disponibles
+    niveaux_disponibles = Subject.objects.values_list('niveau', flat=True).distinct()
     subject_list = []
     attendance_list = []
 
@@ -414,6 +430,9 @@ def admin_home(request):
         "student_count_list_in_course": student_count_list_in_course,
         "course_name_list": course_name_list,
         "course_progress": course_progress,  # Nouvelle clé ajoutée
+        'niveaux_disponibles': list(niveaux_disponibles),
+        'selected_niveau': selected_niveau,
+    
     }
 
     return render(request, 'hod_template/home_content.html', context)

@@ -121,86 +121,64 @@
                       <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
                   </div>
               </div>
-              <div class="card-body">
-                  <!-- Canvas pour l'histogramme -->
-                  <canvas id="courseProgressChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
-              </div>
+              <div class="form-group">
+                <label for="niveau-select">Sélectionner le niveau :</label>
+                <select id="niveau-select" class="form-control" onchange="window.location.href='?niveau=' + this.value;">
+                    {% for niveau in niveaux_disponibles %}
+                        <option value="{{ niveau }}" {% if niveau == selected_niveau %}selected{% endif %}>
+                            {{ niveau }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Graphique avec axe en pourcentage -->
+            <div class="chart-container">
+                <canvas id="courseProgressChart"></canvas>
+            </div>
+            
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var ctx = document.getElementById('courseProgressChart').getContext('2d');
+                var chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: {{ subject_list|safe }},
+                        datasets: [{
+                            label: 'Progression des matières (%)',
+                            data: {{ course_progress|safe }},
+                            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                title: {
+                                    display: true,
+                                    text: 'Progression (%)'
+                                }
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Progression des matières - {{ selected_niveau }}'
+                            }
+                        }
+                    }
+                });
+            });
+            </script>
           </div>
       </div>
       
-      <!-- Ajouter Chart.js -->
-      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-      <!-- Ajouter Chart.js Data Labels -->
-      <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
-      
-      <script>
-          // Données pour l'histogramme : vérifier que course_progress est bien passé en format JSON
-          var courseProgressData = {
-              labels: [{% for subject, progress in course_progress %}"{{ subject }}",{% endfor %}],  // Matières
-              datasets: [{
-                  label: 'Progression des cours',
-                  data: [{% for subject, progress in course_progress %}{{ progress }},{% endfor %}],  // Progrès
-                  backgroundColor: 'rgba(0, 0, 0, 1)',  // Barres noires
-                  borderColor: 'rgba(0, 0, 0, 1)',  // Bordures noires
-                  borderWidth: 1
-              }]
-          };
-      
-          // Initialisation du graphique
-          var ctx = document.getElementById('courseProgressChart').getContext('2d');
-          
-          var courseProgressChart = new Chart(ctx, {
-              type: 'bar',  // Type de graphique : histogramme
-              data: courseProgressData,
-              options: {
-                  responsive: true,
-                  plugins: {
-                      datalabels: {
-                          color: '#fff',  // Couleur des labels en blanc
-                          font: {
-                              weight: 'bold',
-                              size: 14
-                          },
-                          formatter: function(value, context) {
-                              return value + '%';  // Affiche le pourcentage sur chaque barre
-                          }
-                      }
-                  },
-                  scales: {
-                      y: {
-                          ticks: {
-                              beginAtZero: true,
-                              color: '#fff'  // Colorier les ticks de l'axe Y en blanc
-                          },
-                          grid: {
-                              color: 'rgba(255, 255, 255, 0.2)'  // Grille de l'axe Y en blanc léger
-                          }
-                      },
-                      x: {
-                          ticks: {
-                              color: '#000'  // Matières en noir sur l'axe X
-                          },
-                          grid: {
-                              color: 'rgba(255, 255, 255, 0.2)'  // Grille de l'axe X en blanc léger
-                          }
-                      }
-                  },
-                  plugins: {
-                      legend: {
-                          labels: {
-                              color: '#fff'  // Légende en blanc
-                          }
-                      }
-                  }
-              }
-          });
-      </script>
-      
-      
-      
-      
-      
-    </div><!-- /.container-fluid -->
+   
 </section>
 {% endblock content %}
 
