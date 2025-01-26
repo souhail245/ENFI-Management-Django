@@ -475,6 +475,12 @@
         </form>
     </div>
 
+    <!-- Filtre de date -->
+    <div class="form-group">
+        <label for="date-filter">Filtrer par date :</label>
+        <input type="date" id="date-filter" class="form-control" onchange="filterByDate()">
+    </div>
+
     <!-- Aperçu du calendrier -->
     <div class="timetable-section">
         <!-- Ajouter ce bloc de code juste avant calendar-header -->
@@ -762,170 +768,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
-</script>
-```javascript
-// Initialiser l'affichage au chargement
-document.addEventListener('DOMContentLoaded', function() {
-    toggleFields();
-    const dateInput = document.getElementById('date_debut');
-    if (dateInput) {
-        dateInput.valueAsDate = new Date();
+
+function filterByDate() {
+    const dateFilter = document.getElementById('date-filter').value;
+    if (dateFilter) {
+        window.location.href = `?promotion={{ promotion_selected }}&date_debut=${dateFilter}`;
     }
-});
-
-// Mettre à jour automatiquement le jour en fonction de la date
-document.addEventListener('DOMContentLoaded', function() {
-    const dateInput = document.getElementById('date_debut');
-    if (dateInput) {
-        dateInput.addEventListener('change', function() {
-            const date = new Date(this.value);
-            const jourSelect = document.querySelector('select[name="jour"]');
-            if (jourSelect) {
-                const jours = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-                jourSelect.value = jours[date.getDay()];
-            }
-        });
-    }
-});
-
-// Mettre à jour le formulaire de création avec les matières de la promotion sélectionnée
-document.getElementById('promotion').addEventListener('change', function() {
-    const promotion = this.value;
-    const matiereSelect = document.getElementById('matiere');
-    if (matiereSelect) {
-        matiereSelect.innerHTML = '';
-        fetch(`/get-matieres-by-niveau/?niveau=${promotion}`)
-            .then(response => response.json())
-            .then(data => {
-                data.matieres.forEach(matiere => {
-                    const option = new Option(matiere.name, matiere.id);
-                    matiereSelect.add(option);
-                });
-            });
-    }
-    window.location.href = `?promotion=${promotion}`;
-});
-
-// Gérer les champs en fonction du type d'événement
-function toggleFields() {
-    const type = document.getElementById('type_evenement').value;
-    const coursExamensFields = document.getElementById('cours_examens_fields');
-    const ferieFields = document.getElementById('ferie_fields');
-    const vacancesFields = document.getElementById('vacances_fields');
-    const rattrapageFields = document.getElementById('rattrapage_fields');
-    const tourneeFields = document.getElementById('tournee_fields');
-    const sortieFields = document.getElementById('sortie_fields');
-    const projetFields = document.getElementById('projet_fields');
-    const visiteMilitaireFields = document.getElementById('visite_militaire_fields');
-    const conferenceFields = document.getElementById('conference_fields');
-    const horaireFields = document.getElementById('horaire_fields');
-    const dateFinGroup = document.getElementById('date_fin_group');
-
-    // Cacher tous les champs d'abord
-    [coursExamensFields, ferieFields, vacancesFields, rattrapageFields, 
-     tourneeFields, sortieFields, projetFields, visiteMilitaireFields, 
-     conferenceFields].forEach(field => {
-        if (field) field.style.display = 'none';
-    });
-
-    // Réinitialiser les champs requis
-    document.querySelectorAll('[required]').forEach(field => {
-        field.removeAttribute('required');
-    });
-
-    // Configurer les champs selon le type d'événement
-    switch(type) {
-        case 'COURS':
-        case 'EXAMEN_PARTIEL':
-        case 'EXAMEN_FINAL':
-            if (coursExamensFields) coursExamensFields.style.display = 'block';
-            if (document.querySelector('select[name="matiere"]')) document.querySelector('select[name="matiere"]').setAttribute('required', '');
-            if (document.querySelector('select[name="professeur"]')) document.querySelector('select[name="professeur"]').setAttribute('required', '');
-            break;
-        case 'RATTRAPAGE':
-            if (coursExamensFields) coursExamensFields.style.display = 'block';
-            if (document.querySelector('select[name="matiere"]')) document.querySelector('select[name="matiere"]').setAttribute('required', '');
-            if (document.querySelector('select[name="professeur"]')) document.querySelector('select[name="professeur"]').setAttribute('required', '');
-            break;
-        case 'CONFERENCE':
-            if (coursExamensFields) coursExamensFields.style.display = 'block';
-            if (conferenceFields) conferenceFields.style.display = 'block';
-            if (document.querySelector('select[name="matiere"]')) document.querySelector('select[name="matiere"]').setAttribute('required', '');
-            if (document.querySelector('select[name="professeur"]')) document.querySelector('select[name="professeur"]').setAttribute('required', '');
-            if (document.querySelector('input[name="titre_evenement"]')) document.querySelector('input[name="titre_evenement"]').setAttribute('required', '');
-            break;
-        case 'SORTIE':
-            if (sortieFields) sortieFields.style.display = 'block';
-            if (coursExamensFields) coursExamensFields.style.display = 'block';
-            if (dateFinGroup) dateFinGroup.style.display = 'block';
-            if (document.querySelector('select[name="matiere"]')) document.querySelector('select[name="matiere"]').setAttribute('required', '');
-            if (document.querySelector('select[name="professeur"]')) document.querySelector('select[name="professeur"]').setAttribute('required', '');
-            if (document.querySelector('input[name="titre_evenement"]')) document.querySelector('input[name="titre_evenement"]').setAttribute('required', '');
-            break;
-        case 'TOURNEE':
-        case 'PROJET':
-        case 'VISITE_MILITAIRE':
-        case 'JOUR_FERIE':
-        case 'VACANCES':
-            if (dateFinGroup) dateFinGroup.style.display = 'block';
-            if (document.getElementById(`${type.toLowerCase()}_fields`)) document.getElementById(`${type.toLowerCase()}_fields`).style.display = 'block';
-            if (document.querySelector('input[name="titre_evenement"]')) document.querySelector('input[name="titre_evenement"]').setAttribute('required', '');
-            break;
-    }
-
-    // Toujours requis
-    if (document.querySelector('input[name="date_debut"]')) document.querySelector('input[name="date_debut"]').setAttribute('required', '');
-    if (document.querySelector('select[name="promotion"]')) document.querySelector('select[name="promotion"]').setAttribute('required', '');
 }
-
-// Mettre à jour les champs quand le type d'événement change
-document.getElementById('type_evenement').addEventListener('change', toggleFields);
-
-// Gérer la soumission des formulaires rapides
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.quick-add-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const matiereSelect = this.querySelector('select[name="matiere"]');
-            
-            if (!matiereSelect.value) {
-                alert('Veuillez sélectionner une matière');
-                return;
-            }
-
-            fetch(this.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Recharger la page pour afficher le nouvel événement
-                    window.location.reload();
-                } else {
-                    alert('Erreur: ' + (data.error || 'Erreur inconnue'));
-                }
-            })
-            .catch(error => {
-                console.error('Erreur:', error);
-                alert('Une erreur est survenue');
-            });
-        });
-
-        // Mettre à jour automatiquement le professeur quand une matière est sélectionnée
-        const matiereSelect = form.querySelector('select[name="matiere"]');
-        matiereSelect.addEventListener('change', function() {
-            const selectedOption = this.options[this.selectedIndex];
-            const professeurId = selectedOption.dataset.professeur;
-            // Si vous avez besoin d'utiliser l'ID du professeur...
-            formData.set('professeur', professeurId);
-        });
-    });
-});
 </script>
 {% endblock content %}
