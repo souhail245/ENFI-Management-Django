@@ -12,7 +12,13 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import UpdateView
 from django.conf import settings
-
+from django.http import HttpResponse
+import xlsxwriter
+from io import BytesIO
+from reportlab.pdfgen import canvas
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 
 from .forms import *
 from .models import *
@@ -91,13 +97,7 @@ def view_absences(request):
     return render(request, 'hod_template/view_absences.html', context)
 
 # export resultats des absences :
-from django.http import HttpResponse
-import xlsxwriter
-from io import BytesIO
-from reportlab.pdfgen import canvas
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+
 
 def export_absences_excel(request):
     # Récupérer les absences filtrées

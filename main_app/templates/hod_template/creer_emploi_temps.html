@@ -248,7 +248,8 @@
                     <div class="form-group">
                         <label for="type_evenement">Type d'événement :</label>
                         <select name="type_evenement" id="type_evenement" class="form-control" required onchange="toggleFields()">
-                            <option value="COURS">Cours</option>
+                            <!-- Supprimer les options "COURS", "VACANCES" et "JOUR_FERIE" -->
+                            <!-- <option value="COURS">Cours</option> -->
                             <option value="EXAMEN_PARTIEL">Examen Partiel</option>
                             <option value="EXAMEN_FINAL">Examen Final</option>
                             <option value="RATTRAPAGE">Rattrapage</option>
@@ -258,8 +259,8 @@
                             <option value="PROJET">Projet</option>
                             <option value="VISITE_MILITAIRE">Visite Militaire</option>
                             <option value="CONFERENCE">Conférence</option>
-                            <option value="JOUR_FERIE">Jour Férié</option>
-                            <option value="VACANCES">Vacances</option>
+                            <!-- <option value="JOUR_FERIE">Jour Férié</option> -->
+                            <!-- <option value="VACANCES">Vacances</option> -->
                         </select>
                     </div>
 
@@ -762,7 +763,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-{% endblock content %}
 ```javascript
 // Initialiser l'affichage au chargement
 document.addEventListener('DOMContentLoaded', function() {
@@ -927,4 +927,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
-```
+</script>
+{% endblock content %}
