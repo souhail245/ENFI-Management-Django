@@ -71,19 +71,45 @@
         background-color: #fff3cd;
     }
 
-    .progress {
-        height: 8px;
-        background: #e9ecef;
-        border-radius: 4px;
-        overflow: hidden;
-        margin-top: 8px;
-    }
+    /* Modifier le style de la barre de progression */
+.progress {
+    height: 12px;
+    background: #e9ecef;
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 12px 0;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
 
-    .progress-bar {
-        background: linear-gradient(to right, #4CAF50, #45a049);
-        height: 100%;
-        transition: width 0.3s ease;
-    }
+.progress-bar {
+    background: linear-gradient(45deg, #2196F3, #d43c00);
+    height: 100%;
+    transition: width 0.5s ease-in-out;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Style pour les informations de progression */
+.progression-info {
+    margin-top: 8px;
+    font-size: 0.95rem;
+    color: #0a0a0a;
+}
+
+.progression-value {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #e81a1a;
+    margin-right: 5px;
+}
+
+.seance-info {
+    font-weight: 600;
+    color: #00070e;
+    font-size: 1rem;
+    margin-top: 4px;
+}
 
     .calendar-header {
         background: #000000;
@@ -160,20 +186,24 @@
                                                 <small class="d-block">{{ session.professeur.admin.get_full_name }}</small>
                                                 
                                                 <!-- Progression -->
-                                                <div class="progress">
-                                                    <div class="progress-bar" 
-                                                         role="progressbar" 
-                                                         style="width: {% if session.progression %}{{ session.progression }}{% else %}0{% endif %}%"
-                                                         aria-valuenow="{% if session.progression %}{{ session.progression }}{% else %}0{% endif %}"
-                                                         aria-valuemin="0" 
-                                                         aria-valuemax="100">
-                                                    </div>
-                                                </div>
-                                                <small class="d-block mt-1">
-                                                    Progression: {% if session.progression %}{{ session.progression }}{% else %}0{% endif %}%
-                                                    <br>
-                                                    Séance {{ session.numero_seance }}/{{ session.matiere.volume_horaire_total|divided_by:2|floatformat:"0" }}
-                                                </small>
+<div class="progress">
+    <div class="progress-bar" 
+         role="progressbar" 
+         style="width: {% if session.progression %}{{ session.progression }}{% else %}0{% endif %}%"
+         aria-valuenow="{% if session.progression %}{{ session.progression }}{% else %}0{% endif %}"
+         aria-valuemin="0" 
+         aria-valuemax="100">
+    </div>
+</div>
+<div class="progression-info">
+    <span class="progression-value">
+        Progression: {% if session.progression %}{{ session.progression }}{% else %}0{% endif %}%
+    </span>
+    <div class="seance-info">
+        Séance {{ session.numero_seance }}/{{ session.matiere.volume_horaire_total|divided_by:2|floatformat:"0" }}
+    </div>
+</div>
+                                               
                                             {% elif session.type_evenement == 'RATTRAPAGE' %}
                                                 <strong style="color: #721c24;">Rattrapage</strong><br>
                                                 <strong>{{ session.matiere.name }}</strong><br>

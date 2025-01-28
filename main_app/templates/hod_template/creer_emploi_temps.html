@@ -56,28 +56,81 @@
     }
 
     .btn-create, .btn-view-progress, .btn-history {
-        background-color: #000000;
-        color: #ffffff;
-        border: 2px solid #000000;
-        transition: all 0.3s ease;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
-    }
+    background-color: #000000;
+    color: #ffffff;
+    border: 2px solid #000000;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+    padding: 12px 24px;
+    margin: 0 10px;
+    border-radius: 8px;
+    min-width: 200px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
 
-    .btn-create:hover, .btn-view-progress:hover, .btn-history:hover {
-        background-color: #ffffff;
-        color: #000000;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
+.btn-create:hover, .btn-view-progress:hover, .btn-history:hover {
+    background-color: #ffffff;
+    color: #000000;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    text-decoration: none;
+}
 
-    .btn-create:focus, .btn-view-progress:focus, .btn-history:focus {
-        outline: none;
-        box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.25);
-    }
+.btn-create:focus, .btn-view-progress:focus, .btn-history:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.25);
+}
 
+.btn-group-custom {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+/* Styles spécifiques pour chaque bouton */
+.btn-create {
+    background-color: #1a73e8;
+    border-color: #1a73e8;
+}
+
+.btn-create:hover {
+    background-color: #ffffff;
+    color: #1a73e8;
+}
+
+.btn-view-progress {
+    background-color: #34a853;
+    border-color: #34a853;
+}
+
+.btn-view-progress:hover {
+    background-color: #ffffff;
+    color: #34a853;
+}
+
+.btn-history {
+    background-color: #ea4335;
+    border-color: #ea4335;
+}
+
+.btn-history:hover {
+    background-color: #ffffff;
+    color: #ea4335;
+}
+
+/* Style pour les icônes dans les boutons */
+.btn-create i, .btn-view-progress i, .btn-history i {
+    margin-right: 8px;
+    font-size: 16px;
+}
     /* Select dropdown styling */
     select.form-control {
         appearance: none;
@@ -147,8 +200,6 @@
         margin-bottom: 8px;
         font-size: 14px;
         position: relative;
-        cursor: pointer;
-        transition: transform 0.2s;
     }
 
     .session-card strong {
@@ -173,10 +224,6 @@
     .session-card.default {
         background-color: #e9ecef;
         border-color: #ddd;
-    }
-
-    .session-card:hover {
-        transform: scale(1.02);
     }
 
     .progress-bar {
@@ -218,18 +265,8 @@
         width: 100%;
         padding: 2px;
     }
-
-    .error-message {
-        color: #dc3545;
-        font-size: 0.875rem;
-        margin-top: 0.25rem;
-    }
-
-    .loading-spinner {
-        display: none;
-        /* Ajouter styles pour le spinner */
-    }
 </style>
+
 
 <div class="main-container">
     <!-- Messages -->
@@ -265,8 +302,6 @@
                     <div class="form-group">
                         <label for="type_evenement">Type d'événement :</label>
                         <select name="type_evenement" id="type_evenement" class="form-control" required onchange="toggleFields()">
-                            <!-- Supprimer les options "COURS", "VACANCES" et "JOUR_FERIE" -->
-                            <!-- <option value="COURS">Cours</option> -->
                             <option value="EXAMEN_PARTIEL">Examen Partiel</option>
                             <option value="EXAMEN_FINAL">Examen Final</option>
                             <option value="RATTRAPAGE">Rattrapage</option>
@@ -276,12 +311,9 @@
                             <option value="PROJET">Projet</option>
                             <option value="VISITE_MILITAIRE">Visite Militaire</option>
                             <option value="CONFERENCE">Conférence</option>
-                            <!-- <option value="JOUR_FERIE">Jour Férié</option> -->
-                            <!-- <option value="VACANCES">Vacances</option> -->
                         </select>
                     </div>
-
-                    <!-- Champs communs -->
+    
                     <div class="form-group">
                         <label for="promotion">Promotion :</label>
                         <select name="promotion" id="promotion" class="form-control" required>
@@ -292,8 +324,7 @@
                             {% endfor %}
                         </select>
                     </div>
-
-                    <!-- Champs pour cours et examens -->
+    
                     <div id="cours_examens_fields">
                         <div class="form-group">
                             <label for="matiere">Matière :</label>
@@ -312,16 +343,14 @@
                             </select>
                         </div>
                     </div>
-
-                    <!-- Champs pour jour férié -->
+    
                     <div id="ferie_fields" style="display:none;">
                         <div class="form-group">
                             <label for="titre_evenement">Nom du jour férié :</label>
                             <input type="text" name="titre_evenement" class="form-control" placeholder="Ex: Fête du Trône">
                         </div>
                     </div>
-
-                    <!-- Champs pour rattrapage -->
+    
                     <div id="rattrapage_fields" style="display:none;">
                         <div class="form-group">
                             <label for="matiere_rattrapage">Matière à rattraper :</label>
@@ -332,8 +361,7 @@
                             </select>
                         </div>
                     </div>
-
-                    <!-- Champs pour tournée -->
+    
                     <div id="tournee_fields" style="display:none;">
                         <div class="form-group">
                             <label for="titre_evenement">Nom de la tournée :</label>
@@ -345,8 +373,7 @@
                                    required>
                         </div>
                     </div>
-
-                    <!-- Champs pour sortie -->
+    
                     <div id="sortie_fields" style="display:none;">
                         <div class="form-group">
                             <label for="titre_evenement">Nom de la sortie :</label>
@@ -361,24 +388,21 @@
                             </select>
                         </div>
                     </div>
-
-                    <!-- Champs pour projet -->
+    
                     <div id="projet_fields" style="display:none;">
                         <div class="form-group">
                             <label for="titre_evenement">Nom du projet :</label>
                             <input type="text" name="titre_evenement" class="form-control" placeholder="Ex: Projet SIG">
                         </div>
                     </div>
-
-                    <!-- Champs pour visite militaire -->
+    
                     <div id="visite_militaire_fields" style="display:none;">
                         <div class="form-group">
                             <label for="titre_evenement">Unité à visiter :</label>
                             <input type="text" name="titre_evenement" class="form-control" placeholder="Ex: Base militaire de Kénitra">
                         </div>
                     </div>
-
-                    <!-- Champs pour conférence -->
+    
                     <div id="conference_fields" style="display:none;">
                         <div class="form-group">
                             <label for="titre_evenement">Nom de la conférence :</label>
@@ -386,30 +410,25 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Dans la colonne de droite, réorganiser les champs -->
+    
                 <div class="col-md-6">
-                    <!-- Date début -->
                     <div class="form-group">
                         <label for="date_debut">Date début :</label>
                         <input type="date" name="date_debut" id="date_debut" class="form-control" required>
                     </div>
-
-                    <!-- Date fin (affiché uniquement pour certains types d'événements) -->
+    
                     <div class="form-group" id="date_fin_group" style="display:none;">
                         <label for="date_fin">Date fin :</label>
                         <input type="date" name="date_fin" id="date_fin" class="form-control">
                     </div>
                     
-                    <!-- Champs pour les vacances -->
                     <div id="vacances_fields" style="display:none;">
                         <div class="form-group">
                             <label for="titre_vacances">Type de vacances :</label>
                             <input type="text" name="titre_evenement" class="form-control" placeholder="Ex: Vacances d'hiver">
                         </div>
                     </div>
-
-                    <!-- Champs pour cours et examens -->
+    
                     <div id="horaire_fields">
                         <div class="form-group">
                             <label for="horaire">Horaire :</label>
@@ -422,7 +441,7 @@
                     </div>
                 </div>
             </div>
-
+    
             <div class="event-buttons-container text-center mt-4">
                 <div class="btn-group-custom">
                     <button type="submit" class="btn-create">
@@ -436,58 +455,6 @@
                     </a>
                 </div>
             </div>
-            
-            <style>
-            .event-buttons-container {
-                margin-bottom: 20px;
-            }
-            
-            .btn-group-custom {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                gap: 15px;
-            }
-            
-            .btn-group-custom > * {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                padding: 12px 20px;
-                border-radius: 6px;
-                text-decoration: none;
-                font-weight: 600;
-                transition: all 0.3s ease;
-                gap: 8px;
-            }
-            
-            .btn-create {
-                background-color: #000000;
-                color: white;
-                border: 2px solid #0c0c0c;
-            }
-            
-            .btn-view-progress {
-                background-color: #b81717;
-                color: white;
-                border: 2px solid #b81717;
-            }
-            
-            .btn-history {
-                background-color: #272525;
-                color: white;
-                border: 2px solid #272525;
-            }
-            
-            .btn-group-custom > *:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            }
-            
-            .btn-group-custom i {
-                margin-right: 8px;
-            }
-            </style>
             
         </form>
     </div>
@@ -598,7 +565,7 @@
                                             <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
                                             <input type="hidden" name="horaire" value="{{ horaire }}">
                                             
-                                            <select name="matiere" class="form-control form-control-sm" required>
+                                            <select name="matiere" class="form-control form-control-sm">
                                                 <option value="">-- Choisir matière --</option>
                                                 {% for subject in subjects %}
                                                     <option value="{{ subject.id }}" data-professeur="{{ subject.staff.id }}">
@@ -608,7 +575,7 @@
                                             </select>
                                             
                                             <button type="submit" class="btn btn-sm btn-primary mt-1">
-                                                <i class="fas fa-plus"></i> Ajouter
+                                                <i class="fas fa-plus"></i>
                                             </button>
                                         </form>
                                     {% endif %}
@@ -662,252 +629,149 @@ document.getElementById('promotion').addEventListener('change', function() {
 
 function toggleFields() {
     const type = document.getElementById('type_evenement').value;
-    const fields = {
-        cours_examens: document.getElementById('cours_examens_fields'),
-        horaire: document.getElementById('horaire_fields'),
-        date_fin: document.getElementById('date_fin_group'),
-        tournee: document.getElementById('tournee_fields'),
-        sortie: document.getElementById('sortie_fields'),
-        projet: document.getElementById('projet_fields'),
-        visite: document.getElementById('visite_militaire_fields'),
-        conference: document.getElementById('conference_fields')
-    };
+    const coursExamensFields = document.getElementById('cours_examens_fields');
+    const ferieFields = document.getElementById('ferie_fields');
+    const vacancesFields = document.getElementById('vacances_fields');
+    const rattrapageFields = document.getElementById('rattrapage_fields');
+    const tourneeFields = document.getElementById('tournee_fields');
+    const sortieFields = document.getElementById('sortie_fields');
+    const projetFields = document.getElementById('projet_fields');
+    const visiteMilitaireFields = document.getElementById('visite_militaire_fields');
+    const conferenceFields = document.getElementById('conference_fields');
+    const horaireFields = document.getElementById('horaire_fields');
+    const dateFinGroup = document.getElementById('date_fin_group');
 
-    // Cacher tous les champs
-    Object.values(fields).forEach(field => {
+    // Cacher tous les champs d'abord
+    [coursExamensFields, ferieFields, vacancesFields, rattrapageFields, 
+     tourneeFields, sortieFields, projetFields, visiteMilitaireFields, 
+     conferenceFields].forEach(field => {
         if (field) field.style.display = 'none';
     });
 
-    // Réinitialiser required
-    document.querySelectorAll('[required]').forEach(el => el.removeAttribute('required'));
+    // Réinitialiser les champs requis
+    document.querySelectorAll('[required]').forEach(field => {
+        field.removeAttribute('required');
+    });
 
-    // Configuration selon le type
+    // Configurer les champs selon le type d'événement
     switch(type) {
+        case 'COURS':
         case 'EXAMEN_PARTIEL':
         case 'EXAMEN_FINAL':
+            coursExamensFields.style.display = 'block';
+            document.querySelector('select[name="matiere"]').setAttribute('required', '');
+            document.querySelector('select[name="professeur"]').setAttribute('required', '');
+            break;
         case 'RATTRAPAGE':
-            fields.cours_examens.style.display = 'block';
-            fields.horaire.style.display = 'block';
-            setRequired(['matiere', 'horaire']);
+            coursExamensFields.style.display = 'block';
+            document.querySelector('select[name="matiere"]').setAttribute('required', '');
+            document.querySelector('select[name="professeur"]').setAttribute('required', '');
             break;
-            
-        case 'FORMATION_MILITAIRE':
-            fields.horaire.style.display = 'block';
-            setRequired(['horaire']);
-            break;
-            
-        case 'TOURNEE':
-            fields.tournee.style.display = 'block';
-            fields.date_fin.style.display = 'block';
-            fields.horaire.style.display = 'none';
-            setRequired(['titre_evenement', 'date_debut', 'date_fin']);
-            break;
-            
-        case 'SORTIE':
-            fields.sortie.style.display = 'block';
-            fields.date_fin.style.display = 'block';
-            fields.horaire.style.display = 'none';
-            setRequired(['titre_evenement', 'matiere', 'date_debut', 'date_fin']);
-            break;
-            
-        case 'PROJET':
-            fields.projet.style.display = 'block';
-            fields.date_fin.style.display = 'block';
-            fields.horaire.style.display = 'none';
-            setRequired(['titre_evenement', 'date_debut', 'date_fin']);
-            break;
-            
-        case 'VISITE_MILITAIRE':
-            fields.visite.style.display = 'block';
-            fields.date_fin.style.display = 'block';
-            fields.horaire.style.display = 'none';
-            setRequired(['titre_evenement', 'date_debut', 'date_fin']);
-            break;
-            
         case 'CONFERENCE':
-            fields.conference.style.display = 'block';
-            fields.horaire.style.display = 'block';
-            setRequired(['titre_evenement', 'date_debut', 'horaire']);
+            coursExamensFields.style.display = 'block';
+            conferenceFields.style.display = 'block';
+            document.querySelector('select[name="matiere"]').setAttribute('required', '');
+            document.querySelector('select[name="professeur"]').setAttribute('required', '');
+            document.querySelector('input[name="titre_evenement"]').setAttribute('required', '');
+            break;
+        case 'SORTIE':
+            sortieFields.style.display = 'block';
+            coursExamensFields.style.display = 'block';
+            dateFinGroup.style.display = 'block';
+            document.querySelector('select[name="matiere"]').setAttribute('required', '');
+            document.querySelector('select[name="professeur"]').setAttribute('required', '');
+            document.querySelector('input[name="titre_evenement"]').setAttribute('required', '');
+            break;
+        case 'TOURNEE':
+        case 'PROJET':
+        case 'VISITE_MILITAIRE':
+        case 'JOUR_FERIE':
+        case 'VACANCES':
+            dateFinGroup.style.display = 'block';
+            document.getElementById(`${type.toLowerCase()}_fields`).style.display = 'block';
+            document.querySelector('input[name="titre_evenement"]').setAttribute('required', '');
             break;
     }
 
     // Toujours requis
-    setRequired(['promotion']);
+    document.querySelector('input[name="date_debut"]').setAttribute('required', '');
+    document.querySelector('select[name="promotion"]').setAttribute('required', '');
 }
 
-// Mise à jour de l'envoi du formulaire
+// Initialiser l'affichage au chargement
 document.addEventListener('DOMContentLoaded', function() {
-    const mainForm = document.querySelector('form[action="{% url "creer_emploi_temps" %}"]');
-    
-    if (mainForm) {
-        mainForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const submitButton = this.querySelector('button[type="submit"]');
-            submitButton.disabled = true;
-            
-            try {
-                const response = await fetch(this.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    alert(data.message || 'Événement créé avec succès');
-                    window.location.reload();
-                } else {
-                    alert(data.error || 'Une erreur est survenue');
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
-                alert('Une erreur est survenue lors de la communication avec le serveur');
-            } finally {
-                submitButton.disabled = false;
-            }
-        });
-    }
-});
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const mainForm = document.querySelector('form[action="{% url "creer_emploi_temps" %}"]');
-    const quickAddForms = document.querySelectorAll('.quick-add-form');
-
-    if (mainForm) {
-        mainForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const submitButton = this.querySelector('button[type="submit"]');
-            submitButton.disabled = true;
-            
-            try {
-                const response = await fetch(this.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Afficher un message de succès
-                    alert(data.message || 'Événement créé avec succès');
-                    // Recharger la page
-                    window.location.reload();
-                } else {
-                    // Afficher l'erreur
-                    alert(data.error || 'Une erreur est survenue');
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
-                alert('Une erreur est survenue lors de la communication avec le serveur');
-            } finally {
-                submitButton.disabled = false;
-            }
-        });
-    }
-
-    // Gestion des formulaires rapides
-    quickAddForms.forEach(form => {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const submitButton = this.querySelector('button[type="submit"]');
-            submitButton.disabled = true;
-            
-            try {
-                const response = await fetch(this.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    window.location.reload();
-                } else {
-                    alert(data.error || 'Une erreur est survenue');
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
-                alert('Une erreur est survenue');
-            } finally {
-                submitButton.disabled = false;
-            }
-        });
-    });
+    toggleFields();
 });
 
+// Mettre à jour les champs quand le type d'événement change
+document.getElementById('type_evenement').addEventListener('change', toggleFields);
+
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form');
-    
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        // Afficher le spinner
-        document.querySelector('.loading-spinner').style.display = 'block';
-        
-        try {
+    // Gérer la soumission des formulaires rapides
+    document.querySelectorAll('.quick-add-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
             const formData = new FormData(this);
-            const response = await fetch(this.action, {
+            const matiereSelect = this.querySelector('select[name="matiere"]');
+            
+            if (!matiereSelect.value) {
+                alert('Veuillez sélectionner une matière');
+                return;
+            }
+
+            // Ajouter automatiquement la date et l'horaire
+            formData.append('date_debut', this.querySelector('input[name="date"]').value);
+            formData.append('horaire', this.querySelector('input[name="horaire"]').value);
+
+            fetch(this.action, {
                 method: 'POST',
                 body: formData,
                 headers: {
                     'X-CSRFToken': formData.get('csrfmiddlewaretoken')
                 }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Si la réponse est ok, recharger la page
+                    window.location.reload();
+                    return;
+                }
+                // Si la réponse n'est pas ok, essayer de lire le message d'erreur
+                return response.json().then(data => {
+                    throw new Error(data.error || 'Une erreur est survenue');
+                });
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                if (error.message.includes('SyntaxError')) {
+                    // Si l'ajout a réussi mais la réponse n'est pas du JSON
+                    window.location.reload();
+                } else {
+                    alert(error.message);
+                }
             });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                // Recharger le calendrier sans recharger la page
-                updateCalendar();
-                form.reset();
-            } else {
-                showError(data.error);
-            }
-        } catch (error) {
-            showError('Une erreur est survenue');
-        } finally {
-            // Cacher le spinner
-            document.querySelector('.loading-spinner').style.display = 'none';
+        });
+
+        // Mettre à jour automatiquement le professeur quand une matière est sélectionnée
+        const matiereSelect = form.querySelector('select[name="matiere"]');
+        if (matiereSelect) {
+            matiereSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                if (selectedOption && selectedOption.dataset.professeur) {
+                    const professeurId = selectedOption.dataset.professeur;
+                    const formData = new FormData(this.closest('form'));
+                    formData.set('professeur', professeurId);
+                }
+            });
         }
     });
-    
-    function showError(message) {
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'error-message';
-        errorDiv.textContent = message;
-        form.appendChild(errorDiv);
-        setTimeout(() => errorDiv.remove(), 5000);
-    }
-    
-    async function updateCalendar() {
-        // Logique pour mettre à jour le calendrier via AJAX
-    }
 });
 
-// Amélioration de la fonction filterByDate
 function filterByDate() {
     const dateFilter = document.getElementById('date-filter').value;
     if (dateFilter) {
-        const currentUrl = new URL(window.location.href);
-        currentUrl.searchParams.set('date_debut', dateFilter);
-        window.location.href = currentUrl.toString();
+        window.location.href = `?promotion={{ promotion_selected }}&date_debut=${dateFilter}`;
     }
 }
 </script>
