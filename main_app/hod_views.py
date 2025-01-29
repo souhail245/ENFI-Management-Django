@@ -1306,50 +1306,40 @@ def creer_emploi_temps(request):
             date_debut = request.POST.get("date_debut")
             date_fin = request.POST.get("date_fin")
             titre_evenement = request.POST.get("titre_evenement")
+            horaire = request.POST.get("horaire")
 
+            # Données de base pour l'événement
             event_data = {
                 'niveau': promotion,
                 'type_evenement': type_evenement,
-                'date_debut': date_debut,
                 'date': date_debut,
-                'titre_evenement': titre_evenement,  # Assurez-vous que cette ligne existe
-                'horaire': None  # Par défaut à None
+                'date_debut': date_debut,
+                'titre_evenement': titre_evenement if titre_evenement else None  # S'assurer que None est stocké si vide
             }
 
+            # Pour les événements avec horaire
             if type_evenement in EmploiTemps.EVENEMENTS_DATE_ET_HORAIRE:
-                # Pour les événements qui nécessitent un horaire
-                horaire = request.POST.get("horaire")
-                if not horaire:
-                    messages.error(request, "L'horaire est requis pour ce type d'événement")
-                    return redirect(f"{reverse('creer_emploi_temps')}?promotion={promotion}")
                 event_data['horaire'] = horaire
-                
-                matiere_id = request.POST.get("matiere")
-                if matiere_id:
-                    matiere = get_object_or_404(Subject, id=matiere_id)
-                    event_data['matiere'] = matiere
-                    event_data['professeur'] = matiere.staff
+                if type_evenement != 'FORMATION_MILITAIRE' and type_evenement != 'CONFERENCE':
+                    matiere_id = request.POST.get("matiere")
+                    if matiere_id:
+                        matiere = get_object_or_404(Subject, id=matiere_id)
+                        event_data['matiere'] = matiere
+                        event_data['professeur'] = matiere.staff
 
+            # Pour les événements multi-jours
             elif type_evenement in EmploiTemps.EVENEMENTS_MULTI_JOURS:
-                # Pour les événements multi-jours
-                if not date_fin:
-                    messages.error(request, "La date de fin est requise pour ce type d'événement")
-                    return redirect(f"{reverse('creer_emploi_temps')}?promotion={promotion}")
-                event_data['date_fin'] = date_fin
-                event_data['horaire'] = None
-                # S'assurer que le titre est obligatoire pour les événements multi-jours
-                if not titre_evenement:
-                    messages.error(request, "Le titre est requis pour ce type d'événement")
-                    return redirect(f"{reverse('creer_emploi_temps')}?promotion={promotion}")
+                event_data['date_fin'] = date_fin if date_fin else date_debut
+                event_data['horaire'] = None  # Forcer horaire à None pour événements multi-jours
 
-            # Sauvegarder l'événement
+            # Créer l'événement
             emploi_temps = EmploiTemps.objects.create(**event_data)
+            
             messages.success(request, "Événement ajouté avec succès")
-            print(f"Événement ajouté : {emploi_temps}")
 
         except Exception as e:
             messages.error(request, f"Erreur lors de l'ajout : {str(e)}")
-            print(f"Erreur lors de l'ajout : {str(e)}")
+            print(f"Erreur détaillée : {str(e)}")  # Pour le débogage
         
         return redirect(f"{reverse('creer_emploi_temps')}?promotion={promotion}")
 
