@@ -1505,6 +1505,8 @@ def historique_emploi(request):
         date_debut = datetime.now().date().replace(day=1)
     
     if date_fin:
+        date_fin = datetime.strptime(date_fin, '%Y-%m-%d').date()
+    else:
         date_fin = (date_debut + timedelta(days=32)).replace(day=1) - timedelta(days=1)
 
     # Récupérer TOUS les types d'événements
@@ -1522,7 +1524,6 @@ def historique_emploi(request):
     # Organiser les sessions par date avec tous les types d'événements
     sessions_by_date = defaultdict(dict)
     for emploi in emplois:
-        # Stocker tous les types d'événements, pas seulement les cours
         sessions_by_date[emploi.date][emploi.horaire] = emploi
 
     context = {
@@ -1566,4 +1567,3 @@ def supprimer_evenement(request, evenement_id):
     
     # Rediriger vers la même page avec la même promotion sélectionnée
     return redirect(f"{reverse('creer_emploi_temps')}?promotion={niveau}")
-
