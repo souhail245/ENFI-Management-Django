@@ -265,6 +265,44 @@
         width: 100%;
         padding: 2px;
     }
+
+    .multi-day-event {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .multi-day-event .session-card {
+        margin: 0;
+        padding: 15px;
+        text-align: center;
+        border-radius: 8px;
+    }
+
+    .multi-day-event .session-card strong {
+        font-size: 1.2em;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .multi-day-event .session-card small {
+        display: block;
+        margin: 5px 0;
+    }
+
+    .bg-info { background-color: #17a2b8 !important; }
+    .bg-warning { background-color: #ffc107 !important; }
+    .bg-secondary { background-color: #6c757d !important; }
+    .bg-primary { background-color: #007bff !important; }
+
+    .session-card .delete-event {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .session-card .delete-event:hover {
+        color: white;
+    }
 </style>
 
 
@@ -492,96 +530,41 @@
                             <strong>{{ date|date:"d/m/Y" }}</strong><br>
                             <small>{{ date|date:"l"|capfirst }}</small>
                         </td>
+                        
+                        {% with full_day_event=sessions_by_date|get_dict_item:date|get_dict_item:'full_day' %}
+                        {% if full_day_event %}
+                        <!-- Remplacer tous les td par une seule cellule qui s'étend -->
+                        <td colspan="{{ horaires|length }}" class="multi-day-event">
+                            <div class="session-card {% if full_day_event.type_evenement == 'TOURNEE' %}bg-info
+                                                {% elif full_day_event.type_evenement == 'PROJET' %}bg-warning
+                                                {% elif full_day_event.type_evenement == 'VISITE_MILITAIRE' %}bg-secondary
+                                                {% else %}bg-primary{% endif %} text-white">
+                                <strong>{{ full_day_event.type_evenement|title }}</strong><br>
+                                {% if full_day_event.titre_evenement %}
+                                <small>{{ full_day_event.titre_evenement }}</small><br>
+                                {% endif %}
+                                <small>Du {{ full_day_event.date_debut|date:"d/m" }} au {{ full_day_event.date_fin|date:"d/m" }}</small>
+                                
+                                <a href="{% url 'supprimer_evenement' full_day_event.id %}" 
+                                   class="delete-event" 
+                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');"
+                                   title="Supprimer cet événement">
+                                    <i class="fas fa-times-circle"></i>
+                                </a>
+                            </div>
+                        </td>
+                        {% else %}
+                        <!-- Afficher les cellules normales pour les horaires -->
                         {% for horaire in horaires %}
-                            <td>
-                                {% with session=sessions_by_date|get_dict_item:date|get_dict_item:horaire %}
-                                    {% if session %}
-                                        <div class="session-card {% if session.type_evenement == 'JOUR_FERIE' %}jour-ferie
-                                            {% elif session.type_evenement == 'VACANCES' %}vacances
-                                            {% elif session.type_evenement == 'EXAMEN_PARTIEL' or session.type_evenement == 'EXAMEN_FINAL' %}examen{% endif %}">
-                                            
-                                            <!-- Ajouter l'icône de suppression -->
-                                            <a href="{% url 'supprimer_evenement' session.id %}" 
-                                               class="delete-event" 
-                                               onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');"
-                                               title="Supprimer cet événement">
-                                                <i class="fas fa-times-circle"></i>
-                                            </a>
-                                            
-                                            {% if session.type_evenement == 'COURS' %}
-                                                <strong>{{ session.matiere.name }}</strong><br>
-                                                <small>{{ session.professeur.admin.get_full_name }}</small>
-                                            {% elif session.type_evenement == 'RATTRAPAGE' %}
-                                                <strong style="color: #721c24;">Rattrapage</strong><br>
-                                                <strong>{{ session.matiere.name }}</strong>
-                                                <small>{{ session.professeur.admin.get_full_name }}</small>
-                                            {% elif session.type_evenement == 'FORMATION_MILITAIRE' %}
-                                                <strong style="color: #004085;">Formation Militaire</strong><br>
-                                                <small>{{ session.titre_evenement }}</small>
-                                            {% elif session.type_evenement == 'TOURNEE' %}
-                                                <div style="text-align: center; background-color: #e9ecef; padding: 8px; border-radius: 4px;">
-                                                    <strong style="color: #0c5460; display: block;">TOURNÉE</strong>
-                                                    {% if session.titre_evenement %}
-                                                        <small style="display: block; margin-top: 4px;">{{ session.titre_evenement }}</small>
-                                                    {% endif %}
-                                                </div>
-                                            {% elif session.type_evenement == 'SORTIE' %}
-                                                <strong style="color: #383d41;">Sortie</strong><br>
-                                                <small>{{ session.titre_evenement }}</small><br>
-                                                <small>Matière: {{ session.matiere.name }}</small>
-                                            {% elif session.type_evenement == 'PROJET' %}
-                                                <strong style="color: #155724;">Projet</strong><br>
-                                                <small>{{ session.titre_evenement }}</small>
-                                            {% elif session.type_evenement == 'VISITE_MILITAIRE' %}
-                                                <strong style="color: #1b1e21;">Visite Militaire</strong><br>
-                                                <small>{{ session.titre_evenement }}</small>
-                                            {% elif session.type_evenement == 'CONFERENCE' %}
-                                                <strong style="color: #856404;">Conférence</strong><br>
-                                                <small>{{ session.titre_evenement }}</small>
-                                            {% elif session.type_evenement == 'EXAMEN_PARTIEL' %}
-                                                <strong style="color: #856404;">Examen Partiel</strong><br>
-                                                <strong>{{ session.matiere.name }}</strong>
-                                            {% elif session.type_evenement == 'EXAMEN_FINAL' %}
-                                                <strong style="color: #721c24;">Examen Final</strong><br>
-                                                <strong>{{ session.matiere.name }}</strong>
-                                            {% elif session.type_evenement == 'JOUR_FERIE' %}
-                                                <div style="text-align: center;">
-                                                    <strong style="color: #155724;">JOUR FÉRIÉ</strong><br>
-                                                    <small>{{ session.titre_evenement }}</small>
-                                                </div>
-                                            {% elif session.type_evenement == 'VACANCES' %}
-                                                <div style="text-align: center;">
-                                                    <strong style="color: #004085;">VACANCES</strong><br>
-                                                    <small>{{ session.titre_evenement }}</small>
-                                                </div>
-                                            {% endif %}
-                                        </div>
-                                    {% else %}
-                                        <!-- Nouvelle cellule vide avec liste déroulante -->
-                                        <form class="quick-add-form" method="POST" action="{% url 'creer_emploi_temps' %}">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="type_evenement" value="COURS">
-                                            <input type="hidden" name="promotion" value="{{ promotion_selected }}">
-                                            <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
-                                            <input type="hidden" name="horaire" value="{{ horaire }}">
-                                            
-                                            <select name="matiere" class="form-control form-control-sm">
-                                                <option value="">-- Choisir matière --</option>
-                                                {% for subject in subjects %}
-                                                    <option value="{{ subject.id }}" data-professeur="{{ subject.staff.id }}">
-                                                        {{ subject.name }}
-                                                    </option>
-                                                {% endfor %}
-                                            </select>
-                                            
-                                            <button type="submit" class="btn btn-sm btn-primary mt-1">
-                                                <i class="fas fa-plus"></i>
-                                            </button>
-                                        </form>
-                                    {% endif %}
-                                {% endwith %}
-                            </td>
+                        <td>
+                            {% with session=sessions_by_date|get_dict_item:date|get_dict_item:horaire %}
+                            <!-- Le reste du code pour les sessions normales -->
+                            {% include "hod_template/session_cell.html" with session=session %}
+                            {% endwith %}
+                        </td>
                         {% endfor %}
+                        {% endif %}
+                        {% endwith %}
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -629,68 +612,64 @@ document.getElementById('promotion').addEventListener('change', function() {
 
 function toggleFields() {
     const type = document.getElementById('type_evenement').value;
-    const coursExamensFields = document.getElementById('cours_examens_fields');
-    const ferieFields = document.getElementById('ferie_fields');
-    const vacancesFields = document.getElementById('vacances_fields');
-    const rattrapageFields = document.getElementById('rattrapage_fields');
-    const tourneeFields = document.getElementById('tournee_fields');
-    const sortieFields = document.getElementById('sortie_fields');
-    const projetFields = document.getElementById('projet_fields');
-    const visiteMilitaireFields = document.getElementById('visite_militaire_fields');
-    const conferenceFields = document.getElementById('conference_fields');
-    const horaireFields = document.getElementById('horaire_fields');
-    const dateFinGroup = document.getElementById('date_fin_group');
+    
+    // Tous les champs possibles
+    const fields = {
+        coursExamens: document.getElementById('cours_examens_fields'),
+        ferie: document.getElementById('ferie_fields'),
+        vacances: document.getElementById('vacances_fields'),
+        rattrapage: document.getElementById('rattrapage_fields'),
+        tournee: document.getElementById('tournee_fields'),
+        sortie: document.getElementById('sortie_fields'),
+        projet: document.getElementById('projet_fields'),
+        visiteMilitaire: document.getElementById('visite_militaire_fields'),
+        conference: document.getElementById('conference_fields'),
+        horaire: document.getElementById('horaire_fields'),
+        dateFin: document.getElementById('date_fin_group')
+    };
 
     // Cacher tous les champs d'abord
-    [coursExamensFields, ferieFields, vacancesFields, rattrapageFields, 
-     tourneeFields, sortieFields, projetFields, visiteMilitaireFields, 
-     conferenceFields].forEach(field => {
+    Object.values(fields).forEach(field => {
         if (field) field.style.display = 'none';
     });
 
-    // Réinitialiser les champs requis
+    // Enlever tous les attributs required
     document.querySelectorAll('[required]').forEach(field => {
         field.removeAttribute('required');
     });
 
-    // Configurer les champs selon le type d'événement
-    switch(type) {
-        case 'COURS':
-        case 'EXAMEN_PARTIEL':
-        case 'EXAMEN_FINAL':
-            coursExamensFields.style.display = 'block';
-            document.querySelector('select[name="matiere"]').setAttribute('required', '');
-            document.querySelector('select[name="professeur"]').setAttribute('required', '');
-            break;
-        case 'RATTRAPAGE':
-            coursExamensFields.style.display = 'block';
-            document.querySelector('select[name="matiere"]').setAttribute('required', '');
-            document.querySelector('select[name="professeur"]').setAttribute('required', '');
-            break;
-        case 'CONFERENCE':
-            coursExamensFields.style.display = 'block';
-            conferenceFields.style.display = 'block';
-            document.querySelector('select[name="matiere"]').setAttribute('required', '');
-            document.querySelector('select[name="professeur"]').setAttribute('required', '');
-            document.querySelector('input[name="titre_evenement"]').setAttribute('required', '');
-            break;
-        case 'SORTIE':
-            sortieFields.style.display = 'block';
-            coursExamensFields.style.display = 'block';
-            dateFinGroup.style.display = 'block';
-            document.querySelector('select[name="matiere"]').setAttribute('required', '');
-            document.querySelector('select[name="professeur"]').setAttribute('required', '');
-            document.querySelector('input[name="titre_evenement"]').setAttribute('required', '');
-            break;
-        case 'TOURNEE':
-        case 'PROJET':
-        case 'VISITE_MILITAIRE':
-        case 'JOUR_FERIE':
-        case 'VACANCES':
-            dateFinGroup.style.display = 'block';
-            document.getElementById(`${type.toLowerCase()}_fields`).style.display = 'block';
-            document.querySelector('input[name="titre_evenement"]').setAttribute('required', '');
-            break;
+    // Définir les types d'événements
+    const EVENEMENTS_AVEC_HORAIRE = ['EXAMEN_PARTIEL', 'EXAMEN_FINAL', 'RATTRAPAGE', 'FORMATION_MILITAIRE', 'CONFERENCE'];
+    const EVENEMENTS_MULTI_JOURS = ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE'];
+
+    // Logique d'affichage selon le type
+    if (EVENEMENTS_AVEC_HORAIRE.includes(type)) {
+        // Événements avec horaire
+        fields.horaire.style.display = 'block';
+        fields.coursExamens.style.display = 'block';
+        if (type === 'CONFERENCE') {
+            fields.conference.style.display = 'block';
+        }
+        // Champs requis
+        document.querySelector('select[name="horaire"]').setAttribute('required', '');
+        if (fields.coursExamens.querySelector('select[name="matiere"]')) {
+            fields.coursExamens.querySelector('select[name="matiere"]').setAttribute('required', '');
+        }
+    } 
+    else if (EVENEMENTS_MULTI_JOURS.includes(type)) {
+        // Événements sur plusieurs jours
+        fields.dateFin.style.display = 'block';
+        document.querySelector('input[name="date_fin"]').setAttribute('required', '');
+        
+        // Afficher les champs spécifiques
+        const specificField = document.getElementById(`${type.toLowerCase()}_fields`);
+        if (specificField) {
+            specificField.style.display = 'block';
+            const titreInput = specificField.querySelector('input[name="titre_evenement"]');
+            if (titreInput) {
+                titreInput.setAttribute('required', '');
+            }
+        }
     }
 
     // Toujours requis
@@ -698,13 +677,29 @@ function toggleFields() {
     document.querySelector('select[name="promotion"]').setAttribute('required', '');
 }
 
-// Initialiser l'affichage au chargement
+// Initialisation au chargement
 document.addEventListener('DOMContentLoaded', function() {
     toggleFields();
 });
 
-// Mettre à jour les champs quand le type d'événement change
+// Écouter les changements
 document.getElementById('type_evenement').addEventListener('change', toggleFields);
+
+// Validation avant soumission
+document.querySelector('form').addEventListener('submit', function(e) {
+    const type = document.getElementById('type_evenement').value;
+    const EVENEMENTS_MULTI_JOURS = ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE'];
+    
+    if (EVENEMENTS_MULTI_JOURS.includes(type)) {
+        const dateDebut = new Date(document.querySelector('input[name="date_debut"]').value);
+        const dateFin = new Date(document.querySelector('input[name="date_fin"]').value);
+        
+        if (dateFin < dateDebut) {
+            e.preventDefault();
+            alert('La date de fin doit être postérieure à la date de début');
+        }
+    }
+});
 
 document.addEventListener('DOMContentLoaded', function() {
     // Gérer la soumission des formulaires rapides

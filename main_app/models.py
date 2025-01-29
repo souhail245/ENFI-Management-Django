@@ -1,11 +1,11 @@
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import UserManager
 from django.dispatch import receiver
-from django.db.models.signals import post_save
-from django.db import models  # Correction ici : importer models directement de django.db
+from django.db.models import signals, Q
+from django.db import models
 from django.contrib.auth.models import AbstractUser
-
-
+from django.core.exceptions import ValidationError
+from datetime import date
 
 
 class CustomUserManager(UserManager):
@@ -68,9 +68,6 @@ class Admin(models.Model):
     admin = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
 
 
-
-from django.db import models
-
 class Course(models.Model):
     LEVEL_CHOICES = [
         ('3ème année', '3ème année'),
@@ -85,6 +82,7 @@ class Course(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.niveau})"  # Affiche le nom du cours avec le niveau
+
 
 class Student(models.Model):
     admin = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
@@ -275,6 +273,7 @@ class StudentResult(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
+
 class Absence(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="absences")
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="absences")
@@ -288,7 +287,7 @@ class Absence(models.Model):
         return f"{self.student.matricule} - {self.subject.name} - {self.date}"
 
 
-@receiver(post_save, sender=CustomUser)
+@receiver(signals.post_save, sender=CustomUser)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         if instance.user_type == 1:
@@ -299,7 +298,7 @@ def create_user_profile(sender, instance, created, **kwargs):
             Student.objects.create(admin=instance)
 
 
-@receiver(post_save, sender=CustomUser)
+@receiver(signals.post_save, sender=CustomUser)
 def save_user_profile(sender, instance, **kwargs):
     if instance.user_type == 1:
         instance.admin.save()
@@ -307,8 +306,6 @@ def save_user_profile(sender, instance, **kwargs):
         instance.staff.save()
     if instance.user_type == 3:
         instance.student.save()
-
-
 
 
 class SuiviCours(models.Model):
@@ -324,9 +321,6 @@ class SuiviCours(models.Model):
     def __str__(self):
         return f"{self.matiere.name} : {self.heures_effectuees}/{self.total_heures} heures"
 
-
-from datetime import date
-from django.core.exceptions import ValidationError
 
 class EmploiTemps(models.Model):
 
@@ -362,7 +356,13 @@ class EmploiTemps(models.Model):
     )
     date = models.DateField(default=date.today) 
     jour = models.CharField(max_length=10, choices=JOUR_CHOICES, default='Lundi')  # Ajout d'une valeur par défaut
-    horaire = models.CharField(max_length=20, choices=HORAIRES_CHOICES, default='08:00-10:00')  # Ajout d'une valeur par défaut
+    horaire = models.CharField(
+        max_length=20, 
+        choices=HORAIRES_CHOICES, 
+        default='08:00-10:00',
+        null=True,  # Permettre les valeurs NULL
+        blank=True  # Permettre les valeurs vides dans le formulaire
+    )
 
     matiere = models.ForeignKey(
         Subject, 
@@ -417,24 +417,89 @@ class EmploiTemps(models.Model):
     numero_seance = models.IntegerField(default=0)  # Ajouter ce champ
     
     class Meta:
-        unique_together = ['date', 'horaire', 'niveau']
+        # Supprimer la contrainte unique pour permettre des événements sans horaire
+        unique_together = []
         
+    # Créer deux listes pour distinguer les types d'événements
+    EVENEMENTS_AVEC_HORAIRE = ['COURS', 'EXAMEN_PARTIEL', 'EXAMEN_FINAL', 'RATTRAPAGE', 'FORMATION_MILITAIRE', 'CONFERENCE']
+    EVENEMENTS_SANS_HORAIRE = ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE']
+    
+    # Nouvelle définition des constantes de type d'événements
+    EVENEMENTS_DATE_ET_HORAIRE = [
+        'COURS', 
+        'EXAMEN_PARTIEL',
+        'EXAMEN_FINAL',
+        'RATTRAPAGE',
+        'FORMATION_MILITAIRE',
+        'CONFERENCE'
+    ]
+    
+    EVENEMENTS_MULTI_JOURS = [
+        'TOURNEE',
+        'SORTIE',
+        'PROJET',
+        'VISITE_MILITAIRE'
+    ]
+
+    @property
+    def is_multi_day_event(self):
+        return self.type_evenement in self.EVENEMENTS_MULTI_JOURS
+
     def clean(self):
-        # Validation personnalisée
-        if self.date_fin and self.date_debut and self.date_fin < self.date_debut:
-            raise ValidationError("La date de fin ne peut pas être antérieure à la date de début")
+        super().clean()
+        if self.type_evenement in self.EVENEMENTS_MULTI_JOURS:
+            if not self.date_debut or not self.date_fin:
+                raise ValidationError({
+                    'date_debut': 'La date de début est requise',
+                    'date_fin': 'La date de fin est requise'
+                })
+            if self.date_fin < self.date_debut:
+                raise ValidationError('La date de fin ne peut pas être antérieure à la date de début')
+            
+            # Forcer l'horaire à None pour les événements multi-jours
+            self.horaire = None
+            
+            # Vérifier les chevauchements sur la période
+            chevauchement = EmploiTemps.objects.filter(
+                niveau=self.niveau,
+                type_evenement=self.type_evenement
+            ).exclude(id=self.id).filter(
+                Q(date_debut__range=(self.date_debut, self.date_fin)) |
+                Q(date_fin__range=(self.date_debut, self.date_fin)) |
+                Q(date_debut__lte=self.date_debut, date_fin__gte=self.date_fin)
+            )
+            
+            if chevauchement.exists():
+                raise ValidationError('Un événement du même type existe déjà sur cette période')
         
-        # Vérifier les chevauchements
-        overlapping = EmploiTemps.objects.filter(
-            niveau=self.niveau,
-            date=self.date,
-            horaire=self.horaire
-        ).exclude(id=self.id)
-        
-        if overlapping.exists():
-            raise ValidationError("Un événement existe déjà à cet horaire pour cette promotion")
+        elif self.type_evenement in self.EVENEMENTS_JOUR_UNIQUE:
+            if not self.horaire:
+                raise ValidationError('L\'horaire est requis pour ce type d\'événement')
+            
+            # Forcer la date de fin à être égale à la date de début
+            self.date_fin = self.date_debut
+            
+            # Vérifier les chevauchements sur le créneau horaire
+            chevauchement = EmploiTemps.objects.filter(
+                niveau=self.niveau,
+                date=self.date_debut,
+                horaire=self.horaire
+            ).exclude(id=self.id)
+            
+            if chevauchement.exists():
+                raise ValidationError('Un événement existe déjà à cet horaire')
     
     def save(self, *args, **kwargs):
+        # Vérifier le type d'événement
+        if self.is_multi_day_event:
+            # Pour les événements multi-jours, désactiver l'horaire
+            self.horaire = None
+            if not self.date_fin:
+                self.date_fin = self.date_debut
+        else:
+            # Pour les événements à horaire fixe, la date de fin = date de début
+            self.date_fin = self.date_debut
+
         is_new = self.pk is None
         super().save(*args, **kwargs)
         
@@ -487,3 +552,4 @@ class EmploiTemps(models.Model):
 
     def __str__(self):
         return f"{self.niveau} - {self.date} - {self.horaire} : {self.matiere}"
+

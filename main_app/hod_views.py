@@ -199,7 +199,7 @@ def export_absences_pdf(request):
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, 0), 12),
         ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+        ('BACKGROUND', (0,  1), (-1, -1), colors.white),
         ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
         ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
         ('FONTSIZE', (0, 1), (-1, -1), 10),
@@ -1301,136 +1301,96 @@ from django.urls import reverse
 def creer_emploi_temps(request):
     if request.method == "POST":
         try:
-            type_evenement = request.POST.get("type_evenement", "COURS")
+            type_evenement = request.POST.get("type_evenement")
             promotion = request.POST.get("promotion")
-            date = request.POST.get("date") or request.POST.get("date_debut")
-            horaire = request.POST.get("horaire")
-            matiere_id = request.POST.get("matiere")
-            titre_evenement = request.POST.get('titre_evenement')
+            date_debut = request.POST.get("date_debut")
+            date_fin = request.POST.get("date_fin")
+            titre_evenement = request.POST.get("titre_evenement")
 
-            date_debut = request.POST.get("date_debut") or date
-            date_fin = request.POST.get("date_fin") or date
+            event_data = {
+                'niveau': promotion,
+                'type_evenement': type_evenement,
+                'date_debut': date_debut,
+                'date': date_debut,
+                'titre_evenement': titre_evenement,  # Assurez-vous que cette ligne existe
+                'horaire': None  # Par défaut à None
+            }
 
-            if not all([promotion, date, horaire, matiere_id]):
-                messages.error(request, "Tous les champs obligatoires sont requis")
-                return redirect(f"{reverse('creer_emploi_temps')}?promotion={promotion}")
-
-            # Récupérer la matière et le professeur associé
-            matiere = get_object_or_404(Subject, id=matiere_id)
-            professeur = matiere.staff  # Le professeur est lié à la matière
-            
-            if type_evenement in ['VACANCES', 'JOUR_FERIE', 'TOURNEE', 'PROJET', 'VISITE_MILITAIRE']:
-                # Gérer les événements qui peuvent durer plusieurs jours
-                
-                # Convert date and date_fin to date objects
-                date_obj = datetime.strptime(date_debut, "%Y-%m-%d").date()
-                date_fin_obj = datetime.strptime(date_fin, "%Y-%m-%d").date()
-                
-                # Calcule le nombre de jours
-                num_days = (date_fin_obj - date_obj).days + 1
-                
-                for i in range(num_days):
-                    current_date = date_obj + timedelta(days=i)
-                    
-                    existing_event = EmploiTemps.objects.filter(
-                        date=current_date,
-                        horaire=horaire,
-                        niveau=promotion
-                        ).first()
-                    
-                    if existing_event:
-                        messages.error(request, f"Un événement existe déjà pour le {current_date} et cet horaire")
-                        return redirect(f"{reverse('creer_emploi_temps')}?promotion={promotion}")
-
-                for i in range(num_days):
-                    current_date = date_obj + timedelta(days=i)
-
-                    event_data = {
-                        'niveau': promotion,
-                        'type_evenement': type_evenement,
-                        'date': current_date,
-                        'date_debut': date_obj,
-                        'date_fin': date_fin_obj,
-                        'horaire': horaire,
-                        'matiere': matiere if type_evenement not in ['VACANCES', 'JOUR_FERIE'] else None,
-                        'professeur': professeur if type_evenement not in ['VACANCES', 'JOUR_FERIE'] else None,
-                        'titre_evenement': titre_evenement
-                    }
-                    EmploiTemps.objects.create(**event_data)
-
-            else:
-                 existing_event = EmploiTemps.objects.filter(
-                    date=date,
-                    horaire=horaire,
-                    niveau=promotion
-                ).first()
-
-                 if existing_event:
-                    messages.error(request, "Un événement existe déjà à cet horaire")
+            if type_evenement in EmploiTemps.EVENEMENTS_DATE_ET_HORAIRE:
+                # Pour les événements qui nécessitent un horaire
+                horaire = request.POST.get("horaire")
+                if not horaire:
+                    messages.error(request, "L'horaire est requis pour ce type d'événement")
                     return redirect(f"{reverse('creer_emploi_temps')}?promotion={promotion}")
-                 
-                 # Créer l'événement
-                 event_data = {
-                    'niveau': promotion,
-                    'type_evenement': type_evenement,
-                    'date': date,
-                    'date_debut': date_debut,
-                    'date_fin': date_fin,
-                    'horaire': horaire,
-                    'matiere': matiere,
-                    'professeur': professeur,
-                    'titre_evenement': titre_evenement
-                }
+                event_data['horaire'] = horaire
+                
+                matiere_id = request.POST.get("matiere")
+                if matiere_id:
+                    matiere = get_object_or_404(Subject, id=matiere_id)
+                    event_data['matiere'] = matiere
+                    event_data['professeur'] = matiere.staff
 
-                 EmploiTemps.objects.create(**event_data)
-            
+            elif type_evenement in EmploiTemps.EVENEMENTS_MULTI_JOURS:
+                # Pour les événements multi-jours
+                if not date_fin:
+                    messages.error(request, "La date de fin est requise pour ce type d'événement")
+                    return redirect(f"{reverse('creer_emploi_temps')}?promotion={promotion}")
+                event_data['date_fin'] = date_fin
+                event_data['horaire'] = None
+                # S'assurer que le titre est obligatoire pour les événements multi-jours
+                if not titre_evenement:
+                    messages.error(request, "Le titre est requis pour ce type d'événement")
+                    return redirect(f"{reverse('creer_emploi_temps')}?promotion={promotion}")
+
+            # Sauvegarder l'événement
+            emploi_temps = EmploiTemps.objects.create(**event_data)
             messages.success(request, "Événement ajouté avec succès")
-            return redirect(f"{reverse('creer_emploi_temps')}?promotion={promotion}")
-
+            print(f"Événement ajouté : {emploi_temps}")
 
         except Exception as e:
             messages.error(request, f"Erreur lors de l'ajout : {str(e)}")
-            return redirect(f"{reverse('creer_emploi_temps')}?promotion={promotion}")
+            print(f"Erreur lors de l'ajout : {str(e)}")
+        
+        return redirect(f"{reverse('creer_emploi_temps')}?promotion={promotion}")
 
     else:
-        # Récupérer la promotion sélectionnée
         promotion_selected = request.GET.get('promotion', '3ème année')
-        
-        # Liste des promotions disponibles
-        promotions = [
-            '3ème année',
-            '4ème année',
-            '5ème année'
-        ]
-        
+        promotions = ['3ème année', '4ème année', '5ème année']
         date_debut = request.GET.get('date_debut', datetime.now().date())
         if isinstance(date_debut, str):
             date_debut = datetime.strptime(date_debut, '%Y-%m-%d').date()
-        
         date_fin = date_debut + timedelta(days=14)
-        
-        # Filtrer les sessions par promotion
         sessions = EmploiTemps.objects.filter(
-            date__range=[date_debut, date_fin],
-            niveau=promotion_selected
+            Q(date__range=[date_debut, date_fin], niveau=promotion_selected) |
+            Q(date_debut__lte=date_fin, date_fin__gte=date_debut, niveau=promotion_selected)
         ).select_related('matiere', 'professeur')
-        
-        # Organisation des sessions par date
+
         sessions_by_date = defaultdict(dict)
         dates = []
         current_date = date_debut
-        while current_date <= date_fin:
+        while (current_date <= date_fin):
             dates.append(current_date)
             current_date += timedelta(days=1)
-
         horaires = ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00']
         
+        # Organiser les sessions par date
         for session in sessions:
-            sessions_by_date[session.date][session.horaire] = session
-
+            if session.is_multi_day_event:
+                # Pour les événements multi-jours, ajouter à toutes les dates concernées
+                event_start = max(session.date_debut, date_debut)
+                event_end = min(session.date_fin, date_fin)
+                current = event_start
+                while current <= event_end:
+                    # Stocker dans une clé spéciale pour les événements journée complète
+                    sessions_by_date[current]['full_day'] = session
+                    current += timedelta(days=1)
+            else:
+                # Pour les événements standards avec horaire
+                sessions_by_date[session.date][session.horaire] = session
+        
         context = {
-            "promotions": promotions,  # Liste des promotions
-            "promotion_selected": promotion_selected,  # Promotion sélectionnée
+            "promotions": promotions,
+            "promotion_selected": promotion_selected,
             "subjects": Subject.objects.filter(niveau=promotion_selected).order_by('name'),
             "professeurs": Staff.objects.all().order_by('admin__last_name'),
             "sessions_by_date": dict(sessions_by_date),
@@ -1441,7 +1401,6 @@ def creer_emploi_temps(request):
             'page_title': f'Emploi du temps - {promotion_selected}'
         }
         return render(request, "hod_template/creer_emploi_temps.html", context)
-
 
 def choisir_promotion(request):
     promotions = [
@@ -1556,8 +1515,6 @@ def historique_emploi(request):
         date_debut = datetime.now().date().replace(day=1)
     
     if date_fin:
-        date_fin = datetime.strptime(date_fin, '%Y-%m-%d').date()
-    else:
         date_fin = (date_debut + timedelta(days=32)).replace(day=1) - timedelta(days=1)
 
     # Récupérer TOUS les types d'événements
@@ -1619,3 +1576,4 @@ def supprimer_evenement(request, evenement_id):
     
     # Rediriger vers la même page avec la même promotion sélectionnée
     return redirect(f"{reverse('creer_emploi_temps')}?promotion={niveau}")
+
