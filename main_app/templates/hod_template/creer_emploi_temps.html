@@ -267,42 +267,820 @@
     }
 
     .multi-day-event {
-        background-color: rgba(0, 0, 0, 0.05);
+        background-color: #f8f9fa;
+        border: none;
+        padding: 2px;
     }
 
     .multi-day-event .session-card {
+        min-height: 40px;
+        padding: 5px;
         margin: 0;
-        padding: 15px;
-        text-align: center;
-        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        transition: all 0.2s ease;
+        background-color: #ffffff; /* Fond blanc pour contraste */
+        color: #212529; /* Couleur du texte sombre */
     }
 
-    .multi-day-event .session-card strong {
-        font-size: 1.2em;
-        display: block;
-        margin-bottom: 5px;
+    .multi-day-event .event-content {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        width: 100%;
+        padding: 2px 5px;
     }
 
-    .multi-day-event .session-card small {
-        display: block;
-        margin: 5px 0;
+    .multi-day-event .event-type {
+        font-size: 0.7em;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        white-space: nowrap;
+        padding: 2px 4px;
+        border-radius: 3px;
+        background: #212529; /* Fond sombre pour contraste */
+        color: #ffffff; /* Couleur du texte blanc */
     }
 
-    .bg-info { background-color: #17a2b8 !important; }
-    .bg-warning { background-color: #ffc107 !important; }
-    .bg-secondary { background-color: #6c757d !important; }
-    .bg-primary { background-color: #007bff !important; }
-
-    .session-card .delete-event {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        color: rgba(255, 255, 255, 0.8);
+    .multi-day-event .event-type i {
+        font-size: 0.85em;
     }
 
-    .session-card .delete-event:hover {
-        color: white;
+    .multi-day-event .event-title {
+        font-size: 0.75em;
+        flex-grow: 1;
+        margin: 0;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        max-width: 150px;
     }
+
+    .multi-day-event .event-date {
+        font-size: 0.65em;
+        white-space: nowrap;
+        opacity: 0.9;
+    }
+
+    .multi-day-event .delete-event {
+        font-size: 0.7em;
+        opacity: 0.6;
+        padding: 2px;
+        margin-left: auto;
+        color: #dc3545; /* Couleur du texte rouge */
+    }
+
+    /* Styles améliorés pour les différents types d'événements */
+    .event-tournee {
+        background: linear-gradient(90deg, #1976D2, #2196F3);
+        color: #ffffff; /* Couleur du texte blanc */
+    }
+
+    .event-projet {
+        background: linear-gradient(90deg, #F57C00, #FFA726);
+        color: #ffffff; /* Couleur du texte blanc */
+    }
+
+    .event-visite-militaire {
+        background: linear-gradient(90deg, #546E7A, #78909C);
+        color: #ffffff; /* Couleur du texte blanc */
+    }
+
+    .event-formation-militaire {
+        background: linear-gradient(90deg, #2E7D32, #43A047);
+        color: #ffffff; /* Couleur du texte blanc */
+    }
+
+    .event-conference {
+        background: linear-gradient(90deg, #7B1FA2, #9C27B0);
+        color: #ffffff; /* Couleur du texte blanc */
+    }
+
+    /* Animation au survol */
+    .multi-day-event .session-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .multi-day-event .delete-event:hover {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+
+    /* Optimisation pour les petits écrans */
+    @media (max-width: 768px) {
+        .multi-day-event .event-title {
+            max-width: 100px;
+        }
+        
+        .multi-day-event .event-date {
+            display: none;
+        }
+    }
+
+/* Nouveau style optimisé pour les événements */
+.multi-day-event {
+    padding: 2px;
+    border: none;
+}
+
+.multi-day-event .session-card {
+    min-height: 40px;
+    padding: 5px;
+    margin: 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    transition: all 0.2s ease;
+    background-color: #ffffff; /* Fond blanc pour contraste */
+    color: #212529; /* Couleur du texte sombre */
+}
+
+.multi-day-event .event-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 2px 5px;
+}
+
+.multi-day-event .event-type {
+    font-size: 0.8em; /* Augmenter légèrement la taille du texte */
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    padding: 2px 4px;
+    border-radius: 3px;
+    background: #212529; /* Fond sombre pour contraste */
+    color: #ffffff; /* Couleur du texte blanc */
+}
+
+.multi-day-event .event-type i {
+    font-size: 0.85em;
+}
+
+.multi-day-event .event-title {
+    font-size: 0.85em; /* Augmenter légèrement la taille du texte */
+    flex-grow: 1;
+    margin: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 150px;
+}
+
+.multi-day-event .event-date {
+    font-size: 0.75em; /* Augmenter légèrement la taille du texte */
+    white-space: nowrap;
+    opacity: 0.9;
+}
+
+.multi-day-event .delete-event {
+    font-size: 0.7em;
+    opacity: 0.6;
+    padding: 2px;
+    margin-left: auto;
+    color: #dc3545; /* Couleur du texte rouge */
+}
+
+/* Styles améliorés pour les différents types d'événements */
+.event-tournee {
+    background: linear-gradient(90deg, #1976D2, #2196F3);
+    color: #ffffff; /* Couleur du texte blanc */
+}
+
+.event-projet {
+    background: linear-gradient(90deg, #F57C00, #FFA726);
+    color: #ffffff; /* Couleur du texte blanc */
+}
+
+.event-visite-militaire {
+    background: linear-gradient(90deg, #546E7A, #78909C);
+    color: #ffffff; /* Couleur du texte blanc */
+}
+
+.event-formation-militaire {
+    background: linear-gradient(90deg, #2E7D32, #43A047);
+    color: #ffffff; /* Couleur du texte blanc */
+}
+
+.event-conference {
+    background: linear-gradient(90deg, #7B1FA2, #9C27B0);
+    color: #ffffff; /* Couleur du texte blanc */
+}
+
+/* Animation au survol */
+.multi-day-event .session-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.multi-day-event .delete-event:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Optimisation pour les petits écrans */
+@media (max-width: 768px) {
+    .multi-day-event .event-title {
+        max-width: 100px;
+    }
+    
+    .multi-day-event .event-date {
+        display: none;
+    }
+}
+
+/* Styles généraux améliorés */
+.main-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: #f8f9fa;
+}
+
+/* Style du formulaire */
+.creation-form {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid #e9ecef;
+}
+
+.creation-form h3 {
+    color: #1a1a1a;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+/* Style des champs de formulaire */
+.form-control {
+    height: 48px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Style du calendrier */
+.calendar-section {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    padding: 1.5rem;
+}
+
+.calendar {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: none;
+}
+
+.calendar th {
+    background: #f8fafc;
+    color: #1a1a1a;
+    font-weight: 600;
+    padding: 1rem;
+    border-bottom: 2px solid #e9ecef;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.calendar td {
+    padding: 1rem;
+    border: 1px solid #e9ecef;
+    vertical-align: top;
+    height: 120px;
+}
+
+/* Style des événements */
+.session-card {
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s ease;
+}
+
+.session-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Style des boutons */
+.btn-primary {
+    background: #2563eb;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+/* Types d'événements améliorés */
+.event-cours { background: linear-gradient(135deg, #60a5fa20, #60a5fa10); border-left: 4px solid #60a5fa; }
+.event-examen { background: linear-gradient(135deg, #f8717120, #f8717110); border-left: 4px solid #f87171; }
+.event-projet { background: linear-gradient(135deg, #34d39920, #34d39910); border-left: 4px solid #34d399; }
+.event-conference { background: linear-gradient(135deg, #a78bfa20, #a78bfa10); border-left: 4px solid #a78bfa; }
+
+/* Animations douces */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.session-card {
+    animation: fadeIn 0.3s ease forwards;
+}
+
+/* Design System moderne */
+:root {
+  --primary: #2563eb;
+  --secondary: #64748b;
+  --success: #059669;
+  --danger: #dc2626;
+  --warning: #d97706;
+  --info: #0891b2;
+  --light: #f8fafc;
+  --dark: #0f172a;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+  
+  /* Spacing */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+}
+
+/* Améliorations globales */
+.main-container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: var(--spacing-xl);
+    background: var(--light);
+}
+
+/* Formulaire amélioré */
+.creation-form {
+    background: white;
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
+    padding: var(--spacing-xl);
+    border: 1px solid rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.creation-form::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--info));
+}
+
+/* Entrées de formulaire améliorées */
+.form-control {
+    height: 50px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background: #f8fafc;
+}
+
+.form-control:hover {
+    border-color: var(--primary);
+    background: white;
+}
+
+.form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(37,99,235,0.1);
+    background: white;
+}
+
+/* Labels améliorés */
+.form-group label {
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: var(--spacing-xs);
+    display: block;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+/* Boutons améliorés */
+.btn-group-custom {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-xl);
+}
+
+.btn {
+    position: relative;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    border: none;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.btn:hover::before {
+    opacity: 1;
+}
+
+/* Calendrier amélioré */
+.calendar-section {
+    background: white;
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
+    padding: var(--spacing-xl);
+    margin-top: var(--spacing-xl);
+}
+
+.calendar {
+    border-collapse: separate;
+    border-spacing: 2px;
+    width: 100%;
+}
+
+.calendar th {
+    background: #f1f5f9;
+    padding: var(--spacing-md);
+    font-weight: 600;
+    color: var(--dark);
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+}
+
+.calendar td {
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+    height: 120px;
+    vertical-align: top;
+    padding: var(--spacing-sm);
+}
+
+.calendar td:hover {
+    background: #f8fafc;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Cartes d'événements améliorées */
+.session-card {
+    border-radius: 8px;
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-xs);
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.session-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Animations fluides */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.session-card {
+    animation: slideIn 0.3s ease forwards;
+}
+
+/* Responsive Design amélioré */
+@media (max-width: 768px) {
+    .btn-group-custom {
+        grid-template-columns: 1fr;
+    }
+    
+    .calendar th {
+        font-size: 0.75rem;
+    }
+    
+    .calendar td {
+        padding: var(--spacing-xs);
+        height: 100px;
+    }
+}
+
+/* Loading States */
+.form-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.form-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 30px;
+    height: 30px;
+    border: 3px solid #f3f4f6;
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Design System Modernisé */
+:root {
+  /* Palette de couleurs professionnelle */
+  --primary-gradient: linear-gradient(135deg, #0061f2 0%, #6e00ff 100%);
+  --secondary-gradient: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+  --success-gradient: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
+  --warning-gradient: linear-gradient(135deg, #f9d423 0%, #ff4e50 100%);
+  --info-gradient: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);
+  
+  /* Nouvelles ombres plus subtiles */
+  --shadow-smooth: 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-hover: 0 8px 24px rgba(0,0,0,0.12);
+  --shadow-active: 0 4px 12px rgba(0,0,0,0.15);
+  
+  /* Nouvelles transitions */
+  --transition-fast: 0.15s ease-in-out;
+  --transition-medium: 0.25s ease-in-out;
+  --transition-slow: 0.35s ease-in-out;
+}
+
+/* Améliorations globales */
+.main-container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 2.5rem;
+    background: #f8fafc;
+    min-height: 100vh;
+}
+
+/* Style du formulaire amélioré */
+.creation-form {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: var(--shadow-smooth);
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition-medium);
+}
+
+.creation-form:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+}
+
+.creation-form::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--primary-gradient);
+}
+
+/* Nouveaux styles pour les champs de formulaire */
+.form-group {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.form-control {
+    height: 52px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: var(--transition-fast);
+    background: #f8fafc;
+}
+
+.form-control:hover {
+    border-color: #94a3b8;
+}
+
+.form-control:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    background: #ffffff;
+}
+
+/* Animations des labels */
+.form-group label {
+    position: absolute;
+    top: -0.5rem;
+    left: 0.75rem;
+    padding: 0 0.5rem;
+    background: #ffffff;
+    color: #64748b;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: var(--transition-fast);
+}
+
+.form-group:focus-within label {
+    color: #3b82f6;
+    transform: translateY(-2px);
+}
+
+/* Nouveaux styles pour les boutons */
+.btn-custom {
+    position: relative;
+    padding: 0.875rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    overflow: hidden;
+    transition: var(--transition-medium);
+    background: var(--primary-gradient);
+    border: none;
+    color: #ffffff;
+}
+
+.btn-custom::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(255,255,255,0.2), transparent);
+    opacity: 0;
+    transition: var(--transition-fast);
+}
+
+.btn-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+
+.btn-custom:hover::before {
+    opacity: 1;
+}
+
+/* Nouveaux styles pour le calendrier */
+.calendar-section {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: var(--shadow-smooth);
+    margin-top: 2rem;
+    overflow: hidden;
+}
+
+.calendar-header {
+    background: var(--secondary-gradient);
+    color: #ffffff;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.calendar {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 2px;
+}
+
+.calendar th {
+    background: #f1f5f9;
+    padding: 1rem;
+    font-weight: 600;
+    color: #334155;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    letter-spacing: 1px;
+}
+
+/* Animation de chargement améliorée */
+@keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+}
+
+.loading {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite;
+}
+
+/* Amélioration des états de survol et focus */
+.interactive-element {
+    transition: var(--transition-fast);
+}
+
+.interactive-element:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+
+.interactive-element:active {
+    transform: translateY(1px);
+    box-shadow: var(--shadow-active);
+}
+
+/* Badges et indicateurs d'état */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-badge.success {
+    background: linear-gradient(135deg, #84cc16 0%, #22c55e 100%);
+    color: #ffffff;
+}
+
+.status-badge.warning {
+    background: linear-gradient(135deg, #fbbf24 0%, #f97316 100%);
+    color: #ffffff;
+}
+
+/* Tooltips améliorés */
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]:after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    background: #1e293b;
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: var(--transition-fast);
+}
+
+[data-tooltip]:hover:after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(-8px);
+}
 </style>
 
 
@@ -402,10 +1180,10 @@
     
                     <div id="tournee_fields" style="display:none;">
                         <div class="form-group">
-                            <label for="titre_evenement">Nom de la tournée :</label>
+                            <label for="titre_evenement_tournee">Nom de la tournée :</label>
                             <input type="text" 
                                    name="titre_evenement" 
-                                   id="titre_evenement"
+                                   id="titre_evenement_tournee"
                                    class="form-control" 
                                    placeholder="Ex: Tournée forestière Ifrane"
                                    required>
@@ -535,24 +1313,42 @@
                         {% if full_day_event %}
                         <!-- Remplacer tous les td par une seule cellule qui s'étend -->
                         <td colspan="{{ horaires|length }}" class="multi-day-event">
-                            <div class="session-card {% if full_day_event.type_evenement == 'TOURNEE' %}bg-info
-                                                {% elif full_day_event.type_evenement == 'PROJET' %}bg-warning
-                                                {% elif full_day_event.type_evenement == 'VISITE_MILITAIRE' %}bg-secondary
-                                                {% else %}bg-primary{% endif %} text-white">
-                                <strong>{{ full_day_event.type_evenement|title }}</strong><br>
-                                {% if full_day_event.titre_evenement %}
-                                <small>{{ full_day_event.titre_evenement }}</small><br>
-                                {% endif %}
-                                <small>Du {{ full_day_event.date_debut|date:"d/m" }} au {{ full_day_event.date_fin|date:"d/m" }}</small>
-                                
-                                <a href="{% url 'supprimer_evenement' full_day_event.id %}" 
-                                   class="delete-event" 
-                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');"
-                                   title="Supprimer cet événement">
-                                    <i class="fas fa-times-circle"></i>
-                                </a>
-                            </div>
-                        </td>
+    <div class="session-card event-{{ full_day_event.type_evenement|lower }}">
+        <div class="event-content">
+            <span class="event-type">
+                {% if full_day_event.type_evenement == 'TOURNEE' %}
+                    <i class="fas fa-hiking"></i>
+                {% elif full_day_event.type_evenement == 'PROJET' %}
+                    <i class="fas fa-project-diagram"></i>
+                {% elif full_day_event.type_evenement == 'VISITE_MILITAIRE' %}
+                    <i class="fas fa-shield-alt"></i>
+                {% elif full_day_event.type_evenement == 'FORMATION_MILITAIRE' %}
+                    <i class="fas fa-medal"></i>
+                {% elif full_day_event.type_evenement == 'CONFERENCE' %}
+                    <i class="fas fa-microphone-alt"></i>
+                {% endif %}
+                <span>{{ full_day_event.type_evenement|title }}</span>
+            </span>
+            
+            {% if full_day_event.titre_evenement %}
+                <div class="event-title" title="{{ full_day_event.titre_evenement }}">
+                    {{ full_day_event.titre_evenement }}
+                </div>
+            {% endif %}
+            
+            <div class="event-date">
+                {{ full_day_event.date_debut|date:"d/m" }} - {{ full_day_event.date_fin|date:"d/m" }}
+            </div>
+            
+            <a href="{% url 'supprimer_evenement' full_day_event.id %}" 
+               class="delete-event" 
+               onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');">
+                <i class="fas fa-times"></i>
+            </a>
+        </div>
+    </div>
+</td>
+
                         {% else %}
                         <!-- Afficher les cellules normales pour les horaires -->
                         {% for horaire in horaires %}
@@ -639,20 +1435,36 @@ function toggleFields() {
     });
 
     // Définir les types d'événements
-    const EVENEMENTS_AVEC_HORAIRE = ['EXAMEN_PARTIEL', 'EXAMEN_FINAL', 'RATTRAPAGE', 'FORMATION_MILITAIRE', 'CONFERENCE'];
+    const EVENEMENTS_AVEC_MATIERE = ['EXAMEN_PARTIEL', 'EXAMEN_FINAL', 'RATTRAPAGE', 'SORTIE'];
     const EVENEMENTS_MULTI_JOURS = ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE'];
+    const EVENEMENTS_AVEC_HORAIRE = ['EXAMEN_PARTIEL', 'EXAMEN_FINAL', 'RATTRAPAGE', 'FORMATION_MILITAIRE', 'CONFERENCE'];
+    const EVENEMENTS_SANS_MATIERE_PROFESSEUR = ['FORMATION_MILITAIRE', 'CONFERENCE'];
+
+    // Gestion de l'affichage des champs de matière et professeur
+    if (EVENEMENTS_AVEC_MATIERE.includes(type) && !EVENEMENTS_SANS_MATIERE_PROFESSEUR.includes(type)) {
+        fields.coursExamens.style.display = 'block';
+        document.querySelector('select[name="matiere"]').setAttribute('required', '');
+    }
+
+    // Gestion de l'affichage de l'horaire
+    if (EVENEMENTS_AVEC_HORAIRE.includes(type)) {
+        fields.horaire.style.display = 'block';
+        document.querySelector('select[name="horaire"]').setAttribute('required', '');
+    }
 
     // Logique d'affichage selon le type
     if (EVENEMENTS_AVEC_HORAIRE.includes(type)) {
         // Événements avec horaire
         fields.horaire.style.display = 'block';
-        fields.coursExamens.style.display = 'block';
+        if (!EVENEMENTS_SANS_MATIERE_PROFESSEUR.includes(type)) {
+            fields.coursExamens.style.display = 'block';
+        }
         if (type === 'CONFERENCE') {
             fields.conference.style.display = 'block';
         }
         // Champs requis
         document.querySelector('select[name="horaire"]').setAttribute('required', '');
-        if (fields.coursExamens.querySelector('select[name="matiere"]')) {
+        if (fields.coursExamens.style.display === 'block') {
             fields.coursExamens.querySelector('select[name="matiere"]').setAttribute('required', '');
         }
     } 
@@ -665,9 +1477,10 @@ function toggleFields() {
         const specificField = document.getElementById(`${type.toLowerCase()}_fields`);
         if (specificField) {
             specificField.style.display = 'block';
+            // S'assurer que le champ titre est requis pour les événements multi-jours
             const titreInput = specificField.querySelector('input[name="titre_evenement"]');
             if (titreInput) {
-                titreInput.setAttribute('required', '');
+                titreInput.setAttribute('required', 'required');
             }
         }
     }

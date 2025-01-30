@@ -355,7 +355,6 @@ class EmploiTemps(models.Model):
         default='3ème année'
     )
     date = models.DateField(default=date.today) 
-    jour = models.CharField(max_length=10, choices=JOUR_CHOICES, default='Lundi')  # Ajout d'une valeur par défaut
     horaire = models.CharField(
         max_length=20, 
         choices=HORAIRES_CHOICES, 
@@ -490,21 +489,20 @@ class EmploiTemps(models.Model):
                 raise ValidationError('Un événement existe déjà à cet horaire')
     
     def save(self, *args, **kwargs):
-        # Vérifier le type d'événement
-        if self.is_multi_day_event:
-            # Pour les événements multi-jours, désactiver l'horaire
+        # Pour les événements multi-jours
+        if self.type_evenement in self.EVENEMENTS_MULTI_JOURS:
             self.horaire = None
             if not self.date_fin:
                 self.date_fin = self.date_debut
         else:
-            # Pour les événements à horaire fixe, la date de fin = date de début
             self.date_fin = self.date_debut
 
         is_new = self.pk is None
+        # Appel unique à save()
         super().save(*args, **kwargs)
         
+        # Mise à jour de la progression uniquement pour les nouveaux cours
         if is_new and self.type_evenement == 'COURS' and self.matiere:
-            # Calculer le nombre de séances jusqu'à cette date et horaire
             seances_precedentes = EmploiTemps.objects.filter(
                 matiere=self.matiere,
                 type_evenement='COURS',
@@ -519,17 +517,15 @@ class EmploiTemps(models.Model):
             ).count()
             
             self.numero_seance = seances_precedentes + seances_meme_jour + 1
-            
-            # Calculer la progression
             progression = min(int((self.numero_seance * 2 / self.matiere.volume_horaire_total) * 100), 100)
             
-            # Mettre à jour cette séance
+            # Mise à jour dans la base de données
             EmploiTemps.objects.filter(pk=self.pk).update(
                 numero_seance=self.numero_seance,
                 progression=str(progression)
             )
             
-            # Mettre à jour la matière
+            # Mise à jour de la matière
             self.matiere.heures_ajoutees = self.numero_seance * 2
             self.matiere.volume_horaire_restant = max(
                 self.matiere.volume_horaire_total - self.matiere.heures_ajoutees,

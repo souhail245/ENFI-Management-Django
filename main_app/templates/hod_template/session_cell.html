@@ -1,3 +1,110 @@
+<style>
+/* Nouveaux styles pour les cartes d'événements */
+.session-card {
+    position: relative;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    border-radius: 12px;
+    background: #ffffff;
+    transition: var(--transition-medium);
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+}
+
+.session-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--primary-gradient);
+    opacity: 0.8;
+}
+
+.session-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+
+.delete-event {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    transition: var(--transition-fast);
+    opacity: 0;
+}
+
+.session-card:hover .delete-event {
+    opacity: 1;
+}
+
+.delete-event:hover {
+    background: #ef4444;
+    color: #ffffff;
+    transform: rotate(90deg);
+}
+
+/* Types d'événements spécifiques avec gradients */
+.session-card.cours::before { background: var(--primary-gradient); }
+.session-card.examen::before { background: var(--warning-gradient); }
+.session-card.rattrapage::before { background: var(--info-gradient); }
+.session-card.formation::before { background: var(--success-gradient); }
+.session-card.conference::before { background: var(--secondary-gradient); }
+
+/* Conteneur d'informations */
+.event-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.event-title {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+}
+
+.event-details {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+.event-icon {
+    width: 16px;
+    height: 16px;
+    color: #94a3b8;
+}
+
+/* Animation d'apparition */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.session-card {
+    animation: slideIn 0.3s ease-out forwards;
+}
+</style>
+
 {% if session %}
 <div class="session-card {% if session.type_evenement == 'JOUR_FERIE' %}jour-ferie
     {% elif session.type_evenement == 'VACANCES' %}vacances
@@ -10,28 +117,30 @@
         <i class="fas fa-times-circle"></i>
     </a>
     
-    {% if session.type_evenement == 'COURS' %}
-        <strong>{{ session.matiere.name }}</strong><br>
-        <small>{{ session.professeur.admin.get_full_name }}</small>
-    {% elif session.type_evenement == 'RATTRAPAGE' %}
-        <strong style="color: #721c24;">Rattrapage</strong><br>
-        <strong>{{ session.matiere.name }}</strong>
-        <small>{{ session.professeur.admin.get_full_name }}</small>
-    {% elif session.type_evenement == 'FORMATION_MILITAIRE' %}
-        <strong style="color: #004085;">Formation Militaire</strong><br>
-        <small>{{ session.titre_evenement }}</small>
-    {% elif session.type_evenement == 'CONFERENCE' %}
-        <strong style="color: #856404;">Conférence</strong><br>
-        <small>{{ session.titre_evenement }}</small>
-    {% elif session.type_evenement == 'EXAMEN_PARTIEL' %}
-        <strong style="color: #856404;">Examen Partiel</strong><br>
-        <strong>{{ session.matiere.name }}</strong>
-    {% elif session.type_evenement == 'EXAMEN_FINAL' %}
-        <strong style="color: #721c24;">Examen Final</strong><br>
-        <strong>{{ session.matiere.name }}</strong>
-    {% else %}
-        <strong>{{ session.titre_evenement }}</strong>
-    {% endif %}
+    <div class="event-info">
+        {% if session.type_evenement == 'COURS' %}
+            <strong class="event-title">{{ session.matiere.name }}</strong>
+            <small class="event-details">{{ session.professeur.admin.get_full_name }}</small>
+        {% elif session.type_evenement == 'RATTRAPAGE' %}
+            <strong class="event-title" style="color: #721c24;">Rattrapage</strong>
+            <strong class="event-title">{{ session.matiere.name }}</strong>
+            <small class="event-details">{{ session.professeur.admin.get_full_name }}</small>
+        {% elif session.type_evenement == 'FORMATION_MILITAIRE' %}
+            <strong class="event-title" style="color: #004085;">Formation Militaire</strong>
+            <small class="event-details">{{ session.titre_evenement }}</small>
+        {% elif session.type_evenement == 'CONFERENCE' %}
+            <strong class="event-title" style="color: #856404;">Conférence</strong>
+            <small class="event-details">{{ session.titre_evenement }}</small>
+        {% elif session.type_evenement == 'EXAMEN_PARTIEL' %}
+            <strong class="event-title" style="color: #856404;">Examen Partiel</strong>
+            <strong class="event-title">{{ session.matiere.name }}</strong>
+        {% elif session.type_evenement == 'EXAMEN_FINAL' %}
+            <strong class="event-title" style="color: #721c24;">Examen Final</strong>
+            <strong class="event-title">{{ session.matiere.name }}</strong>
+        {% else %}
+            <strong class="event-title">{{ session.titre_evenement }}</strong>
+        {% endif %}
+    </div>
 </div>
 {% else %}
 <!-- Formulaire rapide d'ajout -->

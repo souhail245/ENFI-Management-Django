@@ -1305,44 +1305,64 @@ def creer_emploi_temps(request):
             promotion = request.POST.get("promotion")
             date_debut = request.POST.get("date_debut")
             date_fin = request.POST.get("date_fin")
-            titre_evenement = request.POST.get("titre_evenement")
-            horaire = request.POST.get("horaire")
+            
+            # Récupérer le titre_evenement en prenant la première valeur non vide
+            titres = request.POST.getlist("titre_evenement")
+            titre_evenement = next((titre for titre in titres if titre.strip()), '')
 
-            # Données de base pour l'événement
+            print("Données reçues:", {
+                'type_evenement': type_evenement,
+                'titre_evenement': titre_evenement,  # Afficher le titre trouvé
+                'date_debut': date_debut,
+                'date_fin': date_fin
+            })
+
+            if type_evenement in EmploiTemps.EVENEMENTS_MULTI_JOURS and not titre_evenement:
+                messages.error(request, "Le titre est obligatoire pour ce type d'événement")
+                return redirect(f"{reverse('creer_emploi_temps')}?promotion={promotion}")
+
             event_data = {
                 'niveau': promotion,
                 'type_evenement': type_evenement,
-                'date': date_debut,
                 'date_debut': date_debut,
-                'titre_evenement': titre_evenement if titre_evenement else None  # S'assurer que None est stocké si vide
+                'date': date_debut,
+                'titre_evenement': titre_evenement
             }
 
-            # Pour les événements avec horaire
-            if type_evenement in EmploiTemps.EVENEMENTS_DATE_ET_HORAIRE:
-                event_data['horaire'] = horaire
-                if type_evenement != 'FORMATION_MILITAIRE' and type_evenement != 'CONFERENCE':
+            # Gestion des événements multi-jours
+            if type_evenement in EmploiTemps.EVENEMENTS_MULTI_JOURS:
+                event_data['date_fin'] = date_fin or date_debut
+                event_data['horaire'] = None
+                
+                # Gestion spécifique pour les sorties
+                if type_evenement == 'SORTIE':
                     matiere_id = request.POST.get("matiere")
                     if matiere_id:
                         matiere = get_object_or_404(Subject, id=matiere_id)
                         event_data['matiere'] = matiere
                         event_data['professeur'] = matiere.staff
+            else:
+                event_data['horaire'] = request.POST.get('horaire')
+                # Ne pas gérer la matière pour CONFERENCE et FORMATION_MILITAIRE
+                if type_evenement not in ['FORMATION_MILITAIRE', 'CONFERENCE', 'JOUR_FERIE', 'VACANCES']:
+                    matiere_id = request.POST.getlist("matiere")[0]  # Prendre le premier ID
+                    if matiere_id:
+                        event_data['matiere'] = get_object_or_404(Subject, id=matiere_id)
+                        event_data['professeur'] = event_data['matiere'].staff
 
-            # Pour les événements multi-jours
-            elif type_evenement in EmploiTemps.EVENEMENTS_MULTI_JOURS:
-                event_data['date_fin'] = date_fin if date_fin else date_debut
-                event_data['horaire'] = None  # Forcer horaire à None pour événements multi-jours
+            # Supprimer l'ID s'il est présent dans event_data
+            if 'id' in event_data:
+                del event_data['id']
 
-            # Créer l'événement
             emploi_temps = EmploiTemps.objects.create(**event_data)
-            
             messages.success(request, "Événement ajouté avec succès")
 
         except Exception as e:
             messages.error(request, f"Erreur lors de l'ajout : {str(e)}")
-            print(f"Erreur détaillée : {str(e)}")  # Pour le débogage
-        
-        return redirect(f"{reverse('creer_emploi_temps')}?promotion={promotion}")
+            print(f"Erreur détaillée : {str(e)}")
 
+        return redirect(f"{reverse('creer_emploi_temps')}?promotion={promotion}")
+    
     else:
         promotion_selected = request.GET.get('promotion', '3ème année')
         promotions = ['3ème année', '4ème année', '5ème année']
