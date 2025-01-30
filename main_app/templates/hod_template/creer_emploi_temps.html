@@ -360,7 +360,7 @@
     /* Animation au survol */
     .multi-day-event .session-card:hover {
         transform: translateY(-1px);
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     }
 
     .multi-day-event .delete-event:hover {
@@ -1092,6 +1092,428 @@
     color: #000000; /* Ensure text color matches */
     border: 2px solid #000000; /* Ensure border matches */
 }
+
+/* Enhanced Calendar Styles copied from historique */
+.calendar {
+    border-radius: 12px;
+    overflow: hidden;
+    border: none;
+    box-shadow: 0 0 30px rgba(0,0,0,0.05);
+    background: #fff;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.calendar th {
+    background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+    padding: 15px;
+    font-weight: 600;
+    color: #2c3e50;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.9rem;
+    border-bottom: 2px solid #dee2e6;
+    position: relative;
+}
+
+.calendar th:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to right, rgba(0,0,0,0.1), transparent);
+}
+
+.calendar td {
+    padding: 15px;
+    border: 1px solid #dee2e6;
+    vertical-align: top;
+    transition: all 0.2s ease;
+    position: relative;
+    background: #ffffff;
+}
+
+.calendar td:hover {
+    background-color: #f8f9fa;
+    transform: scale(1.01);
+    z-index: 1;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.calendar tr:nth-child(even) td {
+    background-color: rgba(248, 249, 250, 0.5);
+}
+
+/* Calendar Header Enhancement */
+.calendar-header {
+    background: linear-gradient(135deg, #34495e, #2980b9);
+    padding: 30px;
+    border-radius: 15px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 25px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.calendar-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(to right, #3498db, #2ecc71);
+}
+
+.calendar-header h4 {
+    color: #ffffff;
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    letter-spacing: 0.5px;
+}
+
+.calendar-header strong {
+    color: #e0e0e0;
+    font-size: 1.1rem;
+    display: block;
+    margin-top: 8px;
+}
+
+/* Enhanced Session Cards */
+.session-card {
+    border: 1px solid rgba(0,0,0,0.1);
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 5px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.session-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+/* Table Responsive Enhancement */
+.table-responsive {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.05);
+    padding: 1px;
+    margin-top: 20px;
+}
+
+/* Date Column Enhancement */
+.calendar td:first-child {
+    background: linear-gradient(to right, #f8f9fa, #ffffff);
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.calendar td:first-child strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #2c3e50;
+}
+
+.calendar td:first-child small {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+/* Style harmonisé pour le tableau */
+.calendar {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 2px solid #000000; /* Bordure extérieure épaisse */
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(0,0,0,0.05);
+    background: #fff;
+}
+
+.calendar th, .calendar td {
+    border: 1px solid #dee2e6; /* Bordures internes */
+    padding: 15px;
+    vertical-align: top;
+    text-align: center;
+    background-color: #ffffff; /* Couleur de fond uniforme */
+    transition: all 0.3s ease;
+}
+
+.calendar th {
+    background-color: #f8f9fa; /* Fond légèrement plus foncé pour les en-têtes */
+    font-weight: 700;
+    color: #000000;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.9rem;
+    position: relative;
+}
+
+.calendar th:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to right, rgba(0,0,0,0.1), transparent);
+}
+
+.calendar td {
+    background-color: #ffffff;
+    transition: all 0.3s ease;
+}
+
+.calendar td:hover {
+    background-color: #f8f9fa;
+    transform: scale(1.01);
+    z-index: 1;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.calendar tr:nth-child(even) td {
+    background-color: rgba(248, 249, 250, 0.5);
+}
+
+.calendar td:first-child {
+    font-weight: 600;
+    background-color: #f4f4f4;
+    color: #2c3e50;
+}
+
+.calendar td:first-child strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #2c3e50;
+}
+
+.calendar td:first-child small {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+/* Style harmonisé pour les cartes d'événements */
+.session-card {
+    background: linear-gradient(to right bottom, #ffffff, #f8f9fa);
+    padding: 15px;
+    border-radius: 8px;
+    margin: 5px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: all 0.3s ease;
+}
+
+.session-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+/* Styles spécifiques pour les types d'événements */
+.session-card.jour-ferie {
+    background: linear-gradient(45deg, #d4edda, #e8f5e9);
+    border: 1px solid rgba(40, 167, 69, 0.2);
+}
+
+.session-card.vacances {
+    background: linear-gradient(45deg, #cce5ff, #e3f2fd);
+    border: 1px solid rgba(0, 123, 255, 0.2);
+}
+
+.session-card.examen {
+    background: linear-gradient(45deg, #fff3cd, #fff8e1);
+    border: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+.session-card.default {
+    background: linear-gradient(to right bottom, #ffffff, #f8f9fa);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Style harmonisé pour les événements multi-jours */
+.multi-day-event .session-card {
+    min-height: 40px;
+    padding: 5px;
+    margin: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    transition: all 0.2s ease;
+    background-color: #ffffff; /* Fond blanc pour contraste */
+    color: #212529; /* Couleur du texte sombre */
+}
+
+.multi-day-event .event-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 2px 5px;
+}
+
+.multi-day-event .event-type {
+    font-size: 0.8em; /* Augmenter légèrement la taille du texte */
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    padding: 2px 4px;
+    border-radius: 3px;
+    background: #212529; /* Fond sombre pour contraste */
+    color: #ffffff; /* Couleur du texte blanc */
+}
+
+.multi-day-event .event-type i {
+    font-size: 0.85em;
+}
+
+.multi-day-event .event-title {
+    font-size: 0.85em; /* Augmenter légèrement la taille du texte */
+    flex-grow: 1;
+    margin: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 150px;
+}
+
+.multi-day-event .event-date {
+    font-size: 0.75em; /* Augmenter légèrement la taille du texte */
+    white-space: nowrap;
+    opacity: 0.9;
+}
+
+.multi-day-event .delete-event {
+    font-size: 0.7em;
+    opacity: 0.6;
+    padding: 2px;
+    margin-left: auto;
+    color: #dc3545; /* Couleur du texte rouge */
+}
+
+/* Animation au survol */
+.multi-day-event .session-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.multi-day-event .delete-event:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Optimisation pour les petits écrans */
+@media (max-width: 768px) {
+    .multi-day-event .event-title {
+        max-width: 100px;
+    }
+    
+    .multi-day-event .event-date {
+        display: none;
+    }
+}
+
+/* Remplacer les styles existants des événements multi-jours par ces nouveaux styles unifiés */
+.multi-day-event {
+    padding: 2px;
+    background: #ffffff;
+}
+
+.multi-day-event .session-card {
+    min-height: 40px;
+    padding: 10px;
+    margin: 0;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+.multi-day-event .event-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.multi-day-event .event-type {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    color: #ffffff;
+    background: #2c3e50;
+}
+
+.multi-day-event .event-type i {
+    font-size: 1rem;
+}
+
+.multi-day-event .event-details {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    font-size: 0.9rem;
+}
+
+.multi-day-event .event-title {
+    font-weight: 600;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.multi-day-event .event-matiere {
+    color: #666;
+    font-style: italic;
+}
+
+.multi-day-event .event-date {
+    white-space: nowrap;
+    color: #666;
+    font-size: 0.85rem;
+}
+
+.multi-day-event .delete-event {
+    padding: 4px;
+    color: #dc3545;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+}
+
+.multi-day-event .delete-event:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Styles spécifiques pour chaque type d'événement */
+.event-tournee { background-color: #e3f2fd; }
+.event-sortie { background-color: #f3e5f5; }
+.event-projet { background-color: #e8f5e9; }
+.event-visite_militaire { background-color: #fff3e0; }
+.event-formation_militaire { background-color: #e8eaf6; }
+.event-conference { background-color: #fce4ec; }
+
+@media (max-width: 768px) {
+    .multi-day-event .event-title {
+        max-width: 120px;
+    }
+    
+    .multi-day-event .event-matiere {
+        display: none;
+    }
+}
 </style>
 
 
@@ -1202,19 +1624,19 @@
                     </div>
     
                     <div id="sortie_fields" style="display:none;">
-                        <div class="form-group">
-                            <label for="titre_evenement">Nom de la sortie :</label>
-                            <input type="text" name="titre_evenement" class="form-control" placeholder="Ex: Sortie géologique">
-                        </div>
-                        <div class="form-group">
-                            <label for="matiere">Matière concernée :</label>
-                            <select name="matiere" class="form-control">
-                                {% for subject in subjects %}
-                                    <option value="{{ subject.id }}">{{ subject.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
+    <div class="form-group">
+        <label for="titre_evenement">Nom de la sortie :</label>
+        <input type="text" name="titre_evenement" class="form-control" placeholder="Ex: Sortie géologique">
+    </div>
+    <div class="form-group">
+        <label for="matiere_sortie">Matière concernée :</label>
+        <select name="matiere" id="matiere_sortie" class="form-control">
+            {% for subject in subjects %}
+                <option value="{{ subject.id }}">{{ subject.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
     
                     <div id="projet_fields" style="display:none;">
                         <div class="form-group">
@@ -1329,6 +1751,8 @@
             <span class="event-type">
                 {% if full_day_event.type_evenement == 'TOURNEE' %}
                     <i class="fas fa-hiking"></i>
+                {% elif full_day_event.type_evenement == 'SORTIE' %}
+                    <i class="fas fa-map-marked-alt"></i>
                 {% elif full_day_event.type_evenement == 'PROJET' %}
                     <i class="fas fa-project-diagram"></i>
                 {% elif full_day_event.type_evenement == 'VISITE_MILITAIRE' %}
@@ -1338,17 +1762,21 @@
                 {% elif full_day_event.type_evenement == 'CONFERENCE' %}
                     <i class="fas fa-microphone-alt"></i>
                 {% endif %}
-                <span>{{ full_day_event.type_evenement|title }}</span>
+                <span>{{ full_day_event.type_evenement|title|cut:"_" }}</span>
             </span>
             
-            {% if full_day_event.titre_evenement %}
-                <div class="event-title" title="{{ full_day_event.titre_evenement }}">
-                    {{ full_day_event.titre_evenement }}
-                </div>
-            {% endif %}
-            
-            <div class="event-date">
-                {{ full_day_event.date_debut|date:"d/m" }} - {{ full_day_event.date_fin|date:"d/m" }}
+            <div class="event-details">
+                {% if full_day_event.titre_evenement %}
+                    <span class="event-title">{{ full_day_event.titre_evenement }}</span>
+                {% endif %}
+                
+                {% if full_day_event.matiere %}
+                    <span class="event-matiere">({{ full_day_event.matiere.name }})</span>
+                {% endif %}
+                
+                <span class="event-date">
+                    {{ full_day_event.date_debut|date:"d/m" }} - {{ full_day_event.date_fin|date:"d/m" }}
+                </span>
             </div>
             
             <a href="{% url 'supprimer_evenement' full_day_event.id %}" 
@@ -1493,6 +1921,27 @@ function toggleFields() {
             if (titreInput) {
                 titreInput.setAttribute('required', 'required');
             }
+        }
+    }
+
+    // Gestion spécifique pour l'événement SORTIE
+    if (type === 'SORTIE') {
+        // Cacher le champ de matière standard
+        if (fields.coursExamens) {
+            fields.coursExamens.style.display = 'none';
+        }
+        // Afficher uniquement les champs spécifiques à la sortie
+        fields.sortie.style.display = 'block';
+        
+        // S'assurer que seul le champ matière de sortie est requis
+        const matiereSortieSelect = document.getElementById('matiere_sortie');
+        if (matiereSortieSelect) {
+            matiereSortieSelect.setAttribute('required', '');
+        }
+        // Supprimer required des autres champs de matière
+        const autresMatiereSelect = document.querySelector('#cours_examens_fields select[name="matiere"]');
+        if (autresMatiereSelect) {
+            autresMatiereSelect.removeAttribute('required');
         }
     }
 

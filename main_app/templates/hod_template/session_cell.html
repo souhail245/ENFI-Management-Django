@@ -1,126 +1,109 @@
 <style>
-/* Nouveaux styles pour les cartes d'événements */
+/* Harmonisation des styles de base */
 .session-card {
     position: relative;
-    padding: 1rem;
-    margin-bottom: 0.75rem;
-    border-radius: 12px;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
     background: #ffffff;
-    transition: var(--transition-medium);
     border: 1px solid #e2e8f0;
-    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+    font-size: 0.8rem;
 }
 
+/* Amélioration des indicateurs de type */
 .session-card::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
-    width: 4px;
     height: 100%;
-    background: var(--primary-gradient);
-    opacity: 0.8;
+    width: 4px;
+    border-radius: 4px 0 0 4px;
 }
 
-.session-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-hover);
+/* Styles spécifiques pour chaque type d'événement */
+.session-card.cours::before { background: linear-gradient(to bottom, #3b82f6, #2563eb); }
+.session-card.examen::before { background: linear-gradient(to bottom, #f59e0b, #d97706); }
+.session-card.rattrapage::before { background: linear-gradient(to bottom, #dc2626, #b91c1c); }
+.session-card.formation::before { background: linear-gradient(to bottom, #10b981, #059669); }
+.session-card.conference::before { background: linear-gradient(to bottom, #8b5cf6, #7c3aed); }
+
+/* Conteneur d'informations amélioré */
+.event-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-left: 0.5rem;
 }
 
+/* Titre d'événement amélioré */
+.event-title {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.85rem;
+    margin-bottom: 0.15rem;
+    line-height: 1.2;
+}
+
+/* Détails d'événement améliorés */
+.event-details {
+    font-size: 0.75rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Bouton de suppression amélioré */
 .delete-event {
     position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
-    width: 24px;
-    height: 24px;
+    top: 0.25rem;
+    right: 0.25rem;
+    width: 18px;
+    height: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
     background: rgba(239, 68, 68, 0.1);
     color: #ef4444;
-    transition: var(--transition-fast);
+    font-size: 0.8rem;
     opacity: 0;
+    transition: all 0.2s ease;
 }
 
 .session-card:hover .delete-event {
     opacity: 1;
 }
 
-.delete-event:hover {
-    background: #ef4444;
-    color: #ffffff;
-    transform: rotate(90deg);
-}
-
-/* Types d'événements spécifiques avec gradients */
-.session-card.cours::before { background: var(--primary-gradient); }
-.session-card.examen::before { background: var(--warning-gradient); }
-.session-card.rattrapage::before { background: var(--info-gradient); }
-.session-card.formation::before { background: var(--success-gradient); }
-.session-card.conference::before { background: var(--secondary-gradient); }
-
-/* Conteneur d'informations */
-.event-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.event-title {
-    font-weight: 600;
-    color: #1e293b;
-    font-size: 1rem;
-    margin-bottom: 0.25rem;
-}
-
-.event-details {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+/* Amélioration de la barre de progression */
+.progression-info {
+    margin-top: 0.25rem;
+    font-size: 0.7rem;
     color: #64748b;
-    font-size: 0.875rem;
 }
 
-.event-icon {
-    width: 16px;
-    height: 16px;
-    color: #94a3b8;
+.progress {
+    height: 4px;
+    background: #e2e8f0;
+    border-radius: 2px;
+    margin: 0.25rem 0;
 }
 
-/* Animation d'apparition */
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
+.progress-bar {
+    background: linear-gradient(to right, #3b82f6, #2563eb);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+/* Adaptation responsive */
+@media (max-width: 768px) {
+    .event-details {
+        flex-direction: column;
+        align-items: flex-start;
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.session-card {
-    animation: slideIn 0.3s ease-out forwards;
-}
-
-.matiere-info {
-    margin-top: 5px;
-    padding: 5px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-}
-
-.matiere-info strong {
-    display: block;
-    font-size: 0.9em;
-    color: #333;
-}
-
-.matiere-info small {
-    display: block;
-    font-size: 0.8em;
-    color: #666;
 }
 </style>
 
