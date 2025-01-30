@@ -1529,11 +1529,20 @@ def historique_emploi(request):
     else:
         date_fin = (date_debut + timedelta(days=32)).replace(day=1) - timedelta(days=1)
 
-    # Récupérer TOUS les types d'événements
-    emplois = EmploiTemps.objects.filter(
-        niveau=promotion_selected,
-        date__range=[date_debut, date_fin]
-    ).select_related('matiere', 'professeur').order_by('date', 'horaire')
+    # Récupérer TOUS les événements y compris multi-jours
+    sessions = EmploiTemps.objects.filter(
+        Q(niveau=promotion_selected) &
+        (
+            # Pour les événements standards
+            (Q(date__range=[date_debut, date_fin])) |
+            # Pour les événements multi-jours
+            (
+                Q(date_debut__lte=date_fin) & 
+                Q(date_fin__gte=date_debut) & 
+                Q(type_evenement__in=['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE'])
+            )
+        )
+    ).select_related('matiere', 'professeur')
 
     dates = []
     current_date = date_debut
@@ -1541,13 +1550,23 @@ def historique_emploi(request):
         dates.append(current_date)
         current_date += timedelta(days=1)
 
-    # Organiser les sessions par date avec tous les types d'événements
+    # Organiser les sessions par date
     sessions_by_date = defaultdict(dict)
-    for emploi in emplois:
-        sessions_by_date[emploi.date][emploi.horaire] = emploi
+    for session in sessions:
+        if session.type_evenement in ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE']:
+            # Pour les événements multi-jours
+            event_start = max(session.date_debut, date_debut)
+            event_end = min(session.date_fin, date_fin)
+            current = event_start
+            while current <= event_end:
+                sessions_by_date[current]['full_day'] = session
+                current += timedelta(days=1)
+        else:
+            # Pour les événements standards
+            sessions_by_date[session.date][session.horaire] = session
 
     context = {
-        'sessions_by_date': dict(sorted(sessions_by_date.items())),
+        'sessions_by_date': dict(sessions_by_date),
         'promotions': promotions,
         'horaires': horaires,
         'promotion_selected': promotion_selected,
@@ -1556,6 +1575,7 @@ def historique_emploi(request):
         'dates': dates,
         'page_title': 'Historique des emplois'
     }
+    
     return render(request, 'hod_template/historique_emploi.html', context)
 
 def supprimer_evenement(request, evenement_id):
