@@ -103,6 +103,25 @@
 .session-card {
     animation: slideIn 0.3s ease-out forwards;
 }
+
+.matiere-info {
+    margin-top: 5px;
+    padding: 5px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.matiere-info strong {
+    display: block;
+    font-size: 0.9em;
+    color: #333;
+}
+
+.matiere-info small {
+    display: block;
+    font-size: 0.8em;
+    color: #666;
+}
 </style>
 
 {% if session %}
@@ -133,10 +152,16 @@
             <small class="event-details">{{ session.titre_evenement }}</small>
         {% elif session.type_evenement == 'EXAMEN_PARTIEL' %}
             <strong class="event-title" style="color: #856404;">Examen Partiel</strong>
-            <strong class="event-title">{{ session.matiere.name }}</strong>
+            <div class="matiere-info">
+                <strong>{{ session.matiere.name }}</strong>
+                <small class="event-details">{{ session.professeur.admin.get_full_name }}</small>
+            </div>
         {% elif session.type_evenement == 'EXAMEN_FINAL' %}
             <strong class="event-title" style="color: #721c24;">Examen Final</strong>
-            <strong class="event-title">{{ session.matiere.name }}</strong>
+            <div class="matiere-info">
+                <strong>{{ session.matiere.name }}</strong>
+                <small class="event-details">{{ session.professeur.admin.get_full_name }}</small>
+            </div>
         {% else %}
             <strong class="event-title">{{ session.titre_evenement }}</strong>
         {% endif %}

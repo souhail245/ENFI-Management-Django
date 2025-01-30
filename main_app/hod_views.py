@@ -1443,26 +1443,20 @@ def liste_emplois(request):
     else:
         date_fin = date_debut + timedelta(days=14)
 
-    # Récupérer les sessions
+    # Récupérer tous les événements (standard et multi-jours)
     sessions = EmploiTemps.objects.filter(
-        niveau=promotion_selected,
-        date__range=[date_debut, date_fin]
-    ).select_related('matiere', 'professeur').order_by('date', 'horaire')
-
-    # Pour chaque matière, calculer le numéro de séance en fonction de la date
-    matiere_seances = {}
-    for session in sessions:
-        if session.matiere and session.type_evenement == 'COURS':
-            # Calculer le numéro de la séance en comptant les séances antérieures
-            seance_num = EmploiTemps.objects.filter(
-                matiere=session.matiere,
-                type_evenement='COURS',
-                date__lte=session.date
-            ).order_by('date', 'horaire').count()
-            
-            # Stocker le numéro de séance pour chaque cours
-            key = f"{session.matiere.id}_{session.date}_{session.horaire}"
-            matiere_seances[key] = seance_num
+        Q(niveau=promotion_selected) &
+        (
+            # Pour les événements standards
+            (Q(date__range=[date_debut, date_fin])) |
+            # Pour les événements multi-jours
+            (
+                Q(date_debut__lte=date_fin) & 
+                Q(date_fin__gte=date_debut) & 
+                Q(type_evenement__in=['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE'])
+            )
+        )
+    ).select_related('matiere', 'professeur')
 
     # Générer les dates
     dates = []
@@ -1474,7 +1468,17 @@ def liste_emplois(request):
     # Organiser les sessions par date
     sessions_by_date = defaultdict(dict)
     for session in sessions:
-        sessions_by_date[session.date][session.horaire] = session
+        if session.type_evenement in ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE']:
+            # Pour les événements multi-jours
+            event_start = max(session.date_debut, date_debut)
+            event_end = min(session.date_fin, date_fin)
+            current = event_start
+            while current <= event_end:
+                sessions_by_date[current]['full_day'] = session
+                current += timedelta(days=1)
+        else:
+            # Pour les événements standards
+            sessions_by_date[session.date][session.horaire] = session
 
     context = {
         'sessions_by_date': dict(sessions_by_date),
@@ -1484,7 +1488,6 @@ def liste_emplois(request):
         'date_debut': date_debut,
         'date_fin': date_fin,
         'dates': dates,
-        'matiere_seances': matiere_seances,  # Ajouter au contexte
         'page_title': f'Emploi du temps - {promotion_selected}'
     }
     return render(request, "hod_template/liste_emplois.html", context)

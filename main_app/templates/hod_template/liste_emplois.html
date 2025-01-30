@@ -6,139 +6,222 @@
 
 {% block content %}
 <style>
+    /* Modern Container Styles */
     .main-container {
-        padding: 20px;
+        padding: 30px;
+        background: #f8f9fa;
+        min-height: 100vh;
     }
 
     .timetable-wrapper {
-        background: white;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        background: #ffffff;
+        padding: 35px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease;
     }
 
-    .calendar {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        border: 3px solid #000000; /* Bold outer border */
+    /* Enhanced Form Controls */
+    .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 12px;
+        transition: all 0.3s ease;
     }
 
-    .calendar th, .calendar td {
-        border: 2px solid #000000; /* Bold internal borders */
-        padding: 15px;
-        vertical-align: top;
-        text-align: center;
+    .form-control:focus {
+        border-color: #000000;
+        box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.1);
     }
 
-    .calendar th {
-        background-color: #f1f1f1; /* Slightly darker background */
-        font-weight: 700;
-        color: #000000;
-    }
-
-    .calendar tr:nth-child(even) {
-        background-color: #f9f9f9; /* Subtle alternating row color */
-    }
-
-    .calendar tr:nth-child(odd) {
-        background-color: #ffffff;
-    }
-
-    /* Ensure date column has a distinct look */
-    .calendar td:first-child {
-        font-weight: 600;
-        background-color: #f4f4f4;
-    }
-
-    .session-card {
+    /* Improved Progress Bar */
+    .progress {
+        height: 8px;
         background: #e9ecef;
-        padding: 10px;
-        border-radius: 5px;
-        margin-bottom: 8px;
-        font-size: 14px;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 15px 0;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
     }
 
+    .progress-bar {
+        background: linear-gradient(45deg, #2196F3, #00c853);
+        transition: width 0.8s ease-in-out;
+    }
+
+    /* Event Cards */
+    .session-card {
+        background: linear-gradient(to right bottom, #ffffff, #f8f9fa);
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .session-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Event Type Specific Styles */
     .session-card.jour-ferie {
-        background-color: #d4edda;
+        background: linear-gradient(45deg, #d4edda, #c3e6cb);
     }
 
     .session-card.vacances {
-        background-color: #cce5ff;
+        background: linear-gradient(45deg, #cce5ff, #b8daff);
     }
 
     .session-card.examen {
-        background-color: #fff3cd;
+        background: linear-gradient(45deg, #fff3cd, #ffeeba);
     }
 
-    /* Modifier le style de la barre de progression */
-.progress {
-    height: 12px;
-    background: #e9ecef;
-    border-radius: 6px;
-    overflow: hidden;
-    margin: 12px 0;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
-    position: relative;
-}
+    /* Event Information */
+    .event-content {
+        position: relative;
+        padding: 10px;
+    }
 
-.progress-bar {
-    background: linear-gradient(45deg, #2196F3, #d43c00);
-    height: 100%;
-    transition: width 0.5s ease-in-out;
-    position: relative;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Style pour les informations de progression */
-.progression-info {
-    margin-top: 8px;
-    font-size: 0.95rem;
-    color: #0a0a0a;
-}
-
-.progression-value {
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: #e81a1a;
-    margin-right: 5px;
-}
-
-.seance-info {
-    font-weight: 600;
-    color: #00070e;
-    font-size: 1rem;
-    margin-top: 4px;
-}
-
-    .calendar-header {
-        background: #000000;
-        color: #ffffff;
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
+    .event-type {
+        display: inline-flex;
         align-items: center;
-        gap: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        gap: 8px;
+        font-weight: 600;
+        margin-bottom: 8px;
     }
 
-    .calendar-header h4 {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin: 0;
-        letter-spacing: 1px;
-    }
-
-    .calendar-header strong {
+    .event-title {
         font-size: 1rem;
-        color: #e0e0e0;
+        margin: 8px 0;
+        color: #1a1a1a;
+    }
+
+    .event-date {
+        font-size: 0.9rem;
+        color: #666;
+        margin-top: 5px;
+    }
+
+    /* Delete Button */
+    .delete-event {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        color: #dc3545;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .session-card:hover .delete-event {
+        opacity: 1;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .main-container {
+            padding: 15px;
+        }
+
+        .timetable-wrapper {
+            padding: 20px;
+        }
+
+        .calendar th, .calendar td {
+            padding: 8px;
+            font-size: 0.9rem;
+        }
+    }
+
+    /* Enhanced Table Styles */
+    .calendar {
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.05);
+        background: #fff;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .calendar th {
+        background: linear-gradient(to bottom, #f8f9fa, #f2f2f2);
+        padding: 18px;
+        font-weight: 600;
+        color: #1a1a1a;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        border-right: 1px solid rgba(0, 0, 0, 0.05);
+        position: relative;
+    }
+
+    .calendar th:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(to right, rgba(0,0,0,0.1), transparent);
+    }
+
+    .calendar td {
+        padding: 15px;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        position: relative;
+        background: #ffffff;
+    }
+
+    .calendar td:first-child {
+        font-weight: 600;
+        background: linear-gradient(to right, #f8f9fa, #ffffff);
+    }
+
+    .calendar tr:hover td {
+        background-color: #f8f9fa;
+    }
+
+    /* Enhanced Event Cards */
+    .session-card {
+        background: linear-gradient(to right bottom, #ffffff, #f8f9fa);
+        padding: 15px;
+        border-radius: 8px;
+        margin: 5px;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        transition: all 0.3s ease;
+    }
+
+    .session-card:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+        border-color: rgba(0, 0, 0, 0.1);
+    }
+
+    /* Event Type Specific Styles with Subtle Borders */
+    .session-card.jour-ferie {
+        background: linear-gradient(45deg, #d4edda, #e8f5e9);
+        border: 1px solid rgba(40, 167, 69, 0.2);
+    }
+
+    .session-card.vacances {
+        background: linear-gradient(45deg, #cce5ff, #e3f2fd);
+        border: 1px solid rgba(0, 123, 255, 0.2);
+    }
+
+    .session-card.examen {
+        background: linear-gradient(45deg, #fff3cd, #fff8e1);
+        border: 1px solid rgba(255, 193, 7, 0.2);
     }
 </style>
 
 <div class="main-container">
+    <!-- Bouton de retour -->
+    <div class="text-center mb-4">
+        <a href="{% url 'creer_emploi_temps' %}?promotion={{ promotion_selected }}" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i> Retour à la création d'emploi du temps
+        </a>
+    </div>
+
     <!-- Sélecteur de promotion -->
     <div class="form-group mb-4">
         <label for="promotion-select">Promotion :</label>
@@ -151,9 +234,23 @@
         </select>
     </div>
 
+    <!-- Filtre de date -->
+    <div class="form-group mb-4">
+        <label for="date-debut">Date début :</label>
+        <input type="date" id="date-debut" class="form-control" value="{{ date_debut|date:'Y-m-d' }}">
+    </div>
+    <div class="form-group mb-4">
+        <label for="date-fin">Date fin :</label>
+        <input type="date" id="date-fin" class="form-control" value="{{ date_fin|date:'Y-m-d' }}">
+    </div>
+    <button class="btn btn-primary" onclick="filterByDate()">Filtrer</button>
+
     <div class="timetable-wrapper">
         <div class="calendar-header">
             <h4>Emploi du temps - {{ promotion_selected }}</h4>
+            {% if date_debut and date_fin %}
+                <strong>Du {{ date_debut|date:"d/m/Y" }} au {{ date_fin|date:"d/m/Y" }}</strong>
+            {% endif %}
         </div>
 
         <div class="table-responsive">
@@ -173,7 +270,46 @@
                             <strong>{{ date|date:"d/m/Y" }}</strong><br>
                             <small>{{ date|date:"l"|capfirst }}</small>
                         </td>
-                        {% for horaire in horaires %}
+                        {% with full_day_event=sessions_by_date|get_dict_item:date|get_dict_item:'full_day' %}
+                        {% if full_day_event %}
+                        <td colspan="{{ horaires|length }}" class="multi-day-event">
+                            <div class="session-card event-{{ full_day_event.type_evenement|lower }}">
+                                <div class="event-content">
+                                    <span class="event-type">
+                                        {% if full_day_event.type_evenement == 'TOURNEE' %}
+                                            <i class="fas fa-hiking"></i>
+                                        {% elif full_day_event.type_evenement == 'PROJET' %}
+                                            <i class="fas fa-project-diagram"></i>
+                                        {% elif full_day_event.type_evenement == 'VISITE_MILITAIRE' %}
+                                            <i class="fas fa-shield-alt"></i>
+                                        {% elif full_day_event.type_evenement == 'FORMATION_MILITAIRE' %}
+                                            <i class="fas fa-medal"></i>
+                                        {% elif full_day_event.type_evenement == 'CONFERENCE' %}
+                                            <i class="fas fa-microphone-alt"></i>
+                                        {% endif %}
+                                        <span>{{ full_day_event.type_evenement|title }}</span>
+                                    </span>
+                                    
+                                    {% if full_day_event.titre_evenement %}
+                                        <div class="event-title" title="{{ full_day_event.titre_evenement }}">
+                                            {{ full_day_event.titre_evenement }}
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <div class="event-date">
+                                        {{ full_day_event.date_debut|date:"d/m" }} - {{ full_day_event.date_fin|date:"d/m" }}
+                                    </div>
+                                    
+                                    <a href="{% url 'supprimer_evenement' full_day_event.id %}" 
+                                       class="delete-event" 
+                                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </td>
+                        {% else %}
+                            {% for horaire in horaires %}
                             <td>
                                 {% with session=sessions_by_date|get_dict_item:date|get_dict_item:horaire %}
                                     {% if session %}
@@ -208,6 +344,18 @@
                                                 <strong style="color: #721c24;">Rattrapage</strong><br>
                                                 <strong>{{ session.matiere.name }}</strong><br>
                                                 <small>{{ session.professeur.admin.get_full_name }}</small>
+                                            {% elif session.type_evenement == 'EXAMEN_PARTIEL' %}
+                                                <strong style="color: #856404;">Examen Partiel</strong>
+                                                <div class="matiere-info">
+                                                    <strong>{{ session.matiere.name }}</strong>
+                                                    <small class="event-details">{{ session.professeur.admin.get_full_name }}</small>
+                                                </div>
+                                            {% elif session.type_evenement == 'EXAMEN_FINAL' %}
+                                                <strong style="color: #721c24;">Examen Final</strong>
+                                                <div class="matiere-info">
+                                                    <strong>{{ session.matiere.name }}</strong>
+                                                    <small class="event-details">{{ session.professeur.admin.get_full_name }}</small>
+                                                </div>
                                             {% elif session.type_evenement == 'FORMATION_MILITAIRE' %}
                                                 <strong style="color: #004085;">Formation Militaire</strong><br>
                                                 <small>{{ session.titre_evenement }}</small>
@@ -241,7 +389,9 @@
                                     {% endif %}
                                 {% endwith %}
                             </td>
-                        {% endfor %}
+                            {% endfor %}
+                        {% endif %}
+                        {% endwith %}
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -249,6 +399,16 @@
         </div>
     </div>
 </div>
+
+<script>
+function filterByDate() {
+    const dateDebut = document.getElementById('date-debut').value;
+    const dateFin = document.getElementById('date-fin').value;
+    if (dateDebut && dateFin) {
+        window.location.href = `?promotion={{ promotion_selected }}&date_debut=${dateDebut}&date_fin=${dateFin}`;
+    }
+}
+</script>
 {% endblock content %}
 
 

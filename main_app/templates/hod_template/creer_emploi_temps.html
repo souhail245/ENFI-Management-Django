@@ -172,6 +172,7 @@
         padding: 15px;
         vertical-align: top;
         text-align: center;
+        background-color: #ffffff; /* Ensure consistent background color */
     }
 
     .calendar th {
@@ -276,7 +277,7 @@
         min-height: 40px;
         padding: 5px;
         margin: 0;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
         transition: all 0.2s ease;
         background-color: #ffffff; /* Fond blanc pour contraste */
         color: #212529; /* Couleur du texte sombre */
@@ -1080,6 +1081,16 @@
     opacity: 1;
     visibility: visible;
     transform: translateX(-50%) translateY(-8px);
+}
+
+/* Correction pour la première ligne du tableau */
+.calendar thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: #f1f1f1;
+    color: #000000; /* Ensure text color matches */
+    border: 2px solid #000000; /* Ensure border matches */
 }
 </style>
 
