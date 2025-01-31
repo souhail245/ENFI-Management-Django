@@ -26,6 +26,7 @@ def stringformat(value, arg):
     """
     return str(value)
 
+
 @register.filter
 def get_dict_item(dictionary, key):
     """Retourne l'élément d'un dictionnaire pour une clé donnée."""
@@ -33,6 +34,7 @@ def get_dict_item(dictionary, key):
         return None  # Retourne None si le dictionnaire est vide
     return dictionary.get(key)
 
+<<<<<<< Updated upstream
 @register.filter
 def replace(value, arg):
     """
@@ -43,3 +45,6 @@ def replace(value, arg):
         return value
     what, to = arg.split(',')
     return value.replace(what, to)
+=======
+
+>>>>>>> Stashed changes

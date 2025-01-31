@@ -1293,9 +1293,10 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime, timedelta
 from collections import defaultdict
-from .models import EmploiTemps, Subject, Staff  # Assure-toi que tes modèles sont correctement importés
+from .models import EmploiTemps, Subject, Staff, AcademicYear, Holiday, Vacation  # Assure-toi que tes modèles sont correctement importés
 from django.contrib import messages
 from django.urls import reverse
+from django.db.models import Q
 
 @csrf_exempt
 def creer_emploi_temps(request):
@@ -1325,7 +1326,7 @@ def creer_emploi_temps(request):
                 'niveau': promotion,
                 'type_evenement': type_evenement,
                 'date_debut': date_debut,
-                'date': date_debut,
+                'date': date_debut, # Initialiser 'date' avec date_debut
                 'titre_evenement': titre_evenement
             }
 
@@ -1344,7 +1345,7 @@ def creer_emploi_temps(request):
             else:
                 event_data['horaire'] = request.POST.get('horaire')
                 # Ne pas gérer la matière pour CONFERENCE et FORMATION_MILITAIRE
-                if type_evenement not in ['FORMATION_MILITAIRE', 'CONFERENCE', 'JOUR_FERIE', 'VACANCES']:
+                if type_evenement not in ['FORMATION_MILITAIRE', 'CONFERENCE']:
                     matiere_id = request.POST.getlist("matiere")[0]  # Prendre le premier ID
                     if matiere_id:
                         event_data['matiere'] = get_object_or_404(Subject, id=matiere_id)
@@ -1365,11 +1366,48 @@ def creer_emploi_temps(request):
     
     else:
         promotion_selected = request.GET.get('promotion', '3ème année')
-        promotions = ['3ème année', '4ème année', '5ème année']
+        promotions = ['3ème année', '4ème année', '5ème année', '6ème année']
         date_debut = request.GET.get('date_debut', datetime.now().date())
         if isinstance(date_debut, str):
             date_debut = datetime.strptime(date_debut, '%Y-%m-%d').date()
         date_fin = date_debut + timedelta(days=14)
+
+        # Récupération de l'année académique courante
+        try:
+            current_year = AcademicYear.objects.filter(start_date__lte=date_debut, end_date__gte=date_debut).first()
+        except AcademicYear.DoesNotExist:
+            messages.error(request, "Aucune année académique n'a été définie pour cette date.")
+            current_year = None
+
+        # Création des événements 'JOUR_FERIE' et 'VACANCES'
+        if current_year:
+            # Récupérer les jours fériés de l'année courante
+            holidays = Holiday.objects.filter(date__range=[current_year.start_date, current_year.end_date])
+            for holiday in holidays:
+                # Vérifier si l'événement n'existe pas déjà pour éviter les doublons
+                if not EmploiTemps.objects.filter(date=holiday.date, type_evenement='JOUR_FERIE', niveau=promotion_selected).exists():
+                    EmploiTemps.objects.create(
+                        niveau=promotion_selected,
+                        date=holiday.date,
+                        type_evenement='JOUR_FERIE',
+                        titre_evenement=holiday.description,
+                    )
+
+            # Récupérer les vacances de l'année courante
+            vacations = Vacation.objects.filter(start_date__range=[current_year.start_date, current_year.end_date])
+            for vacation in vacations:
+                # Pour chaque jour de la période de vacances
+                current_date = vacation.start_date
+                while current_date <= vacation.end_date:
+                    # Vérifier si la période n'existe pas déjà pour éviter les doublons
+                    if not EmploiTemps.objects.filter(date=current_date, type_evenement='VACANCES', niveau=promotion_selected, titre_evenement=vacation.description).exists():
+                        EmploiTemps.objects.create(
+                            niveau=promotion_selected,
+                             date = current_date,
+                            type_evenement='VACANCES',
+                            titre_evenement=vacation.description,
+                        )
+                    current_date += timedelta(days=1)
         sessions = EmploiTemps.objects.filter(
             Q(date__range=[date_debut, date_fin], niveau=promotion_selected) |
             Q(date_debut__lte=date_fin, date_fin__gte=date_debut, niveau=promotion_selected)
@@ -1416,7 +1454,8 @@ def choisir_promotion(request):
     promotions = [
         '3ème année',
         '4ème année',
-        '5ème année'
+        '5ème année',
+        '6ème année'
     ]
     context = {
         'promotions': promotions,
@@ -1429,7 +1468,7 @@ def liste_emplois(request):
     date_debut = request.GET.get('date_debut')
     date_fin = request.GET.get('date_fin')
     
-    promotions = ['3ème année', '4ème année', '5ème année']
+    promotions = ['3ème année', '4ème année', '5ème année', '6ème année']
     horaires = ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00']
 
     # Convertir les dates
@@ -1451,9 +1490,9 @@ def liste_emplois(request):
             (Q(date__range=[date_debut, date_fin])) |
             # Pour les événements multi-jours
             (
-                Q(date_debut__lte=date_fin) & 
-                Q(date_fin__gte=date_debut) & 
-                Q(type_evenement__in=['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE'])
+                (Q(date_debut__lte=date_fin) if date_debut else Q(pk__in=[])) &
+                (Q(date_fin__gte=date_debut) if date_fin else Q(pk__in=[])) &
+                Q(type_evenement__in=['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE', 'VACANCES', 'JOUR_FERIE'])
             )
         )
     ).select_related('matiere', 'professeur')
@@ -1468,17 +1507,21 @@ def liste_emplois(request):
     # Organiser les sessions par date
     sessions_by_date = defaultdict(dict)
     for session in sessions:
-        if session.type_evenement in ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE']:
-            # Pour les événements multi-jours
-            event_start = max(session.date_debut, date_debut)
-            event_end = min(session.date_fin, date_fin)
-            current = event_start
-            while current <= event_end:
-                sessions_by_date[current]['full_day'] = session
-                current += timedelta(days=1)
-        else:
-            # Pour les événements standards
-            sessions_by_date[session.date][session.horaire] = session
+     if session.type_evenement in ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE', 'VACANCES', 'JOUR_FERIE']:
+        # Pour les événements multi-jours
+         if session.date_debut and session.date_fin:
+             event_start = max(session.date_debut, date_debut) 
+             event_end = min(session.date_fin, date_fin) 
+             current = event_start
+             while current <= event_end:
+                 sessions_by_date[current]['full_day'] = session
+                 current += timedelta(days=1)
+         else:
+             # Pour les événements VACANCES et JOUR_FERIE
+              sessions_by_date[session.date]['full_day'] = session
+     else:
+         # Pour les événements standards
+         sessions_by_date[session.date][session.horaire] = session
 
     context = {
         'sessions_by_date': dict(sessions_by_date),
@@ -1492,16 +1535,6 @@ def liste_emplois(request):
     }
     return render(request, "hod_template/liste_emplois.html", context)
 
-def mettre_a_jour_progression(request, emploi_id):
-    emploi = get_object_or_404(EmploiTemps, id=emploi_id)
-
-    if request.method == "POST":
-        progression = request.POST.get("progression")
-        emploi.progression = progression
-        emploi.save()
-        return redirect("liste_emplois")  # Redirection vers la liste des emplois
-
-    return render(request, "hod_template/mise_a_jour_progression.html", {"emploi": emploi})
 
 @csrf_exempt
 def get_matieres_by_niveau(request):
@@ -1518,7 +1551,7 @@ def historique_emploi(request):
     date_debut = request.GET.get('date_debut')
     date_fin = request.GET.get('date_fin')
     
-    promotions = ['3ème année', '4ème année', '5ème année']
+    promotions = ['3ème année', '4ème année', '5ème année', '6ème année']
     horaires = ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00']
 
     # Convertir les dates
@@ -1540,9 +1573,9 @@ def historique_emploi(request):
             (Q(date__range=[date_debut, date_fin])) |
             # Pour les événements multi-jours
             (
-                Q(date_debut__lte=date_fin) & 
-                Q(date_fin__gte=date_debut) & 
-                Q(type_evenement__in=['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE'])
+                (Q(date_debut__lte=date_fin) if date_debut else Q(pk__in=[])) &
+                (Q(date_fin__gte=date_debut) if date_fin else Q(pk__in=[])) &
+                Q(type_evenement__in=['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE', 'VACANCES', 'JOUR_FERIE'])
             )
         )
     ).select_related('matiere', 'professeur')
@@ -1556,10 +1589,10 @@ def historique_emploi(request):
     # Organiser les sessions par date
     sessions_by_date = defaultdict(dict)
     for session in sessions:
-        if session.type_evenement in ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE']:
+        if session.type_evenement in ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE', 'VACANCES', 'JOUR_FERIE']:
             # Pour les événements multi-jours
-            event_start = max(session.date_debut, date_debut)
-            event_end = min(session.date_fin, date_fin)
+            event_start = max(session.date_debut, date_debut) if session.date_debut else date_debut
+            event_end = min(session.date_fin, date_fin) if session.date_fin else date_fin
             current = event_start
             while current <= event_end:
                 sessions_by_date[current]['full_day'] = session
@@ -1580,7 +1613,7 @@ def historique_emploi(request):
     }
     
     return render(request, 'hod_template/historique_emploi.html', context)
-
+    
 def supprimer_evenement(request, evenement_id):
     try:
         # Récupérer l'événement initial

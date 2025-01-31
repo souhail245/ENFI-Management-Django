@@ -83,38 +83,68 @@ class Course(models.Model):
     def __str__(self):
         return f"{self.name} ({self.niveau})"  # Affiche le nom du cours avec le niveau
 
+from django.db import models
+from datetime import date
+from django.core.exceptions import ValidationError
+from django.db.models import Q
+from django.utils import timezone
 
-class Student(models.Model):
-    admin = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    course = models.ForeignKey(Course, on_delete=models.DO_NOTHING, null=True, blank=False)
-    session = models.ForeignKey(Session, on_delete=models.DO_NOTHING, null=True)
-    phone_number = models.CharField(max_length=20,  default="06000007")  # Nouveau champ
-    matricule = models.CharField(max_length=14, unique=False, default="5001")  # Nouveau champ
-    # Champ Niveau avec des choix
-    NIVEAU_CHOICES = [
-        ('3eme année', '3ème année'),
-        ('4eme année', '4ème année'),
-        ('5eme année', '5ème année'),
-        ('6eme année', '6ème année'),
-                  ]
-    niveau = models.CharField(max_length=20, choices=NIVEAU_CHOICES, default='3eme année')
-    lieu = models.CharField(max_length=100, null=True, blank=True)  # Lieu de naissance
-    dateN = models.DateField(null=True, blank=True)  # Date de naissance
+
+class AcademicYear(models.Model):
+    start_date = models.DateField(verbose_name="Date de début de l'année académique", unique=True)
+    end_date = models.DateField(verbose_name="Date de fin de l'année académique", unique=True)
 
     def __str__(self):
-        return self.admin.last_name + ", " + self.admin.first_name
+        return f"Année académique: {self.start_date.year}-{self.end_date.year}"
 
+    def clean(self):
+        if self.end_date <= self.start_date:
+            raise ValidationError("La date de fin doit être postérieure à la date de début")
+
+
+class Holiday(models.Model):
+    date = models.DateField(verbose_name="Date du jour férié", unique=True)
+    description = models.CharField(max_length=255, verbose_name="Description")
+
+    def __str__(self):
+        return f"Jour férié : {self.date} - {self.description}"
+        
+    class Meta:
+        verbose_name = "Jour férié"
+        verbose_name_plural = "Jours fériés"
+
+
+class Vacation(models.Model):
+    start_date = models.DateField(verbose_name="Date de début des vacances", unique=True)
+    end_date = models.DateField(verbose_name="Date de fin des vacances", unique=True)
+    description = models.CharField(max_length=255, verbose_name="Description")
+    
+    def __str__(self):
+       return f"Vacances : {self.start_date} - {self.end_date} ({self.description})"
+    
+    def clean(self):
+        if self.end_date <= self.start_date:
+            raise ValidationError("La date de fin doit être postérieure à la date de début")
+        
+    class Meta:
+        verbose_name = "Vacances"
+        verbose_name_plural = "Vacances"
+        
 
 class Staff(models.Model):
-    admin = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    admin = models.OneToOneField(CustomUser, on_delete=models.CASCADE, verbose_name="Utilisateur")
 
     def __str__(self):
         return self.admin.last_name + " " + self.admin.first_name
+    
+    class Meta:
+        verbose_name = "Personnel"
+        verbose_name_plural = "Personnel"
 
 
 class Subject(models.Model):
-    name = models.CharField(max_length=120)
-    staff = models.ForeignKey(Staff,on_delete=models.CASCADE,)
+    name = models.CharField(max_length=255, verbose_name="Nom de la matière")
+    staff = models.ForeignKey(Staff,on_delete=models.CASCADE, verbose_name="Professeur")
     niveau = models.CharField(
         max_length=20,
         choices=[
@@ -123,14 +153,15 @@ class Subject(models.Model):
             ('5ème année', '5ème année'),
              ('6ème année', '6ème année'),
         ],
-        default='3ème année'
+        default='3ème année',
+        verbose_name="Niveau"
     )
-    volume_horaire_total = models.IntegerField(default=40)  # 30-40 heures
-    updated_at = models.DateTimeField(auto_now=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    heures_ajoutees = models.IntegerField(default=0, null=True, blank=True)
-    progression_cours = models.IntegerField(default=0)  # Progression en %
-    volume_horaire_restant = models.IntegerField(default=40, null=True, blank=True)  # Initialisé avec le total
+    volume_horaire_total = models.IntegerField(default=40, verbose_name="Volume horaire total")  # 30-40 heures
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Date de mise à jour")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
+    heures_ajoutees = models.IntegerField(default=0, null=True, blank=True, verbose_name="Heures ajoutées")
+    progression_cours = models.IntegerField(default=0, verbose_name="Progression du cours en %")  # Progression en %
+    volume_horaire_restant = models.IntegerField(default=40, null=True, blank=True, verbose_name="Volume horaire restant")  # Initialisé avec le total
 
     def __str__(self):
         return self.name
@@ -182,6 +213,251 @@ class Subject(models.Model):
                 progression_cours=self.progression_cours,
                 volume_horaire_restant=self.volume_horaire_restant
             )
+
+class EmploiTemps(models.Model):
+    HORAIRES_CHOICES = [
+        ('08:00-10:00', '08:00-10:00'),
+        ('10:00-12:00', '10:00-12:00'),
+        ('14:00-16:00', '14:00-16:00'),
+        ('16:00-18:00', '16:00-18:00'),
+        ('08:00-12:00', '08:00-12:00'),
+        ('14:00-18:00', '14:00-18:00'),
+    ]
+
+    JOUR_CHOICES = [
+        ('Lundi', 'Lundi'),
+        ('Mardi', 'Mardi'),
+        ('Mercredi', 'Mercredi'),
+        ('Jeudi', 'Jeudi'),
+        ('Vendredi', 'Vendredi'),
+        ('Samedi', 'Samedi'),
+    ]
+    jour = models.CharField(max_length=10, choices=JOUR_CHOICES, default='Lundi')
+    # Supprimer l'ancien champ niveau qui référence Student
+    # niveau = models.ForeignKey(Student, on_delete=models.CASCADE)
+    
+    niveau = models.CharField(
+        max_length=20,
+        choices=[
+            ('3ème année', '3ème année'),
+            ('4ème année', '4ème année'),
+            ('5ème année', '5ème année'),
+            ('6ème année', '6ème année'),
+        ],
+        default='3ème année'
+    )
+    date = models.DateField(default=date.today) 
+    horaire = models.CharField(
+        max_length=20, 
+        choices=HORAIRES_CHOICES, 
+        default='08:00-10:00',
+        null=True,  # Permettre les valeurs NULL
+        blank=True  # Permettre les valeurs vides dans le formulaire
+    )
+
+    matiere = models.ForeignKey(
+        Subject, 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    professeur = models.ForeignKey(
+        Staff, 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    
+    progression = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Décrivez la progression, par exemple '50% terminé' ou 'Chapitre 3 terminé'."
+    )
+
+    TYPE_CHOICES = [
+        ('COURS', 'Cours'),
+        ('EXAMEN_PARTIEL', 'Examen Partiel'),
+        ('EXAMEN_FINAL', 'Examen Final'),
+        ('RATTRAPAGE', 'Rattrapage'),
+        ('FORMATION_MILITAIRE', 'Formation Militaire'),
+        ('TOURNEE', 'Tournée'),
+        ('SORTIE', 'Sortie'),
+        ('PROJET', 'Projet'),
+        ('VISITE_MILITAIRE', 'Visite Militaire'),
+        ('CONFERENCE', 'Conférence'),
+    ]
+    
+    type_evenement = models.CharField(
+        max_length=20,
+        choices=TYPE_CHOICES,
+        default='COURS'
+    )
+    
+    titre_evenement = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Titre de l'événement (conférence, tournée, etc.)"
+    )
+    
+    date_debut = models.DateField(null=True, blank=True)
+    date_fin = models.DateField(null=True, blank=True)
+    numero_seance = models.IntegerField(default=0)  # Ajouter ce champ
+    
+    class Meta:
+        # Supprimer la contrainte unique pour permettre des événements sans horaire
+        unique_together = []
+        
+    # Créer deux listes pour distinguer les types d'événements
+    EVENEMENTS_AVEC_HORAIRE = ['COURS', 'EXAMEN_PARTIEL', 'EXAMEN_FINAL', 'RATTRAPAGE', 'FORMATION_MILITAIRE', 'CONFERENCE']
+    EVENEMENTS_SANS_HORAIRE = ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE']
+    
+    # Nouvelle définition des constantes de type d'événements
+    EVENEMENTS_DATE_ET_HORAIRE = [
+        'COURS', 
+        'EXAMEN_PARTIEL',
+        'EXAMEN_FINAL',
+        'RATTRAPAGE',
+        'FORMATION_MILITAIRE',
+        'CONFERENCE'
+    ]
+    
+    EVENEMENTS_MULTI_JOURS = [
+        'TOURNEE',
+        'SORTIE',
+        'PROJET',
+        'VISITE_MILITAIRE'
+    ]
+
+    @property
+    def is_multi_day_event(self):
+        return self.type_evenement in self.EVENEMENTS_MULTI_JOURS
+
+    def clean(self):
+        super().clean()
+        if self.type_evenement in self.EVENEMENTS_MULTI_JOURS:
+            if not self.date_debut or not self.date_fin:
+                raise ValidationError({
+                    'date_debut': 'La date de début est requise',
+                    'date_fin': 'La date de fin est requise'
+                })
+            if self.date_fin < self.date_debut:
+                raise ValidationError('La date de fin ne peut pas être antérieure à la date de début')
+            
+            # Forcer l'horaire à None pour les événements multi-jours
+            self.horaire = None
+            
+            # Vérifier les chevauchements sur la période
+            chevauchement = EmploiTemps.objects.filter(
+                niveau=self.niveau,
+                type_evenement=self.type_evenement
+            ).exclude(id=self.id).filter(
+                Q(date_debut__range=(self.date_debut, self.date_fin)) |
+                Q(date_fin__range=(self.date_debut, self.date_fin)) |
+                Q(date_debut__lte=self.date_debut, date_fin__gte=self.date_fin)
+            )
+            
+            if chevauchement.exists():
+                raise ValidationError('Un événement du même type existe déjà sur cette période')
+        
+        elif self.type_evenement in self.EVENEMENTS_DATE_ET_HORAIRE:
+            if not self.horaire:
+                raise ValidationError('L\'horaire est requis pour ce type d\'événement')
+            
+            # Forcer la date de fin à être égale à la date de début
+            self.date_fin = self.date_debut
+            
+            # Vérifier les chevauchements sur le créneau horaire
+            chevauchement = EmploiTemps.objects.filter(
+                niveau=self.niveau,
+                date=self.date_debut,
+                horaire=self.horaire
+            ).exclude(id=self.id)
+            
+            if chevauchement.exists():
+                raise ValidationError('Un événement existe déjà à cet horaire')
+    
+    def save(self, *args, **kwargs):
+        # Pour les événements multi-jours
+        if self.type_evenement in self.EVENEMENTS_MULTI_JOURS:
+            self.horaire = None
+            if not self.date_fin:
+                self.date_fin = self.date_debut
+        else:
+            self.date_fin = self.date_debut
+
+        is_new = self.pk is None
+        # Appel unique à save()
+        super().save(*args, **kwargs)
+        
+        # Mise à jour de la progression uniquement pour les nouveaux cours
+        if is_new and self.type_evenement == 'COURS' and self.matiere:
+            seances_precedentes = EmploiTemps.objects.filter(
+                matiere=self.matiere,
+                type_evenement='COURS',
+                date__lt=self.date
+            ).count()
+            
+            seances_meme_jour = EmploiTemps.objects.filter(
+                matiere=self.matiere,
+                type_evenement='COURS',
+                date=self.date,
+                horaire__lt=self.horaire
+            ).count()
+            
+            self.numero_seance = seances_precedentes + seances_meme_jour + 1
+            progression = min(int((self.numero_seance * 2 / self.matiere.volume_horaire_total) * 100), 100)
+            
+            # Mise à jour dans la base de données
+            EmploiTemps.objects.filter(pk=self.pk).update(
+                numero_seance=self.numero_seance,
+                progression=str(progression)
+            )
+            
+            # Mise à jour de la matière
+            self.matiere.heures_ajoutees = self.numero_seance * 2
+            self.matiere.volume_horaire_restant = max(
+                self.matiere.volume_horaire_total - self.matiere.heures_ajoutees,
+                0
+            )
+            self.matiere.progression_cours = progression
+            
+            Subject.objects.filter(pk=self.matiere.pk).update(
+                heures_ajoutees=self.matiere.heures_ajoutees,
+                progression_cours=self.matiere.progression_cours,
+                volume_horaire_restant=self.matiere.volume_horaire_restant
+            )
+
+    def get_progression_percentage(self):
+        """Retourne la progression en pourcentage"""
+        try:
+            return int(self.progression or 0)
+        except ValueError:
+            return 0
+
+    def __str__(self):
+        return f"{self.niveau} - {self.date} - {self.horaire} : {self.matiere}"
+
+class Student(models.Model):
+    admin = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.DO_NOTHING, null=True, blank=False)
+    session = models.ForeignKey(Session, on_delete=models.DO_NOTHING, null=True)
+    phone_number = models.CharField(max_length=20,  default="06000007")  # Nouveau champ
+    matricule = models.CharField(max_length=14, unique=False, default="5001")  # Nouveau champ
+    # Champ Niveau avec des choix
+    NIVEAU_CHOICES = [
+        ('3eme année', '3ème année'),
+        ('4eme année', '4ème année'),
+        ('5eme année', '5ème année'),
+        ('6eme année', '6ème année'),
+                  ]
+    niveau = models.CharField(max_length=20, choices=NIVEAU_CHOICES, default='3eme année')
+    lieu = models.CharField(max_length=100, null=True, blank=True)  # Lieu de naissance
+    dateN = models.DateField(null=True, blank=True)  # Date de naissance
+
+    def __str__(self):
+        return self.admin.last_name + ", " + self.admin.first_name
 
 
 class Attendance(models.Model):
@@ -322,230 +598,9 @@ class SuiviCours(models.Model):
         return f"{self.matiere.name} : {self.heures_effectuees}/{self.total_heures} heures"
 
 
-class EmploiTemps(models.Model):
 
-    HORAIRES_CHOICES = [
-        ('08:00-10:00', '08:00-10:00'),
-        ('10:00-12:00', '10:00-12:00'),
-        ('14:00-16:00', '14:00-16:00'),
-        ('16:00-18:00', '16:00-18:00'),
-        ('08:00-12:00', '08:00-12:00'),
-        ('14:00-18:00', '14:00-18:00'),
-    ]
 
-    JOUR_CHOICES = [
-        ('Lundi', 'Lundi'),
-        ('Mardi', 'Mardi'),
-        ('Mercredi', 'Mercredi'),
-        ('Jeudi', 'Jeudi'),
-        ('Vendredi', 'Vendredi'),
-        ('Samedi', 'Samedi'),
-    ]
-    jour = models.CharField(max_length=10, choices=JOUR_CHOICES, default='Lundi')
-    # Supprimer l'ancien champ niveau qui référence Student
-    # niveau = models.ForeignKey(Student, on_delete=models.CASCADE)
-    
-    niveau = models.CharField(
-        max_length=20,
-        choices=[
-            ('3ème année', '3ème année'),
-            ('4ème année', '4ème année'),
-            ('5ème année', '5ème année'),
-        ],
-        default='3ème année'
-    )
-    date = models.DateField(default=date.today) 
-    horaire = models.CharField(
-        max_length=20, 
-        choices=HORAIRES_CHOICES, 
-        default='08:00-10:00',
-        null=True,  # Permettre les valeurs NULL
-        blank=True  # Permettre les valeurs vides dans le formulaire
-    )
 
-    matiere = models.ForeignKey(
-        Subject, 
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True
-    )
-    professeur = models.ForeignKey(
-        Staff, 
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True
-    )
-    
-    progression = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-        help_text="Décrivez la progression, par exemple '50% terminé' ou 'Chapitre 3 terminé'."
-    )
 
-    TYPE_CHOICES = [
-        ('COURS', 'Cours'),
-        ('EXAMEN_PARTIEL', 'Examen Partiel'),
-        ('EXAMEN_FINAL', 'Examen Final'),
-        ('RATTRAPAGE', 'Rattrapage'),
-        ('FORMATION_MILITAIRE', 'Formation Militaire'),
-        ('TOURNEE', 'Tournée'),
-        ('SORTIE', 'Sortie'),
-        ('PROJET', 'Projet'),
-        ('VISITE_MILITAIRE', 'Visite Militaire'),
-        ('CONFERENCE', 'Conférence'),
-        ('JOUR_FERIE', 'Jour Férié'),
-        ('VACANCES', 'Vacances'),
-    ]
-    
-    type_evenement = models.CharField(
-        max_length=20,
-        choices=TYPE_CHOICES,
-        default='COURS'
-    )
-    
-    titre_evenement = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-        help_text="Titre de l'événement (conférence, tournée, etc.)"
-    )
-    
-    date_debut = models.DateField(null=True, blank=True)
-    date_fin = models.DateField(null=True, blank=True)
-    numero_seance = models.IntegerField(default=0)  # Ajouter ce champ
-    
-    class Meta:
-        # Supprimer la contrainte unique pour permettre des événements sans horaire
-        unique_together = []
-        
-    # Créer deux listes pour distinguer les types d'événements
-    EVENEMENTS_AVEC_HORAIRE = ['COURS', 'EXAMEN_PARTIEL', 'EXAMEN_FINAL', 'RATTRAPAGE', 'FORMATION_MILITAIRE', 'CONFERENCE']
-    EVENEMENTS_SANS_HORAIRE = ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE']
-    
-    # Nouvelle définition des constantes de type d'événements
-    EVENEMENTS_DATE_ET_HORAIRE = [
-        'COURS', 
-        'EXAMEN_PARTIEL',
-        'EXAMEN_FINAL',
-        'RATTRAPAGE',
-        'FORMATION_MILITAIRE',
-        'CONFERENCE'
-    ]
-    
-    EVENEMENTS_MULTI_JOURS = [
-        'TOURNEE',
-        'SORTIE',
-        'PROJET',
-        'VISITE_MILITAIRE'
-    ]
-
-    @property
-    def is_multi_day_event(self):
-        return self.type_evenement in self.EVENEMENTS_MULTI_JOURS
-
-    def clean(self):
-        super().clean()
-        if self.type_evenement in self.EVENEMENTS_MULTI_JOURS:
-            if not self.date_debut or not self.date_fin:
-                raise ValidationError({
-                    'date_debut': 'La date de début est requise',
-                    'date_fin': 'La date de fin est requise'
-                })
-            if self.date_fin < self.date_debut:
-                raise ValidationError('La date de fin ne peut pas être antérieure à la date de début')
-            
-            # Forcer l'horaire à None pour les événements multi-jours
-            self.horaire = None
-            
-            # Vérifier les chevauchements sur la période
-            chevauchement = EmploiTemps.objects.filter(
-                niveau=self.niveau,
-                type_evenement=self.type_evenement
-            ).exclude(id=self.id).filter(
-                Q(date_debut__range=(self.date_debut, self.date_fin)) |
-                Q(date_fin__range=(self.date_debut, self.date_fin)) |
-                Q(date_debut__lte=self.date_debut, date_fin__gte=self.date_fin)
-            )
-            
-            if chevauchement.exists():
-                raise ValidationError('Un événement du même type existe déjà sur cette période')
-        
-        elif self.type_evenement in self.EVENEMENTS_JOUR_UNIQUE:
-            if not self.horaire:
-                raise ValidationError('L\'horaire est requis pour ce type d\'événement')
-            
-            # Forcer la date de fin à être égale à la date de début
-            self.date_fin = self.date_debut
-            
-            # Vérifier les chevauchements sur le créneau horaire
-            chevauchement = EmploiTemps.objects.filter(
-                niveau=self.niveau,
-                date=self.date_debut,
-                horaire=self.horaire
-            ).exclude(id=self.id)
-            
-            if chevauchement.exists():
-                raise ValidationError('Un événement existe déjà à cet horaire')
-    
-    def save(self, *args, **kwargs):
-        # Pour les événements multi-jours
-        if self.type_evenement in self.EVENEMENTS_MULTI_JOURS:
-            self.horaire = None
-            if not self.date_fin:
-                self.date_fin = self.date_debut
-        else:
-            self.date_fin = self.date_debut
-
-        is_new = self.pk is None
-        # Appel unique à save()
-        super().save(*args, **kwargs)
-        
-        # Mise à jour de la progression uniquement pour les nouveaux cours
-        if is_new and self.type_evenement == 'COURS' and self.matiere:
-            seances_precedentes = EmploiTemps.objects.filter(
-                matiere=self.matiere,
-                type_evenement='COURS',
-                date__lt=self.date
-            ).count()
-            
-            seances_meme_jour = EmploiTemps.objects.filter(
-                matiere=self.matiere,
-                type_evenement='COURS',
-                date=self.date,
-                horaire__lt=self.horaire
-            ).count()
-            
-            self.numero_seance = seances_precedentes + seances_meme_jour + 1
-            progression = min(int((self.numero_seance * 2 / self.matiere.volume_horaire_total) * 100), 100)
-            
-            # Mise à jour dans la base de données
-            EmploiTemps.objects.filter(pk=self.pk).update(
-                numero_seance=self.numero_seance,
-                progression=str(progression)
-            )
-            
-            # Mise à jour de la matière
-            self.matiere.heures_ajoutees = self.numero_seance * 2
-            self.matiere.volume_horaire_restant = max(
-                self.matiere.volume_horaire_total - self.matiere.heures_ajoutees,
-                0
-            )
-            self.matiere.progression_cours = progression
-            
-            Subject.objects.filter(pk=self.matiere.pk).update(
-                heures_ajoutees=self.matiere.heures_ajoutees,
-                progression_cours=self.matiere.progression_cours,
-                volume_horaire_restant=self.matiere.volume_horaire_restant
-            )
-
-    def get_progression_percentage(self):
-        """Retourne la progression en pourcentage"""
-        try:
-            return int(self.progression or 0)
-        except ValueError:
-            return 0
-
-    def __str__(self):
-        return f"{self.niveau} - {self.date} - {self.horaire} : {self.matiere}"
+#  test annnée academique 
 

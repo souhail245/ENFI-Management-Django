@@ -94,17 +94,21 @@ urlpatterns = [
     path('get_student_details/', hod_views.get_student_details, name='get_student_details'),
     path('view-absences/', hod_views.view_absences, name='view_absences'),
 
+   # export pdf/excel    absences 
+
     path('export-absences-excel/', hod_views.export_absences_excel, name='export_absences_excel'),
     path('export-absences-pdf/', hod_views.export_absences_pdf, name='export_absences_pdf'),
 
+   # Page pour afficher les emplois du temps
+    
     path('emploi/create/', hod_views.creer_emploi_temps, name='creer_emploi_temps'),  # Page pour créer un emploi du temps
-    # Page pour afficher les emplois du temps
-
     path('emploi/list/', hod_views.liste_emplois, name='liste_emplois'),
+    path('emploi/historique/', hod_views.historique_emploi, name='historique_emploi'),
+
+
     path('emploi/choisir_promotion/', hod_views.choisir_promotion, name='choisir_promotion'),
     
-     path("emploi/progression/<int:emploi_id>/", hod_views.mettre_a_jour_progression, name="mettre_a_jour_progression"),
-     path('emploi/historique/', hod_views.historique_emploi, name='historique_emploi'),
+    
 
     # Staff
     path("staff/home/", staff_views.staff_home, name='staff_home'),
