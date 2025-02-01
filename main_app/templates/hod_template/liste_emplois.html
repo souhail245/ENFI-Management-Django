@@ -134,14 +134,12 @@
 
     /* Enhanced Table Styles */
     .calendar {
-        border-radius: 12px;
-        overflow: hidden;
-        border: 1px solid rgba(0, 0, 0, 0.1);
-        box-shadow: 0 0 30px rgba(0, 0, 0, 0.05);
-        background: #fff;
+        width: 100%;
         border-collapse: separate;
         border-spacing: 0;
+        border: 3px solid #000000; /* Bold outer border */
     }
+
 
     .calendar th {
         background: linear-gradient(to bottom, #f8f9fa, #f2f2f2);
@@ -204,8 +202,8 @@
     }
 
     .session-card.vacances {
-        background: linear-gradient(45deg, #cce5ff, #e3f2fd);
-        border: 1px solid rgba(0, 123, 255, 0.2);
+        background: linear-gradient(45deg, #141414, #0a0a0a);
+        border: 1px solid rgba(13, 13, 14, 0.2);
     }
 
     .session-card.examen {
@@ -447,7 +445,12 @@
     font-weight: 600;
     margin: 0;
     color: #000000; /* Titre en noir */
-    font-size: 0.9rem;
+    font-size: 0.9rem;.event-tournee { background: linear-gradient(90deg, rgba(25, 118, 210, 0.7), rgba(33, 150, 243, 0.7)); }
+.event-sortie { background: linear-gradient(90deg, rgba(156, 39, 176, 0.7), rgba(224, 64, 251, 0.7)); }
+.event-projet { background: linear-gradient(90deg, rgba(245, 124, 0, 0.7), rgba(255, 167, 38, 0.7)); }
+.event-visite_militaire { background: linear-gradient(90deg, rgba(84, 110, 122, 0.7), rgba(120, 144, 156, 0.7)); }
+.event-formation_militaire { background: linear-gradient(90deg, rgba(46, 125, 50, 0.7), rgba(67, 160, 71, 0.7)); }
+.event-conference { background: linear-gradient(90deg, rgba(123, 31, 162, 0.7), rgba(156, 39, 176, 0.7)); }
 }
 
 .multi-day-event .event-matiere {
@@ -463,12 +466,7 @@
 }
 
 /* Styles spécifiques pour chaque type d'événement (avec opacité réduite pour meilleure lisibilité) */
-.event-tournee { background: linear-gradient(90deg, rgba(25, 118, 210, 0.7), rgba(33, 150, 243, 0.7)); }
-.event-sortie { background: linear-gradient(90deg, rgba(156, 39, 176, 0.7), rgba(224, 64, 251, 0.7)); }
-.event-projet { background: linear-gradient(90deg, rgba(245, 124, 0, 0.7), rgba(255, 167, 38, 0.7)); }
-.event-visite_militaire { background: linear-gradient(90deg, rgba(84, 110, 122, 0.7), rgba(120, 144, 156, 0.7)); }
-.event-formation_militaire { background: linear-gradient(90deg, rgba(46, 125, 50, 0.7), rgba(67, 160, 71, 0.7)); }
-.event-conference { background: linear-gradient(90deg, rgba(123, 31, 162, 0.7), rgba(156, 39, 176, 0.7)); }
+
 </style>
 
 <div class="main-container">

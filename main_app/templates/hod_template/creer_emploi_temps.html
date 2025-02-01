@@ -9,7 +9,13 @@
     .main-container {
         padding: 20px;
     }
-
+    .timetable-wrapper {
+        background: #ffffff;
+        padding: 35px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease;
+    }
     .creation-form {
         background: white;
         padding: 30px;
@@ -545,41 +551,106 @@
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    border: none;
+    border: 2px solid #000000;
+    background: #ffffff;
 }
 
+/* En-têtes de colonnes en gras */
 .calendar th {
-    background: #f8fafc;
-    color: #1a1a1a;
-    font-weight: 600;
-    padding: 1rem;
-    border-bottom: 2px solid #e9ecef;
+    border: 1px solid #000000;
+    background-color: #f1f1f1;
+    color: #000000;
+    font-weight: 700;
+    padding: 15px;
+    text-align: center;
     text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 0.5px;
 }
 
+/* Cellules du calendrier avec bordures */
 .calendar td {
-    padding: 1rem;
-    border: 1px solid #e9ecef;
+    border: 1px solid #000000;
+    padding: 15px;
     vertical-align: top;
-    height: 120px;
+    background-color: #ffffff;
+    min-height: 120px;
 }
 
-/* Style des événements */
+/* Style amélioré pour les événements */
 .session-card {
     background: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-    padding: 0.75rem;
-    margin-bottom: 0.5rem;
-    border: 1px solid #e9ecef;
-    transition: all 0.2s ease;
+    border: 1px solid #000000;
+    border-radius: 6px;
+    padding: 12px;
+    margin: 5px 0;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Style pour les événements multi-jours */
+.multi-day-event .session-card {
+    min-height: 40px;
+    background-color: #f8f9fa;
+    border: 1px solid #000000;
+    margin: 2px 0;
+}
+
+.multi-day-event .event-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.multi-day-event .event-title {
+    font-weight: 700;
+    color: #000000;
+    font-size: 0.95em;
+}
+
+.multi-day-event .event-type {
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: #ffffff;
+    background: #000000;
+}
+
+/* Styles spécifiques pour différents types d'événements */
+.event-tournee {
+    border-left: 4px solid #1976D2;
+    font-weight: 700;
+}
+
+.event-projet {
+    border-left: 4px solid #F57C00;
+    font-weight: 700;
+}
+
+.event-visite-militaire {
+    border-left: 4px solid #546E7A;
+    font-weight: 700;
+}
+
+.event-formation-militaire {
+    border-left: 4px solid #2E7D32;
+    font-weight: 700;
+}
+
+.event-conference {
+    border-left: 4px solid #7B1FA2;
+    font-weight: 700;
+}
+
+/* Amélioration de la lisibilité des dates */
+.calendar td:first-child {
+    font-weight: 700;
+    background-color: #f4f4f4;
+    border-right: 2px solid #000000;
+}
+
+/* Hover effects */
 .session-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Style des boutons */
@@ -750,7 +821,7 @@
 }
 
 .calendar th {
-    background: #f1f5f9;
+    background: #141414;
     padding: var(--spacing-md);
     font-weight: 600;
     color: var(--dark);
@@ -760,7 +831,7 @@
 }
 
 .calendar td {
-    border: 1px solid #e2e8f0;
+    border: 1px solid #141414;
     transition: all 0.2s ease;
     height: 120px;
     vertical-align: top;
@@ -768,7 +839,7 @@
 }
 
 .calendar td:hover {
-    background: #f8fafc;
+    background: #141414;
     box-shadow: var(--shadow-sm);
 }
 
@@ -978,7 +1049,7 @@
 
 /* Nouveaux styles pour le calendrier */
 .calendar-section {
-    background: #ffffff;
+    background: #141414;
     border-radius: 16px;
     box-shadow: var(--shadow-smooth);
     margin-top: 2rem;
@@ -987,7 +1058,7 @@
 
 .calendar-header {
     background: var(--secondary-gradient);
-    color: #ffffff;
+    color: #141414;
     padding: 1.5rem;
     text-align: center;
 }
@@ -999,7 +1070,7 @@
 }
 
 .calendar th {
-    background: #f1f5f9;
+    background: #141414;
     padding: 1rem;
     font-weight: 600;
     color: #334155;
@@ -1497,15 +1568,8 @@
     transform: scale(1.1);
 }
 
-/* Styles spécifiques pour chaque type d'événement */
-.event-tournee { background-color: #e3f2fd; }
-.event-sortie { background-color: #f3e5f5; }
-.event-projet { background-color: #e8f5e9; }
-.event-visite_militaire { background-color: #fff3e0; }
-.event-formation_militaire { background-color: #e8eaf6; }
-.event-conference { background-color: #fce4ec; }
 
-@media (max-width: 768px) {
+@media (max-width: 850px) {
     .multi-day-event .event-title {
         max-width: 120px;
     }
@@ -1514,6 +1578,13 @@
         display: none;
     }
 }
+
+.event-tournee { background: linear-gradient(90deg, rgba(25, 118, 210, 0.7), rgba(33, 150, 243, 0.7)); }
+.event-sortie { background: linear-gradient(90deg, rgba(156, 39, 176, 0.7), rgba(224, 64, 251, 0.7)); }
+.event-projet { background: linear-gradient(90deg, rgba(245, 124, 0, 0.7), rgba(255, 167, 38, 0.7)); }
+.event-visite_militaire { background: linear-gradient(90deg, rgba(84, 110, 122, 0.7), rgba(120, 144, 156, 0.7)); }
+.event-formation_militaire { background: linear-gradient(90deg, rgba(46, 125, 50, 0.7), rgba(67, 160, 71, 0.7)); }
+.event-conference { background: linear-gradient(90deg, rgba(123, 31, 162, 0.7), rgba(156, 39, 176, 0.7)); }
 </style>
 
 
