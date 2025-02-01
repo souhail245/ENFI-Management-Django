@@ -70,152 +70,123 @@
         </div>
         <!-- /.row -->
         <!-- Main row -->
-        <div class="row">
+        <div class="row mb-4">
             <div class="col-md-6">
-                <!-- LINE CHART -->
-                <div class="card card-dark">
-                  <div class="card-header">
-                    <h3 class="card-title"> Aperçu Personnels - Étudiants</h3>
-    
-                    <div class="card-tools">
-                      <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i>
-                      </button>
-                      <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
-                    </div>
-                  </div>
-                  <div class="card-body">
-                    <div class="chart">
-                      <canvas id="pieChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
-                    </div>
-                  </div></div>
-                  <!-- /.card-body -->
+                <div class="card card-dark h-100">
+                    <div class="card-header">
+                        <h3 class="card-title"> Aperçu Personnels - Étudiants</h3>
+        
+                        <div class="card-tools">
+                          <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i>
+                          </button>
+                          <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+                        </div>
+                      </div>
+                      <div class="card-body">
+                        <div class="chart">
+                          <canvas id="pieChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                        </div>
+                      </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="card card-dark">
-              <div class="card-header">
-                <h3 class="card-title">Présence par matière</h3>
-
-                <div class="card-tools">
-                  <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i>
-                  </button>
-                  <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
-                </div>
-              </div>
-              <div class="card-body">
-                <div class="chart">
-                  <canvas id="barChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
-                </div>
-              </div>
-              <!-- /.card-body -->
             </div>
+            <div class="col-md-6">
+                <div class="card card-dark h-100">
+                    <div class="card-header">
+                        <h3 class="card-title">Présence par matière</h3>
+        
+                        <div class="card-tools">
+                          <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i>
+                          </button>
+                          <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+                        </div>
+                      </div>
+                      <div class="card-body">
+                        <div class="chart">
+                          <canvas id="barChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                        </div>
+                      </div>
                 </div>
-            <!-- right col -->
+            </div>
         </div>
      
-        <div class="col-lg-12">
-          <div class="card card-dark">
-              <div class="card-header">
-                  <h3 class="card-title">Progression des cours par matière</h3>
-                  <div class="card-tools">
-                      <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
-                      <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
-                  </div>
-              </div>
-              <div class="form-group p-3">
-                <label for="niveau-select">Sélectionner le niveau :</label>
-                <select id="niveau-select" class="form-control" onchange="updateChart(this.value);">
-                    {% for niveau in niveaux_disponibles %}
-                        <option value="{{ niveau }}" {% if niveau == selected_niveau %}selected{% endif %}>
-                            {{ niveau }}
-                        </option>
-                    {% endfor %}
-                </select>
+        <div class="row">
+    <div class="col-12">
+        <div class="card card-dark">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="card-title d-flex align-items-center">
+                        <i class="fas fa-chart-bar mr-2 text-warning"></i>
+                        Progression des cours par matière
+                    </h3>
+                    <div class="card-tools d-flex align-items-center">
+                        <button id="downloadBtn" class="btn btn-tool mr-2" title="Télécharger le graphique">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button type="button" class="btn btn-tool mr-2" data-card-widget="maximize">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
-            
-            <!-- Graphique avec axe en pourcentage -->
-            <div class="chart-container p-3">
-                <canvas id="courseProgressChart"></canvas>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="niveau-select" class="font-weight-bold">
+                                <i class="fas fa-layer-group mr-1 text-primary"></i>
+                                Niveau d'études
+                            </label>
+                            <select id="niveau-select" class="form-control form-control-lg custom-select">
+                                {% for niveau in niveaux_disponibles %}
+                                    <option value="{{ niveau }}" {% if niveau == selected_niveau %}selected{% endif %}>
+                                        {{ niveau }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="progress-legend mt-4 text-center">
+                            <span class="badge badge-success px-3 py-2 mr-2">
+                                <i class="fas fa-check-circle"></i> Terminé (100%)
+                            </span>
+                            <span class="badge badge-info px-3 py-2 mr-2">
+                                <i class="fas fa-running"></i> Bonne progression (50-99%)
+                            </span>
+                            <span class="badge badge-warning px-3 py-2 mr-2">
+                                <i class="fas fa-clock"></i> En cours (20-50%)
+                            </span>
+                            <span class="badge badge-orange px-3 py-2 mr-2" style="background-color: #ffd700; color: #000;">
+                                <i class="fas fa-play"></i> Démarrage (1-20%)
+                            </span>
+                            <span class="badge badge-secondary px-3 py-2">
+                                <i class="fas fa-times-circle"></i> Non commencé (0%)
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-wrapper position-relative">
+                    <div class="chart-container" style="height: 65vh; min-height: 450px;">
+                        <canvas id="courseProgressChart"></canvas>
+                    </div>
+                    <div id="loadingOverlay" class="position-absolute w-100 h-100 d-none">
+                        <div class="d-flex justify-content-center align-items-center h-100">
+                            <div class="text-center">
+                                <div class="spinner-border text-primary mb-2" role="status">
+                                    <span class="sr-only">Chargement...</span>
+                                </div>
+                                <p class="text-muted">Chargement des données...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-            <script>
-            let progressChart;
-
-            function updateChart(niveau) {
-                fetch(`/get_progression_data?niveau=${niveau}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (progressChart) {
-                            progressChart.destroy();
-                        }
-
-                        const ctx = document.getElementById('courseProgressChart').getContext('2d');
-                        
-                        if (data.total_subjects === 0) {
-                            // Afficher un message si aucune matière n'existe pour ce niveau
-                            ctx.font = '14px Arial';
-                            ctx.textAlign = 'center';
-                            ctx.fillText('Aucune matière définie pour ce niveau', ctx.canvas.width/2, ctx.canvas.height/2);
-                            return;
-                        }
-
-                        progressChart = new Chart(ctx, {
-                            type: 'bar',
-                            data: {
-                                labels: data.subject_list,
-                                datasets: [{
-                                    label: 'Progression des matières (%)',
-                                    data: data.course_progress,
-                                    backgroundColor: data.course_progress.map(value => 
-                                        value === 0 ? 'rgba(200, 200, 200, 0.6)' : 'rgba(75, 192, 192, 0.6)'
-                                    ),
-                                    borderColor: data.course_progress.map(value => 
-                                        value === 0 ? 'rgba(200, 200, 200, 1)' : 'rgba(75, 192, 192, 1)'
-                                    ),
-                                    borderWidth: 1
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        max: 100,
-                                        title: {
-                                            display: true,
-                                            text: 'Progression (%)'
-                                        }
-                                    }
-                                },
-                                plugins: {
-                                    title: {
-                                        display: true,
-                                        text: `Progression des matières - ${niveau}`
-                                    },
-                                    tooltip: {
-                                        callbacks: {
-                                            label: function(context) {
-                                                const value = context.raw;
-                                                if (value === 0) {
-                                                    return 'Aucune séance réalisée';
-                                                }
-                                                return `Progression actuelle: ${value}%`;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        });
-                    });
-            }
-
-            document.addEventListener('DOMContentLoaded', function() {
-                updateChart(document.getElementById('niveau-select').value);
-            });
-            </script>
-          </div>
-      </div>
-      
+        </div>
+    </div>
+</div>
    
 </section>
 {% endblock content %}
@@ -223,14 +194,356 @@
 {% block custom_js %}
 
   <script>
+// Configuration globale des graphiques
+const CHART_CONFIG = {
+    colors: {
+        success: {
+            gradient: ['#00b09b', '#96c93d'],
+            stroke: '#00b09b'
+        },
+        warning: {
+            gradient: ['#ffd700', '#ffaa00'],
+            stroke: '#ffd700'
+        },
+        starting: {
+            gradient: ['#ff9966', '#ff5e62'],
+            stroke: '#ff7b00'
+        },
+        pending: {
+            gradient: ['#8e9eab', '#606c88'],
+            stroke: '#8e9eab'
+        }
+    },
+    fonts: {
+        family: "'Poppins', 'Helvetica Neue', 'Arial', sans-serif"
+    },
+    animation: {
+        duration: 1200,
+        easing: 'easeOutQuart'
+    },
+    hover: {
+        animationDuration: 200
+    }
+};
+
+// Variables globales
+let progressChart = null;
+let currentNiveau = null;
+
+// Fonction pour mettre à jour le graphique avec animations
+function updateChart(niveau, forceUpdate = false) {
+    if (!niveau || (niveau === currentNiveau && !forceUpdate)) return;
     
+    currentNiveau = niveau;
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    loadingOverlay.classList.remove('d-none');
+
+    fetch('/get_progression_data?niveau=' + encodeURIComponent(niveau))
+        .then(response => {
+            if (!response.ok) throw new Error('Erreur réseau');
+            return response.json();
+        })
+        .then(data => {
+            if (progressChart) {
+                progressChart.destroy();
+            }
+
+            const ctx = document.getElementById('courseProgressChart').getContext('2d');
+            
+            if (!data.subject_list || data.total_subjects === 0) {
+                showErrorMessage(ctx, 'Aucune matière définie pour ce niveau');
+                return;
+            }
+
+            createProgressChart(ctx, data, niveau);
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            const ctx = document.getElementById('courseProgressChart').getContext('2d');
+            showErrorMessage(ctx, 'Erreur lors du chargement des données');
+        })
+        .finally(() => {
+            setTimeout(() => {
+                loadingOverlay.classList.add('d-none');
+            }, CHART_CONFIG.transition.duration);
+        });
+}
+
+// Fonction améliorée pour créer le graphique
+function createProgressChart(ctx, data, niveau) {
+    // Calculer la valeur maximale de progression
+    const maxProgress = Math.max(...data.course_progress);
+    
+    // Déterminer l'échelle et les intervalles
+    let suggestedMax, stepSize;
+    if (maxProgress <= 30) {
+        suggestedMax = 40;
+        stepSize = 5;  // Intervalles de 5% pour l'échelle de 40%
+    } else if (maxProgress <= 50) {
+        suggestedMax = 60;
+        stepSize = 10; // Intervalles de 10% pour l'échelle de 60%
+    } else {
+        suggestedMax = 100;
+        stepSize = 20; // Intervalles de 20% pour l'échelle de 100%
+    }
+
+    // Créer les gradients
+    const gradients = data.course_progress.map(value => {
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        let colors;
+        
+        if (value === 0) {
+            colors = CHART_CONFIG.colors.pending;
+        } else if (value <= 20) {
+            // Nouvelle couleur pour "Démarrage"
+            colors = {
+                gradient: ['#ffd700', '#ffa500']  // Dégradé doré vers orange
+            };
+        } else if (value < 50) {
+            colors = CHART_CONFIG.colors.warning;
+        } else {
+            colors = CHART_CONFIG.colors.success;
+        }
+        
+        gradient.addColorStop(0, colors.gradient[0]);
+        gradient.addColorStop(1, colors.gradient[1]);
+        return gradient;
+    });
+
+    // Configuration du graphique
+    progressChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.subject_list,
+            datasets: [{
+                label: 'Progression',
+                data: data.course_progress,
+                backgroundColor: gradients,
+                borderColor: data.course_progress.map(value => {
+                    if (value === 0) return CHART_CONFIG.colors.pending.stroke;
+                    if (value <= 20) return CHART_CONFIG.colors.starting.stroke;
+                    if (value < 50) return CHART_CONFIG.colors.warning.stroke;
+                    return CHART_CONFIG.colors.success.stroke;
+                }),
+                borderWidth: 2,
+                borderRadius: 8,
+                barThickness: 'flex',
+                minBarLength: 4,
+                hoverBackgroundColor: gradients,
+                hoverBorderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: data.subject_list.length > 8 ? 'y' : 'x',
+            animation: {
+                duration: CHART_CONFIG.animation.duration,
+                easing: CHART_CONFIG.animation.easing,
+                delay: (context) => context.dataIndex * 50
+            },
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    suggestedMax: suggestedMax,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)',
+                        drawBorder: false,
+                        lineWidth: 0.5
+                    },
+                    ticks: {
+                        stepSize: stepSize,
+                        font: {
+                            family: CHART_CONFIG.fonts.family,
+                            size: 11,
+                            weight: '500'
+                        },
+                        padding: 10,
+                        callback: value => `${value}%`
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            family: CHART_CONFIG.fonts.family,
+                            size: 11,
+                            weight: '500'
+                        },
+                        maxRotation: data.subject_list.length > 8 ? 0 : 45,
+                        minRotation: data.subject_list.length > 8 ? 0 : 45,
+                        padding: 10
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: (ctx) => {
+                        const total = data.course_progress.length;
+                        const completed = data.course_progress.filter(p => p === 100).length;
+                        const inProgress = data.course_progress.filter(p => p > 0 && p < 100).length;
+                        const notStarted = data.course_progress.filter(p => p === 0).length;
+                        
+                        return [
+                            `État d'avancement des cours - ${niveau}`,
+                            `${completed} terminé${completed > 1 ? 's' : ''} • ${inProgress} en cours • ${notStarted} non commencé${notStarted > 1 ? 's' : ''}`
+                        ];
+                    },
+                    font: {
+                        family: CHART_CONFIG.fonts.family,
+                        size: 16,
+                        weight: '600'
+                    },
+                    padding: {
+                        top: 20,
+                        bottom: 20
+                    },
+                    color: '#2c3e50'
+                },
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                    titleColor: '#2c3e50',
+                    titleFont: {
+                        family: CHART_CONFIG.fonts.family,
+                        size: 14,
+                        weight: '600'
+                    },
+                    bodyColor: '#2c3e50',
+                    bodyFont: {
+                        family: CHART_CONFIG.fonts.family,
+                        size: 13
+                    },
+                    borderColor: '#e0e0e0',
+                    borderWidth: 1,
+                    padding: 15,
+                    displayColors: false,
+                    cornerRadius: 8,
+                    callbacks: {
+                        title: tooltipItems => tooltipItems[0].label,
+                        label: context => {
+                            const value = context.raw;
+                            let status, emoji, details, color;
+                            
+                            const heures_effectuees = Math.round((value / 100) * 40); // Supposant 40h total
+                            const heures_restantes = 40 - heures_effectuees;
+
+                            if (value === 0) {
+                                status = 'Non commencé';
+                                emoji = '⚪';
+                                details = `Aucune heure effectuée sur 40h`;
+                                color = CHART_CONFIG.colors.pending.stroke;
+                            } else if (value <= 20) {
+                                status = 'Phase de démarrage';
+                                emoji = '🟡';
+                                details = `${heures_effectuees}h effectuées sur 40h`;
+                                color = CHART_CONFIG.colors.starting.stroke;
+                            } else if (value <= 50) {
+                                status = 'En progression';
+                                emoji = '🟡';
+                                details = `${heures_effectuees}h effectuées sur 40h`;
+                                color = CHART_CONFIG.colors.warning.stroke;
+                            } else if (value < 100) {
+                                status = 'Progression avancée';
+                                emoji = '🟢';
+                                details = `${heures_effectuees}h effectuées sur 40h`;
+                                color = CHART_CONFIG.colors.success.stroke;
+                            } else {
+                                status = 'Terminé';
+                                emoji = '✅';
+                                details = `Programme complété (40h)`;
+                                color = CHART_CONFIG.colors.success.stroke;
+                            }
+
+                            return [
+                                `${emoji} ${status}`,
+                                `📊 Progression : ${value}%`,
+                                `⏱️ ${details}`,
+                                value < 100 ? `⌛ Reste : ${heures_restantes}h` : '🎯 Objectif atteint !',
+                                `📅 Mis à jour le ${new Date().toLocaleDateString('fr-FR', {
+                                    day: 'numeric',
+                                    month: 'long',
+                                    year: 'numeric'
+                                })}`
+                            ].map(text => ({
+                                text: text,
+                                fillStyle: color,
+                                padding: 4
+                            }));
+                        }
+                    }
+                }
+            }
+        },
+        plugins: [{
+            id: 'customCanvasBackgroundColor',
+            beforeDraw: (chart) => {
+                const ctx = chart.canvas.getContext('2d');
+                ctx.save();
+                ctx.globalCompositeOperation = 'destination-over';
+                ctx.fillStyle = 'rgba(250, 250, 250, 0.8)';
+                ctx.fillRect(0, 0, chart.width, chart.height);
+                ctx.restore();
+            }
+        }]
+    });
+}
+
+// Initialisation et écouteurs d'événements
+document.addEventListener('DOMContentLoaded', function() {
+    const niveauSelect = document.getElementById('niveau-select');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    if (niveauSelect) {
+        updateChart(niveauSelect.value);
+        
+        let updateTimeout = null;
+        niveauSelect.addEventListener('change', function() {
+            if (updateTimeout) clearTimeout(updateTimeout);
+            updateTimeout = setTimeout(() => {
+                updateChart(niveauSelect.value, true);
+            }, CHART_CONFIG.transition.duration);
+        });
+    }
+
+    // Fonction de téléchargement du graphique
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', function() {
+            if (!progressChart) return;
+            
+            const link = document.createElement('a');
+            link.download = `progression-cours-${currentNiveau}.png`;
+            link.href = progressChart.canvas.toDataURL('image/png');
+            link.click();
+        });
+    }
+
+    // Rafraîchir le graphique lors du redimensionnement
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+        if (resizeTimeout) clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            if (currentNiveau) updateChart(currentNiveau, true);
+        }, 250);
+    });
+});
+
       $(document).ready(function(){
         var donutData        = {
             labels: ['Étudiants', 'Personnel'],
             datasets: [
               {
                 data:[{{total_students}}, {{total_staff}}],
-                backgroundColor : ['#00a65a', '#f39c12',],
+                backgroundColor: ['#00a65a', '#f39c12'],
               }
             ]
           }
@@ -301,7 +614,15 @@
       //-------------
       // Get context with jQuery - using jQuery's .get() method.
       var pieChartCanvas3 = $('#pieChart3').get(0).getContext('2d')
-      var pieData3        = pieData3;
+      var pieData3        = {
+        labels: ['Label1', 'Label2'], // Replace with actual labels
+        datasets: [
+          {
+            data: [10, 20], // Replace with actual data
+            backgroundColor: ['#ff6384', '#36a2eb'], // Replace with actual colors
+          }
+        ]
+      };
       var pieOptions3     = {
         maintainAspectRatio : false,
         responsive : true,
@@ -317,8 +638,8 @@
 
          //- BAR CHART - Student Attendance & Leave Overview //
       var student_attendance_present_list = {{ student_attendance_present_list }};
-      var student_attendance_leave_list = {{ student_attendance_leave_list }};
-      var student_name_list = {{ student_name_list|safe }};
+      var student_attendance_leave_list = {{ student_attendance_leave_list|safe }};
+      var student_name_list = "{{ student_name_list|safe }}";
 
       var areaChartData2 = {
         labels  : student_name_list,
