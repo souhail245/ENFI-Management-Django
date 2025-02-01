@@ -34,17 +34,3 @@ def get_dict_item(dictionary, key):
         return None  # Retourne None si le dictionnaire est vide
     return dictionary.get(key)
 
-<<<<<<< Updated upstream
-@register.filter
-def replace(value, arg):
-    """
-    Remplace toutes les occurrences de arg[0] par arg[1] dans value
-    Usage: {{ value|replace:"_," }}
-    """
-    if len(arg.split(',')) != 2:
-        return value
-    what, to = arg.split(',')
-    return value.replace(what, to)
-=======
-
->>>>>>> Stashed changes
