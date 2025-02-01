@@ -356,6 +356,7 @@ def admin_home(request):
     total_attendance = attendance_list.count()
       # Récupérer le niveau/promotion sélectionné (par défaut 3ème année)
     selected_niveau = request.GET.get('niveau', '3ème année')
+    today = datetime.now().date()
 
     subject_list = []
     course_progress = []
@@ -363,10 +364,21 @@ def admin_home(request):
     for subject in subjects:
         subject_list.append(subject.name[:15])  # Raccourcir les noms de matières
         
-        # Convertir la progression en pourcentage
-        progression = subject.progression_cours if subject.progression_cours is not None else 0
-        progression_percentage = min(max(progression, 0), 100)  # Forcer entre 0 et 100
-        course_progress.append(progression_percentage)
+        # Calculer uniquement les séances qui ont déjà eu lieu
+        seances_realisees = EmploiTemps.objects.filter(
+            matiere=subject,
+            type_evenement='COURS',
+            date__lte=today
+        ).count()
+        
+        # Calculer la progression
+        if subject.volume_horaire_total > 0:
+            heures_realisees = seances_realisees * 2
+            progression = min(int((heures_realisees / subject.volume_horaire_total) * 100), 100)
+        else:
+            progression = 0
+            
+        course_progress.append(progression)
 
     # Récupérer tous les niveaux disponibles
     niveaux_disponibles = Subject.objects.values_list('niveau', flat=True).distinct()
@@ -437,6 +449,40 @@ def admin_home(request):
 
     return render(request, 'hod_template/home_content.html', context)
 
+def get_progression_data(request):
+    niveau = request.GET.get('niveau', '3ème année')
+    today = datetime.now().date()
+    
+    # Récupérer toutes les matières du niveau sélectionné
+    subjects = Subject.objects.filter(niveau=niveau)
+    
+    subject_list = []
+    course_progress = []
+    
+    for subject in subjects:
+        subject_list.append(subject.name[:15])
+        
+        # Calculer uniquement les séances qui ont déjà eu lieu
+        seances_realisees = EmploiTemps.objects.filter(
+            matiere=subject,
+            type_evenement='COURS',
+            date__lte=today  # Seulement les séances jusqu'à aujourd'hui
+        ).count()
+        
+        # Calculer la progression
+        if subject.volume_horaire_total > 0:
+            heures_realisees = seances_realisees * 2  # 2 heures par séance
+            progression = min(int((heures_realisees / subject.volume_horaire_total) * 100), 100)
+        else:
+            progression = 0
+            
+        course_progress.append(progression)
+    
+    return JsonResponse({
+        'subject_list': subject_list,
+        'course_progress': course_progress,
+        'total_subjects': len(subject_list)
+    })
 
 def add_staff(request):
     form = StaffForm(request.POST or None, request.FILES or None)

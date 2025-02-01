@@ -121,9 +121,9 @@
                       <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
                   </div>
               </div>
-              <div class="form-group">
+              <div class="form-group p-3">
                 <label for="niveau-select">Sélectionner le niveau :</label>
-                <select id="niveau-select" class="form-control" onchange="window.location.href='?niveau=' + this.value;">
+                <select id="niveau-select" class="form-control" onchange="updateChart(this.value);">
                     {% for niveau in niveaux_disponibles %}
                         <option value="{{ niveau }}" {% if niveau == selected_niveau %}selected{% endif %}>
                             {{ niveau }}
@@ -133,46 +133,84 @@
             </div>
             
             <!-- Graphique avec axe en pourcentage -->
-            <div class="chart-container">
+            <div class="chart-container p-3">
                 <canvas id="courseProgressChart"></canvas>
             </div>
             
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
             <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                var ctx = document.getElementById('courseProgressChart').getContext('2d');
-                var chart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: {{ subject_list|safe }},
-                        datasets: [{
-                            label: 'Progression des matières (%)',
-                            data: {{ course_progress|safe }},
-                            backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                max: 100,
-                                title: {
-                                    display: true,
-                                    text: 'Progression (%)'
+            let progressChart;
+
+            function updateChart(niveau) {
+                fetch(`/get_progression_data?niveau=${niveau}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (progressChart) {
+                            progressChart.destroy();
+                        }
+
+                        const ctx = document.getElementById('courseProgressChart').getContext('2d');
+                        
+                        if (data.total_subjects === 0) {
+                            // Afficher un message si aucune matière n'existe pour ce niveau
+                            ctx.font = '14px Arial';
+                            ctx.textAlign = 'center';
+                            ctx.fillText('Aucune matière définie pour ce niveau', ctx.canvas.width/2, ctx.canvas.height/2);
+                            return;
+                        }
+
+                        progressChart = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: data.subject_list,
+                                datasets: [{
+                                    label: 'Progression des matières (%)',
+                                    data: data.course_progress,
+                                    backgroundColor: data.course_progress.map(value => 
+                                        value === 0 ? 'rgba(200, 200, 200, 0.6)' : 'rgba(75, 192, 192, 0.6)'
+                                    ),
+                                    borderColor: data.course_progress.map(value => 
+                                        value === 0 ? 'rgba(200, 200, 200, 1)' : 'rgba(75, 192, 192, 1)'
+                                    ),
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        max: 100,
+                                        title: {
+                                            display: true,
+                                            text: 'Progression (%)'
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: `Progression des matières - ${niveau}`
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                const value = context.raw;
+                                                if (value === 0) {
+                                                    return 'Aucune séance réalisée';
+                                                }
+                                                return `Progression actuelle: ${value}%`;
+                                            }
+                                        }
+                                    }
                                 }
                             }
-                        },
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: 'Progression des matières - {{ selected_niveau }}'
-                            }
-                        }
-                    }
-                });
+                        });
+                    });
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                updateChart(document.getElementById('niveau-select').value);
             });
             </script>
           </div>
@@ -293,7 +331,7 @@
             pointColor          : '#3b8bba',
             pointStrokeColor    : 'rgba(60,141,188,1)',
             pointHighlightFill  : '#fff',
-            pointHighlightStroke: 'rgba(60,141,188,1)',
+            pointHighlightStroke: 'rgba(220,220,220,1)',
             data                : student_attendance_leave_list 
           },
           {

@@ -108,7 +108,7 @@ urlpatterns = [
 
     path('emploi/choisir_promotion/', hod_views.choisir_promotion, name='choisir_promotion'),
     
-    
+    path('get_progression_data', hod_views.get_progression_data, name='get_progression_data'),
 
     # Staff
     path("staff/home/", staff_views.staff_home, name='staff_home'),
