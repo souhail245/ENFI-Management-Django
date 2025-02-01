@@ -234,23 +234,34 @@ let currentNiveau = null;
 function updateChart(niveau, forceUpdate = false) {
     if (!niveau || (niveau === currentNiveau && !forceUpdate)) return;
     
+    console.log('Updating chart for niveau:', niveau); // Debug log
     currentNiveau = niveau;
     const loadingOverlay = document.getElementById('loadingOverlay');
     loadingOverlay.classList.remove('d-none');
 
-    fetch('/get_progression_data?niveau=' + encodeURIComponent(niveau))
+    // Encodage approprié du niveau
+    const encodedNiveau = encodeURIComponent(niveau);
+    const url = `/get_progression_data?niveau=${encodedNiveau}`;
+    
+    console.log('Fetching data from:', url); // Debug log
+
+    fetch(url)
         .then(response => {
-            if (!response.ok) throw new Error('Erreur réseau');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             return response.json();
         })
         .then(data => {
+            console.log('Received data:', data); // Debug log
+            
             if (progressChart) {
                 progressChart.destroy();
             }
 
             const ctx = document.getElementById('courseProgressChart').getContext('2d');
             
-            if (!data.subject_list || data.total_subjects === 0) {
+            if (!data.subject_list || !Array.isArray(data.subject_list) || data.subject_list.length === 0) {
                 showErrorMessage(ctx, 'Aucune matière définie pour ce niveau');
                 return;
             }
@@ -258,9 +269,9 @@ function updateChart(niveau, forceUpdate = false) {
             createProgressChart(ctx, data, niveau);
         })
         .catch(error => {
-            console.error('Erreur:', error);
+            console.error('Error fetching data:', error);
             const ctx = document.getElementById('courseProgressChart').getContext('2d');
-            showErrorMessage(ctx, 'Erreur lors du chargement des données');
+            showErrorMessage(ctx, `Erreur: ${error.message}`);
         })
         .finally(() => {
             setTimeout(() => {
@@ -504,14 +515,30 @@ document.addEventListener('DOMContentLoaded', function() {
     const downloadBtn = document.getElementById('downloadBtn');
 
     if (niveauSelect) {
-        updateChart(niveauSelect.value);
+        console.log('Initial niveau:', niveauSelect.value); // Debug log
         
-        let updateTimeout = null;
-        niveauSelect.addEventListener('change', function() {
-            if (updateTimeout) clearTimeout(updateTimeout);
-            updateTimeout = setTimeout(() => {
-                updateChart(niveauSelect.value, true);
-            }, CHART_CONFIG.transition.duration);
+        // Mettre à jour le graphique initial avec un léger délai
+        setTimeout(() => {
+            updateChart(niveauSelect.value);
+        }, 100);
+        
+        // Améliorer la gestion du changement de niveau
+        niveauSelect.addEventListener('change', function(e) {
+            console.log('Niveau changed to:', e.target.value); // Debug log
+            
+            // Annuler tout updateTimeout existant
+            if (window.updateTimeout) {
+                clearTimeout(window.updateTimeout);
+            }
+            
+            // Afficher l'overlay de chargement immédiatement
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.classList.remove('d-none');
+            
+            // Mettre à jour le graphique avec un petit délai
+            window.updateTimeout = setTimeout(() => {
+                updateChart(e.target.value, true);
+            }, 300);
         });
     }
 
@@ -536,6 +563,32 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 250);
     });
 });
+
+// Améliorer la fonction showErrorMessage
+function showErrorMessage(ctx, message) {
+    console.log('Showing error message:', message); // Debug log
+    
+    // Effacer le canvas
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    
+    // Définir le style du message d'erreur
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // Dessiner une icône d'erreur
+    ctx.fillStyle = '#dc3545';
+    ctx.font = 'bold 24px "Font Awesome 5 Free"';
+    ctx.fillText('⚠️', ctx.canvas.width / 2, ctx.canvas.height / 2 - 30);
+    
+    // Dessiner le message d'erreur
+    ctx.fillStyle = '#666';
+    ctx.font = 'bold 16px Arial';
+    ctx.fillText(message, ctx.canvas.width / 2, ctx.canvas.height / 2 + 10);
+    
+    // Dessiner un sous-message
+    ctx.font = '14px Arial';
+    ctx.fillText('Veuillez réessayer ou sélectionner un autre niveau', ctx.canvas.width / 2, ctx.canvas.height / 2 + 40);
+}
 
       $(document).ready(function(){
         var donutData        = {

@@ -124,3 +124,40 @@ messaging.setBackgroundMessageHandler(function (payload) {
 });
     """
     return HttpResponse(data, content_type='application/javascript')
+
+
+def get_progression_data(request):
+    try:
+        niveau = request.GET.get('niveau', '3ème année')
+        print(f"Received request for niveau: {niveau}")  # Debug log
+        
+        # Récupérer toutes les matières du niveau sélectionné
+        subjects = Subject.objects.filter(niveau=niveau)
+        print(f"Found {subjects.count()} subjects")  # Debug log
+        
+        subject_list = []
+        course_progress = []
+        
+        for subject in subjects:
+            subject_list.append(subject.name[:15])
+            progression = subject.progression_cours if subject.progression_cours is not None else 0
+            course_progress.append(progression)
+            print(f"Subject: {subject.name}, Progress: {progression}%")  # Debug log
+        
+        data = {
+            'subject_list': subject_list,
+            'course_progress': course_progress,
+            'total_subjects': len(subject_list)
+        }
+        print("Sending data:", data)  # Debug log
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        print(f"Error in get_progression_data: {str(e)}")  # Debug log
+        return JsonResponse({
+            'error': str(e),
+            'subject_list': [],
+            'course_progress': [],
+            'total_subjects': 0
+        })
