@@ -1468,21 +1468,26 @@ def creer_emploi_temps(request):
         horaires = ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00']
         
         # Organiser les sessions par date
-        for session in sessions:
-            if session.is_multi_day_event:
-                # Pour les événements multi-jours, ajouter à toutes les dates concernées
-                event_start = max(session.date_debut, date_debut)
-                event_end = min(session.date_fin, date_fin)
-                current = event_start
-                while current <= event_end:
-                    # Stocker dans une clé spéciale pour les événements journée complète
-                    sessions_by_date[current]['full_day'] = session
-                    current += timedelta(days=1)
-            else:
-                # Pour les événements standards avec horaire
-                sessions_by_date[session.date][session.horaire] = session
+        # Organiser les sessions par date
+    sessions_by_date = defaultdict(dict)
+    for session in sessions:
+     if session.type_evenement in ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE', 'VACANCES', 'JOUR_FERIE']:
+        # Pour les événements multi-jours
+         if session.date_debut and session.date_fin:
+             event_start = max(session.date_debut, date_debut) 
+             event_end = min(session.date_fin, date_fin) 
+             current = event_start
+             while current <= event_end:
+                 sessions_by_date[current]['full_day'] = session
+                 current += timedelta(days=1)
+         else:
+             # Pour les événements VACANCES et JOUR_FERIE
+              sessions_by_date[session.date]['full_day'] = session
+     else:
+         # Pour les événements standards
+         sessions_by_date[session.date][session.horaire] = session
         
-        context = {
+    context = {
             "promotions": promotions,
             "promotion_selected": promotion_selected,
             "subjects": Subject.objects.filter(niveau=promotion_selected).order_by('name'),
@@ -1494,7 +1499,7 @@ def creer_emploi_temps(request):
             "date_fin": date_fin,
             'page_title': f'Emploi du temps - {promotion_selected}'
         }
-        return render(request, "hod_template/creer_emploi_temps.html", context)
+    return render(request, "hod_template/creer_emploi_temps.html", context)
 
 def choisir_promotion(request):
     promotions = [
