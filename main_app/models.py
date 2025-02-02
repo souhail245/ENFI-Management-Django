@@ -40,7 +40,7 @@ class Session(models.Model):
 
 class CustomUser(AbstractUser):
     USER_TYPE = ((1, "HOD"), (2, "Staff"), (3, "Student"))
-    GENDER = [("M", "Male"), ("F", "Female")]
+    GENDER = [("M", "Male"), ("F", "Femelle")]
     
     
     username = None  # Removed username, using email instead
