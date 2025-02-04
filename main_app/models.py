@@ -5,7 +5,7 @@ from django.db.models import signals, Q
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
-from datetime import date
+from datetime import date, datetime
 
 
 class CustomUserManager(UserManager):
@@ -215,14 +215,7 @@ class Subject(models.Model):
             )
 
 class EmploiTemps(models.Model):
-    HORAIRES_CHOICES = [
-        ('08:00-10:00', '08:00-10:00'),
-        ('10:00-12:00', '10:00-12:00'),
-        ('14:00-16:00', '14:00-16:00'),
-        ('16:00-18:00', '16:00-18:00'),
-        ('08:00-12:00', '08:00-12:00'),
-        ('14:00-18:00', '14:00-18:00'),
-    ]
+    # Supprimer la constante HORAIRES_CHOICES si elle existe
 
     JOUR_CHOICES = [
         ('Lundi', 'Lundi'),
@@ -247,13 +240,8 @@ class EmploiTemps(models.Model):
         default='3ème année'
     )
     date = models.DateField(default=date.today) 
-    horaire = models.CharField(
-        max_length=20, 
-        choices=HORAIRES_CHOICES, 
-        default='08:00-10:00',
-        null=True,  # Permettre les valeurs NULL
-        blank=True  # Permettre les valeurs vides dans le formulaire
-    )
+    heure_debut = models.TimeField(null=True, blank=True)
+    heure_fin = models.TimeField(null=True, blank=True)
 
     matiere = models.ForeignKey(
         Subject, 
@@ -334,6 +322,21 @@ class EmploiTemps(models.Model):
     def is_multi_day_event(self):
         return self.type_evenement in self.EVENEMENTS_MULTI_JOURS
 
+    def get_duration_in_hours(self):
+        """Calcule la durée en heures"""
+        if self.heure_debut and self.heure_fin:
+            debut = self.heure_debut.hour + self.heure_debut.minute / 60
+            fin = self.heure_fin.hour + self.heure_fin.minute / 60
+            return (fin - debut)
+        return 1  # Durée par défaut
+    
+    def get_top_position(self):
+        """Calcule la position verticale en pixels"""
+        if self.heure_debut:
+            hours_from_start = (self.heure_debut.hour - 8) + (self.heure_debut.minute / 60)
+            return hours_from_start * 60
+        return 0
+
     def clean(self):
         super().clean()
         if self.type_evenement in self.EVENEMENTS_MULTI_JOURS:
@@ -345,8 +348,9 @@ class EmploiTemps(models.Model):
             if self.date_fin < self.date_debut:
                 raise ValidationError('La date de fin ne peut pas être antérieure à la date de début')
             
-            # Forcer l'horaire à None pour les événements multi-jours
-            self.horaire = None
+            # Ne pas toucher aux heures pour les événements multi-jours
+            self.heure_debut = None
+            self.heure_fin = None
             
             # Vérifier les chevauchements sur la période
             chevauchement = EmploiTemps.objects.filter(
@@ -362,8 +366,10 @@ class EmploiTemps(models.Model):
                 raise ValidationError('Un événement du même type existe déjà sur cette période')
         
         elif self.type_evenement in self.EVENEMENTS_DATE_ET_HORAIRE:
-            if not self.horaire:
-                raise ValidationError('L\'horaire est requis pour ce type d\'événement')
+            if not self.heure_debut or not self.heure_fin:
+                raise ValidationError('Les heures de début et de fin sont requises pour ce type d\'événement')
+            if self.heure_fin <= self.heure_debut:
+                raise ValidationError('L\'heure de fin doit être postérieure à l\'heure de début')
             
             # Forcer la date de fin à être égale à la date de début
             self.date_fin = self.date_debut
@@ -372,7 +378,8 @@ class EmploiTemps(models.Model):
             chevauchement = EmploiTemps.objects.filter(
                 niveau=self.niveau,
                 date=self.date_debut,
-                horaire=self.horaire
+                heure_debut__lt=self.heure_fin,
+                heure_fin__gt=self.heure_debut
             ).exclude(id=self.id)
             
             if chevauchement.exists():
@@ -381,7 +388,8 @@ class EmploiTemps(models.Model):
     def save(self, *args, **kwargs):
         # Pour les événements multi-jours
         if self.type_evenement in self.EVENEMENTS_MULTI_JOURS:
-            self.horaire = None
+            self.heure_debut = None
+            self.heure_fin = None
             if not self.date_fin:
                 self.date_fin = self.date_debut
         else:
@@ -403,7 +411,7 @@ class EmploiTemps(models.Model):
                 matiere=self.matiere,
                 type_evenement='COURS',
                 date=self.date,
-                horaire__lt=self.horaire
+                heure_debut__lt=self.heure_debut
             ).count()
             
             self.numero_seance = seances_precedentes + seances_meme_jour + 1
@@ -437,7 +445,70 @@ class EmploiTemps(models.Model):
             return 0
 
     def __str__(self):
-        return f"{self.niveau} - {self.date} - {self.horaire} : {self.matiere}"
+        return f"{self.niveau} - {self.date} - {self.heure_debut} : {self.matiere}"
+
+    def get_position_style(self):
+        """Calcule la position et la taille de l'événement dans le planning"""
+        if not self.heure_debut or not self.heure_fin:
+            return {}
+            
+        # Convertir les heures en minutes depuis le début de la journée (8h)
+        debut_minutes = (self.heure_debut.hour - 8) * 60 + self.heure_debut.minute
+        fin_minutes = (self.heure_fin.hour - 8) * 60 + self.heure_fin.minute
+        
+        # Calculer la hauteur (1px = 1 minute)
+        height = fin_minutes - debut_minutes
+        
+        return {
+            'top': f"{debut_minutes}px",
+            'height': f"{height}px"
+        }
+
+    def get_formatted_hours(self):
+        """Retourne les heures formatées pour l'affichage"""
+        if not self.heure_debut or not self.heure_fin:
+            return ""
+        return f"{self.heure_debut.strftime('%H:%M')} - {self.heure_fin.strftime('%H:%M')}"
+
+    def get_left_position(self):
+        """Calcule la position horizontale en pourcentage"""
+        if not self.heure_debut:
+            return 0
+        minutes_since_8am = (self.heure_debut.hour - 8) * 60 + self.heure_debut.minute
+        total_minutes = (18 - 8) * 60  # 10 heures (8h-18h) en minutes
+        return (minutes_since_8am / total_minutes) * 100
+
+    def get_width(self):
+        """Calcule la largeur en pourcentage basée sur la durée"""
+        if not (self.heure_debut and self.heure_fin):
+            return 10  # Largeur minimale par défaut
+        debut_minutes = (self.heure_debut.hour - 8) * 60 + self.heure_debut.minute
+        fin_minutes = (self.heure_fin.hour - 8) * 60 + self.heure_fin.minute
+        duree_minutes = fin_minutes - debut_minutes
+        total_minutes = (18 - 8) * 60  # 10 heures en minutes
+        return (duree_minutes / total_minutes) * 100
+
+    def get_left_position(self):
+        """Calcule la position horizontale en pourcentage"""
+        if not self.heure_debut:
+            return 0
+            
+        minutes_since_8am = (self.heure_debut.hour - 8) * 60 + self.heure_debut.minute
+        total_minutes = (18 - 8) * 60  # 10 heures (8h-18h) en minutes
+        return (minutes_since_8am / total_minutes) * 100
+
+    def get_width(self):
+        """Calcule la largeur en pourcentage basée sur la durée"""
+        if not (self.heure_debut and self.heure_fin):
+            return 10  # Largeur minimale par défaut
+            
+        debut_minutes = (self.heure_debut.hour - 8) * 60 + self.heure_debut.minute
+        fin_minutes = (self.heure_fin.hour - 8) * 60 + self.heure_fin.minute
+        duree_minutes = fin_minutes - debut_minutes
+        total_minutes = (18 - 8) * 60  # 10 heures en minutes
+        
+        # Minimum width of 5% to ensure visibility
+        return max((duree_minutes / total_minutes) * 100, 5)
 
 class Student(models.Model):
     admin = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
@@ -602,5 +673,5 @@ class SuiviCours(models.Model):
 
 
 
-#  test annnée academique 
+#  test annnée academique
 

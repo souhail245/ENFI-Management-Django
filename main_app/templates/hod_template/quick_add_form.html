@@ -1,0 +1,24 @@
+
+<div class="quick-add-form">
+    <form method="POST" action="{% url 'creer_emploi_temps' %}" class="inline-form">
+        {% csrf_token %}
+        <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
+        <input type="hidden" name="type_evenement" value="COURS">
+        <input type="hidden" name="promotion" value="{{ promotion_selected }}">
+        <div class="form-row">
+            <select name="matiere" class="form-control form-control-sm">
+                <option value="">Choisir une matière</option>
+                {% for subject in subjects %}
+                    <option value="{{ subject.id }}" data-professeur="{{ subject.staff.id }}">
+                        {{ subject.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            <input type="time" name="heure_debut" class="form-control form-control-sm" min="08:00" max="18:00" required>
+            <input type="time" name="heure_fin" class="form-control form-control-sm" min="08:00" max="18:00" required>
+            <button type="submit" class="btn btn-sm btn-primary">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+    </form>
+</div>

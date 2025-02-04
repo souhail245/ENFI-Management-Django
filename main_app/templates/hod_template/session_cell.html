@@ -105,12 +105,55 @@
         align-items: flex-start;
     }
 }
+
+.time-slot {
+    position: relative;
+    height: 600px; /* 10 heures (8h-18h) * 60px par heure */
+    border: 1px solid #ddd;
+}
+
+.session-card {
+    z-index: 1;
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Background lines for hours */
+.time-slot::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+        to bottom,
+        #f5f5f5 0px,
+        #f5f5f5 1px,
+        transparent 1px,
+        transparent 60px
+    );
+    pointer-events: none;
+}
 </style>
 
 {% if session %}
 <div class="session-card {% if session.type_evenement == 'JOUR_FERIE' %}jour-ferie
     {% elif session.type_evenement == 'VACANCES' %}vacances
-    {% elif session.type_evenement == 'EXAMEN_PARTIEL' or session.type_evenement == 'EXAMEN_FINAL' %}examen{% endif %}">
+    {% elif session.type_evenement == 'EXAMEN_PARTIEL' or session.type_evenement == 'EXAMEN_FINAL' %}examen{% endif %}"
+    style="
+    position: absolute;
+    top: {% widthratio session.heure_debut.hour|add:"-8" 1 60 %}px;
+    height: {% widthratio session.get_duration_in_hours 1 60 %}px;
+    left: 0;
+    right: 0;
+    {% if session.type_evenement == 'EXAMEN_PARTIEL' or session.type_evenement == 'EXAMEN_FINAL' %}
+    background: linear-gradient(45deg, #fff3cd, #fff8e1);
+    {% endif %}
+">
     
     <a href="{% url 'supprimer_evenement' session.id %}" 
        class="delete-event" 

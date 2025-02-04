@@ -1348,68 +1348,55 @@ from django.db.models import Q
 def creer_emploi_temps(request):
     if request.method == "POST":
         try:
+            print("Données POST reçues:", request.POST)  # Debug
+            
+            # Récupération des données
             type_evenement = request.POST.get("type_evenement")
             promotion = request.POST.get("promotion")
             date_debut = request.POST.get("date_debut")
-            date_fin = request.POST.get("date_fin")
+            matiere_id = request.POST.get("matiere")
+            heure_debut = request.POST.get("heure_debut")
+            heure_fin = request.POST.get("heure_fin")
+
+            # Validation
+            if not all([type_evenement, promotion, date_debut, matiere_id, heure_debut, heure_fin]):
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Tous les champs sont requis'
+                })
+
+            # Récupération de la matière
+            matiere = get_object_or_404(Subject, id=matiere_id)
             
-            # Récupérer le titre_evenement en prenant la première valeur non vide
-            titres = request.POST.getlist("titre_evenement")
-            titre_evenement = next((titre for titre in titres if titre.strip()), '')
+            # Création de l'événement
+            emploi_temps = EmploiTemps.objects.create(
+                niveau=promotion,
+                type_evenement=type_evenement,
+                date=date_debut,
+                date_debut=date_debut,
+                matiere=matiere,
+                professeur=matiere.staff,
+                heure_debut=datetime.strptime(heure_debut, '%H:%M').time(),
+                heure_fin=datetime.strptime(heure_fin, '%H:%M').time()
+            )
 
-            print("Données reçues:", {
-                'type_evenement': type_evenement,
-                'titre_evenement': titre_evenement,  # Afficher le titre trouvé
-                'date_debut': date_debut,
-                'date_fin': date_fin
-            })
-
-            if type_evenement in EmploiTemps.EVENEMENTS_MULTI_JOURS and not titre_evenement:
-                messages.error(request, "Le titre est obligatoire pour ce type d'événement")
-                return redirect(f"{reverse('creer_emploi_temps')}?promotion={promotion}")
-
-            event_data = {
-                'niveau': promotion,
-                'type_evenement': type_evenement,
-                'date_debut': date_debut,
-                'date': date_debut, # Initialiser 'date' avec date_debut
-                'titre_evenement': titre_evenement
-            }
-
-            # Gestion des événements multi-jours
-            if type_evenement in EmploiTemps.EVENEMENTS_MULTI_JOURS:
-                event_data['date_fin'] = date_fin or date_debut
-                event_data['horaire'] = None
-                
-                # Gestion spécifique pour les sorties
-                if type_evenement == 'SORTIE':
-                    matiere_id = request.POST.get("matiere")
-                    if matiere_id:
-                        matiere = get_object_or_404(Subject, id=matiere_id)
-                        event_data['matiere'] = matiere
-                        event_data['professeur'] = matiere.staff
-            else:
-                event_data['horaire'] = request.POST.get('horaire')
-                # Ne pas gérer la matière pour CONFERENCE et FORMATION_MILITAIRE
-                if type_evenement not in ['FORMATION_MILITAIRE', 'CONFERENCE']:
-                    matiere_id = request.POST.getlist("matiere")[0]  # Prendre le premier ID
-                    if matiere_id:
-                        event_data['matiere'] = get_object_or_404(Subject, id=matiere_id)
-                        event_data['professeur'] = event_data['matiere'].staff
-
-            # Supprimer l'ID s'il est présent dans event_data
-            if 'id' in event_data:
-                del event_data['id']
-
-            emploi_temps = EmploiTemps.objects.create(**event_data)
-            messages.success(request, "Événement ajouté avec succès")
+            # Retourner une réponse JSON pour les requêtes AJAX
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': True})
+            
+            messages.success(request, "Cours programmé avec succès")
+            return redirect(f"{reverse('creer_emploi_temps')}?promotion={promotion}")
 
         except Exception as e:
-            messages.error(request, f"Erreur lors de l'ajout : {str(e)}")
-            print(f"Erreur détaillée : {str(e)}")
+            print(f"Erreur: {str(e)}")  # Debug
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'error': str(e)
+                })
+            messages.error(request, f"Erreur lors de la programmation : {str(e)}")
+            return redirect(f"{reverse('creer_emploi_temps')}?promotion={promotion}")
 
-        return redirect(f"{reverse('creer_emploi_temps')}?promotion={promotion}")
-    
     else:
         promotion_selected = request.GET.get('promotion', '3ème année')
         promotions = ['3ème année', '4ème année', '5ème année', '6ème année']
@@ -1457,7 +1444,7 @@ def creer_emploi_temps(request):
         sessions = EmploiTemps.objects.filter(
             Q(date__range=[date_debut, date_fin], niveau=promotion_selected) |
             Q(date_debut__lte=date_fin, date_fin__gte=date_debut, niveau=promotion_selected)
-        ).select_related('matiere', 'professeur')
+        ).select_related('matiere', 'professeur').order_by('heure_debut')  # Ajout du order_by
 
         sessions_by_date = defaultdict(dict)
         dates = []
@@ -1469,7 +1456,7 @@ def creer_emploi_temps(request):
         
         # Organiser les sessions par date
         # Organiser les sessions par date
-    sessions_by_date = defaultdict(dict)
+    sessions_by_date = defaultdict(lambda: defaultdict(dict))
     for session in sessions:
      if session.type_evenement in ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE', 'VACANCES', 'JOUR_FERIE']:
         # Pour les événements multi-jours
@@ -1484,8 +1471,9 @@ def creer_emploi_temps(request):
              # Pour les événements VACANCES et JOUR_FERIE
               sessions_by_date[session.date]['full_day'] = session
      else:
-         # Pour les événements standards
-         sessions_by_date[session.date][session.horaire] = session
+         # Pour les événements standards, utiliser heure_debut comme clé
+         time_key = session.heure_debut.strftime('%H:%M')
+         sessions_by_date[session.date][time_key] = session
         
     context = {
             "promotions": promotions,
@@ -1499,6 +1487,35 @@ def creer_emploi_temps(request):
             "date_fin": date_fin,
             'page_title': f'Emploi du temps - {promotion_selected}'
         }
+    # Remplacer horaires fixes par plage horaire
+    heures_possibles = [
+        {'debut': '08:00', 'fin': '19:00'}  # Plage horaire de la journée
+    ]
+    
+    context.update({
+        'heures_possibles': heures_possibles,
+        'intervalle_minutes': 30  # Pour l'affichage de la grille
+    })
+    
+    sessions_by_date = defaultdict(list)  # Changé en list au lieu de dict
+    for session in sessions:
+        if session.type_evenement in ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE', 'VACANCES', 'JOUR_FERIE']:
+            # Pour les événements multi-jours
+            if session.date_debut and session.date_fin:
+                event_start = max(session.date_debut, date_debut) 
+                event_end = min(session.date_fin, date_fin)
+                current = event_start
+                while current <= event_end:
+                    sessions_by_date[current].append(session)
+                    current += timedelta(days=1)
+        else:
+            # Pour les événements standards avec horaire
+            sessions_by_date[session.date].append(session)
+    
+    context.update({
+        'sessions_by_date': dict(sessions_by_date)
+    })
+    
     return render(request, "hod_template/creer_emploi_temps.html", context)
 
 def choisir_promotion(request):
@@ -1694,3 +1711,4 @@ def supprimer_evenement(request, evenement_id):
     
     # Rediriger vers la même page avec la même promotion sélectionnée
     return redirect(f"{reverse('creer_emploi_temps')}?promotion={niveau}")
+

@@ -1585,6 +1585,162 @@
 .event-visite_militaire { background: linear-gradient(90deg, rgba(84, 110, 122, 0.7), rgba(120, 144, 156, 0.7)); }
 .event-formation_militaire { background: linear-gradient(90deg, rgba(46, 125, 50, 0.7), rgba(67, 160, 71, 0.7)); }
 .event-conference { background: linear-gradient(90deg, rgba(123, 31, 162, 0.7), rgba(156, 39, 176, 0.7)); }
+
+/* Dans la section des styles, ajouter ou modifier : */
+.planning-cell {
+    position: relative;
+    height: 100px;
+    padding: 0 !important;
+    background: #fff;
+    overflow: hidden;
+}
+
+.timeline-container {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    background: repeating-linear-gradient(
+        to right,
+        #f5f5f5 0px,
+        #f5f5f5 1px,
+        transparent 1px,
+        transparent calc(100% / 10)
+    );
+}
+
+.hour-marker {
+    position: absolute;
+    top: -20px;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: #666;
+}
+
+.event-cell {
+    position: absolute;
+    height: 80%;
+    top: 10%;
+    background: white;
+    border-radius: 4px;
+    padding: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
+    z-index: 2;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #000;
+}
+
+.event-cell:hover {
+    transform: scale(1.02);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+.event-time {
+    font-size: 10px;
+    color: #666;
+    margin-bottom: 2px;
+}
+
+.event-title {
+    font-size: 11px;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.event-details {
+    font-size: 10px;
+    color: #666;
+}
+
+/* Ajoutez ceci dans la section des styles */
+<style>
+.planning-cell {
+    position: relative;
+    height: 80px !important;  /* Hauteur réduite */
+    padding: 0 !important;
+    background: #fff;
+    border: 1px solid #ddd;
+}
+
+.timeline-container {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    background: repeating-linear-gradient(
+        to right,
+        #f5f5f5 0px,
+        #f5f5f5 1px,
+        transparent 1px,
+        transparent calc(100% / 10)
+    );
+}
+
+.event-cell {
+    position: absolute;
+    height: 70px !important;  /* Hauteur fixe plus petite */
+    top: 5px;  /* Centrage vertical */
+    background: white;
+    border-radius: 4px;
+    padding: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
+    z-index: 2;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 11px;  /* Texte plus petit */
+    border: 1px solid #ddd;
+}
+
+.event-cell:hover {
+    transform: scale(1.02);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    z-index: 3;
+}
+
+.event-time {
+    font-size: 10px;
+    color: #666;
+    margin-bottom: 2px;
+}
+
+.event-title {
+    font-size: 11px;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.event-details {
+    font-size: 10px;
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.delete-event {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: 10px;
+    opacity: 0.7;
+}
+
+.delete-event:hover {
+    opacity: 1;
+}
+
+/* Ajoutez des couleurs différentes pour les types d'événements */
+.event-cell.cours { background-color: #e3f2fd; }
+.event-cell.examen { background-color: #fff3cd; }
+.event-cell.reunion { background-color: #d4edda; }
+.event-cell.autre { background-color: #f8d7da; }
+</style>
+
 </style>
 
 
@@ -1749,16 +1905,19 @@
                         </div>
                     </div>
     
-                    <div id="horaire_fields">
-                        <div class="form-group">
-                            <label for="horaire">Horaire :</label>
-                            <select name="horaire" class="form-control">
-                                {% for horaire in horaires %}
-                                    <option value="{{ horaire }}">{{ horaire }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
+                    <div id="horaire_fields" style="display:none;">
+    <div class="row">
+        <div class="col-md-6">
+            <label for="heure_debut">Heure de début:</label>
+            <input type="time" name="heure_debut" class="form-control" min="08:00" max="19:00">
+        </div>
+        <div class="col-md-6">
+            <label for="heure_fin">Heure de fin:</label>
+            <input type="time" name="heure_fin" class="form-control" min="08:00" max="19:00">
+        </div>
+    </div>
+</div>
+
                 </div>
             </div>
     
@@ -1795,87 +1954,171 @@
             <strong>Du {{ date_debut|date:"d/m/Y" }} au {{ date_fin|date:"d/m/Y" }}</strong>
         </div>
 
-        <div class="table-responsive">
-            <table class="calendar">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        {% for horaire in horaires %}
-                            <th>{{ horaire }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for date in dates %}
-                    <tr>
-                        <td>
-                            <strong>{{ date|date:"d/m/Y" }}</strong><br>
-                            <small>{{ date|date:"l"|capfirst }}</small>
-                        </td>
-                        
-                        {% with full_day_event=sessions_by_date|get_dict_item:date|get_dict_item:'full_day' %}
-                        {% if full_day_event %}
-                        <!-- Remplacer tous les td par une seule cellule qui s'étend -->
-                        <td colspan="{{ horaires|length }}" class="multi-day-event">
-    <div class="session-card event-{{ full_day_event.type_evenement|lower }}">
-        <div class="event-content">
-            <span class="event-type">
-                {% if full_day_event.type_evenement == 'TOURNEE' %}
-                    <i class="fas fa-hiking"></i>
-                {% elif full_day_event.type_evenement == 'SORTIE' %}
-                    <i class="fas fa-map-marked-alt"></i>
-                {% elif full_day_event.type_evenement == 'PROJET' %}
-                    <i class="fas fa-project-diagram"></i>
-                {% elif full_day_event.type_evenement == 'VISITE_MILITAIRE' %}
-                    <i class="fas fa-shield-alt"></i>
-                {% elif full_day_event.type_evenement == 'FORMATION_MILITAIRE' %}
-                    <i class="fas fa-medal"></i>
-                {% elif full_day_event.type_evenement == 'CONFERENCE' %}
-                    <i class="fas fa-microphone-alt"></i>
-                {% endif %}
-                <span>{{ full_day_event.type_evenement|title|cut:"_" }}</span>
-            </span>
-            
-            <div class="event-details">
-                {% if full_day_event.titre_evenement %}
-                    <span class="event-title">{{ full_day_event.titre_evenement }}</span>
-                {% endif %}
-                
-                {% if full_day_event.matiere %}
-                    <span class="event-matiere">({{ full_day_event.matiere.name }})</span>
-                {% endif %}
-                
-                <span class="event-date">
-                    {{ full_day_event.date_debut|date:"d/m" }} - {{ full_day_event.date_fin|date:"d/m" }}
-                </span>
-            </div>
-            
-            <a href="{% url 'supprimer_evenement' full_day_event.id %}" 
-               class="delete-event" 
-               onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');">
-                <i class="fas fa-times"></i>
-            </a>
-        </div>
-    </div>
-</td>
-
-                        {% else %}
-                        <!-- Afficher les cellules normales pour les horaires -->
-                        {% for horaire in horaires %}
-                        <td>
-                            {% with session=sessions_by_date|get_dict_item:date|get_dict_item:horaire %}
-                            <!-- Le reste du code pour les sessions normales -->
-                            {% include "hod_template/session_cell.html" with session=session %}
-                            {% endwith %}
-                        </td>
-                        {% endfor %}
-                        {% endif %}
-                        {% endwith %}
-                    </tr>
+        <!-- Remplacer la section du tableau par ce code -->
+<div class="table-responsive">
+    <table class="calendar">
+        <thead>
+            <tr>
+                <th class="date-header" style="width: 120px;">Date</th>
+                <th class="timeline-header">Planning journalier</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for date in dates %}
+            <tr>
+                <td class="date-cell">
+                    <strong>{{ date|date:"d/m/Y" }}</strong><br>
+                    <small>{{ date|date:"l"|capfirst }}</small>
+                </td>
+                <td class="planning-cell">
+                    <div class="timeline-container">
+                        {% with day_events=sessions_by_date|get_dict_item:date %}
+                            {% if day_events.full_day %}
+                                <div class="full-day-event">
+                                    <!-- Événement sur toute la journée -->
+                                    <div class="event-content full-day">
+                                        <strong>{{ day_events.full_day.titre_evenement }}</strong>
+                                        <span class="event-type">{{ day_events.full_day.get_type_evenement_display }}</span>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="events-container">
+                                    {% for event in day_events %}
+                                        {% include "hod_template/event_cell.html" with session=event %}
+                                    {% endfor %}
+                                    <!-- Ajout du formulaire rapide -->
+                                    <div class="quick-add-form">
+    <form method="POST" action="{% url 'creer_emploi_temps' %}" class="inline-form">
+        {% csrf_token %}
+        <input type="hidden" name="type_evenement" value="COURS">
+        <input type="hidden" name="promotion" value="{{ promotion_selected }}">
+        <input type="hidden" name="date_debut" value="{{ date|date:'Y-m-d' }}">
+        
+        <div class="row g-2">
+            <div class="col-12">
+                <select name="matiere" class="form-control form-control-sm" required>
+                    <option value="">Choisir une matière</option>
+                    {% for subject in subjects %}
+                        <option value="{{ subject.id }}">{{ subject.name }}</option>
                     {% endfor %}
-                </tbody>
-            </table>
+                </select>
+            </div>
+            <div class="col-6">
+                <input type="time" name="heure_debut" class="form-control form-control-sm" 
+                       min="08:00" max="18:00" required>
+            </div>
+            <div class="col-6">
+                <input type="time" name="heure_fin" class="form-control form-control-sm" 
+                       min="08:00" max="18:00" required>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary btn-sm w-100">
+                    <i class="fas fa-plus"></i> Ajouter
+                </button>
+            </div>
         </div>
+    </form>
+</div>
+
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+.planning-cell {
+    position: relative;
+    height: 100px;
+    padding: 0 !important;
+}
+
+.timeline-container {
+    position: relative;
+    height: 100%;
+    background: repeating-linear-gradient(
+        to right,
+        #f5f5f5 0px,
+        #f5f5f5 1px,
+        transparent 1px,
+        transparent calc(100% / 10)
+    );
+}
+
+.event-cell {
+    position: absolute;
+    height: 80%;
+    top: 10%;
+    background: white;
+    border-radius: 4px;
+    padding: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
+    z-index: 2;
+}
+
+.full-day {
+    height: 100%;
+    background: #f8f9fa;
+    padding: 8px;
+    border-left: 4px solid #4a5568;
+}
+
+.event-content {
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.event-time {
+    font-size: 10px;
+    color: #666;
+    margin-bottom: 2px;
+}
+
+.quick-add-form {
+    display: none;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 5px;
+    border-top: 1px solid #ddd;
+    z-index: 10;
+}
+
+.planning-cell:hover .quick-add-form {
+    display: block;
+}
+
+.inline-form {
+    display: flex;
+    gap: 5px;
+}
+
+.form-row {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.form-control-sm {
+    font-size: 12px;
+    padding: 2px 5px;
+    height: auto;
+}
+
+.btn-sm {
+    padding: 2px 8px;
+    font-size: 12px;
+}
+</style>
+
     </div>
 </div>
 
@@ -1949,6 +2192,29 @@ function toggleFields() {
     const EVENEMENTS_MULTI_JOURS = ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE'];
     const EVENEMENTS_AVEC_HORAIRE = ['EXAMEN_PARTIEL', 'EXAMEN_FINAL', 'RATTRAPAGE', 'FORMATION_MILITAIRE', 'CONFERENCE'];
     const EVENEMENTS_SANS_MATIERE_PROFESSEUR = ['FORMATION_MILITAIRE', 'CONFERENCE'];
+    const EVENEMENTS_DATE_ET_HORAIRE = [
+        'COURS', 
+        'EXAMEN_PARTIEL',
+        'EXAMEN_FINAL',
+        'RATTRAPAGE',
+        'FORMATION_MILITAIRE',
+        'CONFERENCE'
+    ];
+    
+    const horaireFields = document.getElementById('horaire_fields');
+    const heureDebut = document.querySelector('input[name="heure_debut"]');
+    const heureFin = document.querySelector('input[name="heure_fin"]');
+    
+    // Gérer l'affichage et les attributs required des champs d'heure
+    if (EVENEMENTS_DATE_ET_HORAIRE.includes(type)) {
+        horaireFields.style.display = 'block';
+        heureDebut.setAttribute('required', '');
+        heureFin.setAttribute('required', '');
+    } else {
+        horaireFields.style.display = 'none';
+        heureDebut.removeAttribute('required');
+        heureFin.removeAttribute('required');
+    }
 
     // Gestion de l'affichage des champs de matière et professeur
     if (EVENEMENTS_AVEC_MATIERE.includes(type) && !EVENEMENTS_SANS_MATIERE_PROFESSEUR.includes(type)) {
@@ -2113,5 +2379,51 @@ function filterByDate() {
         window.location.href = `?promotion={{ promotion_selected }}&date_debut=${dateFilter}`;
     }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Gérer tous les formulaires d'ajout rapide
+    document.querySelectorAll('.quick-add-form form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Vérifier si tous les champs requis sont remplis
+            if (!this.checkValidity()) {
+                alert('Veuillez remplir tous les champs requis');
+                return;
+            }
+
+            // Créer FormData
+            const formData = new FormData(this);
+
+            // Envoi AJAX
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur réseau');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Recharger la page en cas de succès
+                    window.location.reload();
+                } else {
+                    alert(data.error || 'Une erreur est survenue');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Une erreur est survenue lors de l\'ajout du cours');
+            });
+        });
+    });
+});
 </script>
 {% endblock content %}
