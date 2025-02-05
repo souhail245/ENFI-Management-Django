@@ -103,6 +103,7 @@
     position: relative;
     border: 1px solid #ddd;
     margin-bottom: 10px;
+    overflow: hidden; /* Ajout important pour cacher le débordement */
 }
 
 .hours-header {
@@ -112,14 +113,18 @@
     left: 0;
     right: 0;
     height: 20px;
+    white-space: nowrap; /* Empêche le passage à la ligne */
 }
 
 .hour-marker {
     flex: 1;
     text-align: center;
-    font-size: 12px;
+    font-size: 10px; /* Taille de la police réduite */
     color: #666;
     border-left: 1px solid #ddd;
+    overflow: hidden;        /* Ajout important */
+    text-overflow: ellipsis;  /* Ajout important */
+    width: 10%;              /* Ajout important, ajuste la largeur de chaque marqueur */
 }
 
 .events-container {
@@ -135,32 +140,13 @@
     color: white;
     padding: 4px;
     border-radius: 4px;
-    font-size: 12px;
+    font-size: 18px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
 }
 
-.event-cell {
-    z-index: 1;
-    background: white;
-    border-radius: 4px;
-    font-size: 12px;
-    overflow: hidden;
-}
-
-.event-header {
-    display: flex;
-    justify-content: space-between;
-    padding: 2px 4px;
-    background: rgba(0,0,0,0.05);
-    font-size: 10px;
-}
-
-.event-content {
-    padding: 4px;
-}
-
+/* Pour les noms longs de matière */
 .event-title {
     font-weight: bold;
     white-space: nowrap;
@@ -168,8 +154,27 @@
     text-overflow: ellipsis;
 }
 
+/* Pour les noms longs de professeur */
 .event-prof {
     font-size: 10px;
     color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.event-cell {
+    position: absolute;
+    height: 70px !important;  /* Hauteur fixe plus petite */
+    top: 5px;  /* Centrage vertical */
+    background: white;
+    border-radius: 4px;
+    padding: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
+    z-index: 2;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;  /* Modifier la taille ici */
+    border: 1px solid black;
 }
 </style>

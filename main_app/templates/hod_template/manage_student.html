@@ -29,17 +29,25 @@
                             </form>
                         </div>
                 
-                        <!-- Boutons d'export à droite -->
-                        <div class="d-flex align-items-center">
-                            <a href="{% url 'export_students_excel' %}{% if selected_niveau %}?niveau={{ selected_niveau }}{% endif %}" 
-                               class="btn btn-success btn-sm mr-2">
-                                <i class="fas fa-file-excel"></i> Export Excel
-                            </a>
-                            <a href="{% url 'export_students_pdf' %}{% if selected_niveau %}?niveau={{ selected_niveau }}{% endif %}" 
-                               class="btn btn-danger btn-sm">
-                                <i class="fas fa-file-pdf"></i> Export PDF
-                            </a>
-                        </div>
+                         <!-- Boutons d'import et d'export à droite -->
+                         <div class="d-flex align-items-center">
+                             <form method="post" enctype="multipart/form-data" class="mr-2">
+                                 {% csrf_token %}
+                                 <label for="csv_file" class="btn btn-primary btn-sm">
+                                     <i class="fas fa-file-upload"></i> Importer CSV
+                                 </label>
+                                 <input type="file" id="csv_file" name="csv_file" style="display: none;"
+                                     onchange="this.form.submit()" accept=".csv" >
+                             </form>
+                             <a href="{% url 'export_students_excel' %}{% if selected_niveau %}?niveau={{ selected_niveau }}{% endif %}" 
+                                class="btn btn-success btn-sm mr-2">
+                                 <i class="fas fa-file-excel"></i> Export Excel
+                             </a>
+                             <a href="{% url 'export_students_pdf' %}{% if selected_niveau %}?niveau={{ selected_niveau }}{% endif %}" 
+                                class="btn btn-danger btn-sm">
+                                 <i class="fas fa-file-pdf"></i> Export PDF
+                             </a>
+                         </div>
                     </div>
                 </div>
 

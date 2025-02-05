@@ -614,6 +614,15 @@ def manage_staff(request):
     return render(request, "hod_template/manage_staff.html", context)
 
 
+import csv
+from django.shortcuts import render
+from .models import Student, CustomUser, Course, Session
+from django.contrib import messages
+from django.http import HttpResponseRedirect
+from django.db import transaction
+from django.core.exceptions import ValidationError
+
+
 def manage_student(request):
     # Récupérer tous les niveaux uniques
     niveaux = CustomUser.objects.filter(user_type=3).select_related('student').values_list('student__niveau', flat=True).distinct()
@@ -627,7 +636,55 @@ def manage_student(request):
     # Appliquer le filtre si un niveau est sélectionné
     if (selected_niveau):
         students = students.filter(student__niveau=selected_niveau)
-    
+
+    if request.method == 'POST' and request.FILES.get('csv_file'):
+        csv_file = request.FILES['csv_file']
+
+        if not csv_file.name.endswith('.csv'):
+            messages.error(request, 'File is not a CSV file')
+            return HttpResponseRedirect(request.path_info)
+
+        try:
+           
+            decoded_file = csv_file.read().decode('iso-8859-1').splitlines() # spécifier l'encodage ici
+            reader = csv.DictReader(decoded_file)
+        
+            with transaction.atomic():
+                
+                for row in reader:
+                   # Récupérer ou créer l'utilisateur (CustomUser)
+                    user = CustomUser.objects.create(
+                                                first_name=row['first_name'].strip(),
+                                                last_name=row['last_name'].strip(),
+                                                email=row['email'].strip(),
+                                                password=row['password'].strip(),
+                                                user_type="3"
+                    )
+                    # Créer l'objet Student
+                    try:
+                        Student.objects.create(
+                            admin=user,
+                            phone_number=row['phone_number'],
+                            matricule=row['matricule'],
+                            niveau=row['niveau'],
+                            lieu=row.get('lieu',None), #permettre d'avoir un champ lieu vide
+                            dateN=row.get('dateN',None), #permettre d'avoir un champ dateN vide
+                            course=None,  # Mettre course à None
+                            session=None,   # Mettre session à None
+                        )
+                    except ValidationError as e:
+                        messages.error(request, f"Erreur de validation lors de la création de l'étudiant {row['first_name']} {row['last_name']}: {e}")
+                        raise # la transaction atomique annulera les changement de la DB si une erreur est levée
+            messages.success(request, 'Students imported successfully')
+        except UnicodeDecodeError as e: # capture de l'erreur d'encodage
+           messages.error(request, f"UnicodeDecodeError lors de la lecture du fichier : {str(e)}. Veuillez vous assurer que l'encodage est correct.")
+           return HttpResponseRedirect(request.path_info) # redirection avant la fin de la transaction en cas d'erreur
+        
+        except Exception as e:
+           messages.error(request, f"Error importing students: {str(e)}")
+           return HttpResponseRedirect(request.path_info)
+        return HttpResponseRedirect(request.path_info)
+
     context = {
         'students': students,
         'page_title': 'Manage Students',
@@ -635,7 +692,7 @@ def manage_student(request):
         'selected_niveau': selected_niveau
     }
     return render(request, "hod_template/manage_student.html", context)
-
+    
 
 def manage_course(request):
     # Récupérer tous les cours
