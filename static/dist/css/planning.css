@@ -1,0 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+.planning-cell {
+    position: relative;
+    height: 80px !important;
+    border: 1px solid #ddd;
+    background: #fff;
+    margin: 0;
+    padding: 0 !important;
+    font-family: 'Inter', sans-serif;
+}
+
+.timeline-container {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    background: repeating-linear-gradient(
+        to right,
+        #f5f5f5 0px,
+        #f5f5f5 1px,
+        transparent 1px,
+        transparent 10%
+    );
+}
+
+.event-cell {
+    position: absolute;
+    height: 70px;
+    top: 5px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    z-index: 1;
+}
+
+.event-cell:hover {
+    transform: scale(1.02);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    z-index: 3;
+}
+
+/* Types d'événements */
+.event-cell.cours { 
+    background-color: #e3f2fd; 
+    border-left: 3px solid #1976d2;
+    background-image: url('../images/cours-icon.svg'); /* Si vous avez des icônes */
+}
+.event-cell.examen { background-color: #fff3cd; border-left: 3px solid #ffc107; }
+.event-cell.rattrapage { background-color: #f8d7da; border-left: 3px solid #dc3545; }
+.event-cell.formation { background-color: #d4edda; border-left: 3px solid #28a745; }
+
+.event-time {
+    font-size: 10px;
+    color: #666;
+    margin-bottom: 2px;
+}
+
+.event-title {
+    font-weight: bold;
+    font-size: 11px;
+    margin: 2px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.event-details {
+    font-size: 10px;
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.delete-event {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: 10px;
+    color: #dc3545;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.delete-event:hover {
+    opacity: 1;
+}
+
+/* Formulaire rapide */
+.quick-add-form {
+    display: none;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 5px;
+    border-top: 1px solid #ddd;
+    z-index: 10;
+}
+
+.planning-cell:hover .quick-add-form {
+    display: block;
+}

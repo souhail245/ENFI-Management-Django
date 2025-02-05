@@ -1,0 +1,207 @@
+/* Planning horizontal */
+.planning-cell {
+    position: relative;
+    height: 120px !important; /* Hauteur augmentée pour une meilleure visibilité */
+    background: #fff;
+    border: 1px solid #ddd;
+    overflow: hidden;
+    margin: 2px 0; /* Ajout de marge */
+}
+
+.timeline-container {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    /* Graduations horaires subtiles */
+    background: repeating-linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0.03) 0%,
+        rgba(0, 0, 0, 0.03) calc(100% / 10),
+        transparent calc(100% / 10),
+        transparent calc(200% / 10)
+    );
+}
+
+.event-cell {
+    position: absolute;
+    height: 80%;
+    top: 10%;
+    transform-origin: left center;
+    background: white;
+    border-radius: 4px;
+    padding: 4px 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+    z-index: 1;
+    transition: all 0.2s ease;
+    border: 1px solid #ddd;
+    font-size: 11px;
+    min-width: 40px; /* Ajout d'une largeur minimale */
+}
+
+.event-cell:hover {
+    transform: scale(1.02);
+    z-index: 10;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Styles pour les types d'événements */
+.event-cell.cours { 
+    background: linear-gradient(to right, #e3f2fd, #bbdefb); 
+    border-left: 3px solid #1976d2;
+}
+.event-cell.examen { 
+    background: linear-gradient(to right, #fff3cd, #ffe082);
+    border-left: 3px solid #f57c00;
+}
+.event-cell.rattrapage { 
+    background: linear-gradient(to right, #f8d7da, #f5c6cb);
+    border-left: 3px solid #dc3545;
+}
+.event-cell.formation { 
+    background: linear-gradient(to right, #d4edda, #c3e6cb);
+    border-left: 3px solid #28a745;
+}
+.event-cell.conference { background: linear-gradient(to right, #e6d9f2, #d4c4e9); }
+
+/* Informations de l'événement */
+.event-time {
+    font-size: 10px;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 2px;
+    white-space: nowrap;
+}
+
+.event-title {
+    font-size: 11px;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.event-details {
+    font-size: 9px;
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Bouton de suppression */
+.delete-event {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: 10px;
+    opacity: 0.7;
+    color: #dc3545;
+}
+
+.delete-event:hover {
+    opacity: 1;
+}
+
+.planning-day {
+    position: relative;
+    height: 100px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    margin: 2px 0;
+}
+
+.timeline {
+    position: absolute;
+    top: -20px;
+    left: 0;
+    right: 0;
+    height: 20px;
+}
+
+.hour-marker {
+    position: absolute;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: #666;
+}
+
+.events-container {
+    position: relative;
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        transparent 0%,
+        transparent calc(100% - 1px),
+        #e5e7eb calc(100% - 1px),
+        #e5e7eb 100%
+    );
+    background-size: 10% 100%;
+}
+
+.event-item {
+    position: absolute;
+    top: 5px;
+    height: calc(100% - 10px);
+    padding: 4px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.event-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.event-item.cours { background: linear-gradient(to right, #e3f2fd, #bbdefb); border-left: 3px solid #1976d2; }
+.event-item.examen { background: linear-gradient(to right, #fff3cd, #ffe082); border-left: 3px solid #f57c00; }
+.event-item.rattrapage { background: linear-gradient(to right, #f8d7da, #f5c6cb); border-left: 3px solid #dc3545; }
+.event-item.formation { background: linear-gradient(to right, #d4edda, #c3e6cb); border-left: 3px solid #28a745; }
+
+.event-time {
+    font-size: 10px;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 2px;
+}
+
+.event-title {
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.event-prof {
+    font-size: 10px;
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.delete-event {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 16px;
+    height: 16px;
+    border: none;
+    background: rgba(255,255,255,0.8);
+    border-radius: 50%;
+    color: #dc3545;
+    font-size: 10px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.event-item:hover .delete-event {
+    display: flex;
+}

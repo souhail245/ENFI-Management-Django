@@ -1,0 +1,87 @@
+/* Planning horizontal */
+.planning-cell {
+    position: relative;
+    height: 80px !important;
+    padding: 0 !important;
+    background: #fff;
+    border: 1px solid #ddd;
+}
+
+.timeline-container {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    background: repeating-linear-gradient(
+        to right,
+        #f5f5f5 0px,
+        #f5f5f5 1px,
+        transparent 1px,
+        transparent calc(100% / 10)
+    );
+}
+
+.event-cell {
+    position: absolute;
+    height: 70px;
+    top: 5px;
+    background: white;
+    border-radius: 4px;
+    padding: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
+    z-index: 2;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 11px;
+    border: 1px solid #ddd;
+}
+
+.event-cell:hover {
+    transform: scale(1.02);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    z-index: 3;
+}
+
+/* Styles pour les types d'événements */
+.event-cell.cours { background-color: #e3f2fd; }
+.event-cell.examen { background-color: #fff3cd; }
+.event-cell.rattrapage { background-color: #f8d7da; }
+.event-cell.formation { background-color: #d4edda; }
+.event-cell.conference { background-color: #e6d9f2; }
+
+/* Informations de l'événement */
+.event-time {
+    font-size: 10px;
+    color: #666;
+    margin-bottom: 2px;
+}
+
+.event-title {
+    font-size: 11px;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.event-details {
+    font-size: 10px;
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Bouton de suppression */
+.delete-event {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: 10px;
+    opacity: 0.7;
+    color: #dc3545;
+}
+
+.delete-event:hover {
+    opacity: 1;
+}

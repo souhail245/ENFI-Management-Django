@@ -1,24 +1,43 @@
 {% load custom_filters %}
 
 {% if session %}
-<div class="event-cell" 
-     style="left: {{ session.get_left_position }}%; 
-            width: {{ session.get_width }}%;
-            height: 80%;"
-     title="{{ session.get_formatted_hours }} - {{ session.matiere.name|default:session.titre_evenement }}">
-    
-    <div class="event-time">{{ session.get_formatted_hours }}</div>
-    <div class="event-title">{{ session.matiere.name|default:session.titre_evenement }}</div>
-    {% if session.professeur %}
-        <div class="event-details">{{ session.professeur.admin.get_full_name }}</div>
-    {% endif %}
-    
-    <a href="{% url 'supprimer_evenement' session.id %}" 
-       class="delete-event" 
-       onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')">
-        <i class="fas fa-times"></i>
-    </a>
-</div>
+{% if session.type_evenement in 'COURS,EXAMEN_PARTIEL,EXAMEN_FINAL,RATTRAPAGE,FORMATION_MILITAIRE,CONFERENCE'|split:',' %}
+    <div class="event-cell event-{{ session.type_evenement|lower }}" 
+         style="position: absolute; 
+                left: {% widthratio session.get_left_position 1 1 %}%; 
+                width: {% widthratio session.get_width 1 1 %}%;">
+        <div class="event-time">
+            {{ session.heure_debut|time:"H:i" }} - {{ session.heure_fin|time:"H:i" }}
+        </div>
+        <div class="event-title">
+            {% if session.matiere %}
+                {{ session.matiere.name }}
+            {% else %}
+                {{ session.titre_evenement }}
+            {% endif %}
+        </div>
+        {% if session.professeur %}
+        <div class="event-details">
+            {{ session.professeur.admin.get_full_name }}
+        </div>
+        {% endif %}
+        <a href="{% url 'supprimer_evenement' session.id %}" 
+           class="delete-event" 
+           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');">
+            <i class="fas fa-times"></i>
+        </a>
+    </div>
+{% else %}
+    <div class="full-day-event">
+        <div class="event-title">{{ session.titre_evenement }}</div>
+        <div class="event-type">{{ session.get_type_evenement_display }}</div>
+        <a href="{% url 'supprimer_evenement' session.id %}" 
+           class="delete-event" 
+           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');">
+            <i class="fas fa-times"></i>
+        </a>
+    </div>
+{% endif %}
 {% endif %}
 
 <div class="time-slot">

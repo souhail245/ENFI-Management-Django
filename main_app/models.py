@@ -474,19 +474,21 @@ class EmploiTemps(models.Model):
         """Calcule la position horizontale en pourcentage"""
         if not self.heure_debut:
             return 0
-        minutes_since_8am = (self.heure_debut.hour - 8) * 60 + self.heure_debut.minute
-        total_minutes = (18 - 8) * 60  # 10 heures (8h-18h) en minutes
-        return (minutes_since_8am / total_minutes) * 100
+        # Position basée sur l'heure (8h = 0%, 18h = 100%)
+        total_heures = 10  # 10 heures entre 8h et 18h
+        heure_relative = self.heure_debut.hour - 8 + (self.heure_debut.minute / 60)
+        return (heure_relative / total_heures) * 100
 
     def get_width(self):
-        """Calcule la largeur en pourcentage basée sur la durée"""
-        if not (self.heure_debut and self.heure_fin):
-            return 10  # Largeur minimale par défaut
-        debut_minutes = (self.heure_debut.hour - 8) * 60 + self.heure_debut.minute
-        fin_minutes = (self.heure_fin.hour - 8) * 60 + self.heure_fin.minute
-        duree_minutes = fin_minutes - debut_minutes
-        total_minutes = (18 - 8) * 60  # 10 heures en minutes
-        return (duree_minutes / total_minutes) * 100
+        """Calcule la largeur en pourcentage"""
+        if not self.heure_debut or not self.heure_fin:
+            return 10
+        # Calculer la durée en heures
+        debut = self.heure_debut.hour + (self.heure_debut.minute / 60)
+        fin = self.heure_fin.hour + (self.heure_fin.minute / 60)
+        duree = fin - debut
+        # Convertir la durée en pourcentage (10 heures = 100%)
+        return (duree / 10) * 100
 
     def get_left_position(self):
         """Calcule la position horizontale en pourcentage"""
@@ -509,6 +511,22 @@ class EmploiTemps(models.Model):
         
         # Minimum width of 5% to ensure visibility
         return max((duree_minutes / total_minutes) * 100, 5)
+
+    def get_position_percent(self):
+        """Calcule la position horizontale en pourcentage basé sur une journée de 10h (8h-18h)"""
+        if not self.heure_debut:
+            return 0
+        minutes_since_8am = (self.heure_debut.hour - 8) * 60 + self.heure_debut.minute
+        return (minutes_since_8am / (10 * 60)) * 100  # 10 heures = 100%
+
+    def get_width_percent(self):
+        """Calcule la largeur en pourcentage basé sur la durée"""
+        if not (self.heure_debut and self.heure_fin):
+            return 10  # largeur minimale
+        
+        duree_minutes = (self.heure_fin.hour - self.heure_debut.hour) * 60 + \
+                       (self.heure_fin.minute - self.heure_debut.minute)
+        return max((duree_minutes / (10 * 60)) * 100, 5)  # minimum 5% de largeur
 
 class Student(models.Model):
     admin = models.OneToOneField(CustomUser, on_delete=models.CASCADE)

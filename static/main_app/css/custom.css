@@ -1,0 +1,65 @@
+/* Custom styles for the staff table */
+.table-responsive {
+    margin-top: 20px;
+}
+
+.table thead th {
+    background-color: #343a40;
+    color: #fff;
+    text-align: center;
+}
+
+.table tbody td {
+    vertical-align: middle;
+    text-align: center;
+}
+
+.table img {
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.btn-group .btn {
+    margin-right: 5px;
+}
+
+.btn-group .btn:last-child {
+    margin-right: 0;
+}
+
+/* Additional styles for better visualization */
+.table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+.table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.table tbody tr:nth-child(odd) {
+    background-color: #fff;
+}
+
+.table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table th, .table td {
+    border: 1px solid #dee2e6;
+}
+
+.table th {
+    background-color: #343a40;
+    color: #fff;
+}
+
+.table td {
+    background-color: #fff;
+}

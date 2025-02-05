@@ -1,218 +1,103 @@
 <style>
-/* Harmonisation des styles de base */
-.session-card {
+/* Style de base pour la timeline */
+.timeline-container {
     position: relative;
-    padding: 0.5rem;
-    margin-bottom: 0.5rem;
-    border-radius: 8px;
-    background: #ffffff;
-    border: 1px solid #0f0f0f;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s ease;
-    font-size: 0.8rem;
-}
-
-/* Amélioration des indicateurs de type */
-.session-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 4px;
-    border-radius: 4px 0 0 4px;
-}
-
-/* Styles spécifiques pour chaque type d'événement */
-.session-card.cours::before { background: linear-gradient(to bottom, #3b82f6, #2563eb); }
-.session-card.examen::before { background: linear-gradient(to bottom, #f59e0b, #d97706); }
-.session-card.rattrapage::before { background: linear-gradient(to bottom, #dc2626, #b91c1c); }
-.session-card.formation::before { background: linear-gradient(to bottom, #10b981, #059669); }
-.session-card.conference::before { background: linear-gradient(to bottom, #8b5cf6, #7c3aed); }
-
-/* Conteneur d'informations amélioré */
-.event-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    padding-left: 0.5rem;
-}
-
-/* Titre d'événement amélioré */
-.event-title {
-    font-weight: 600;
-    color: #0f0f0f;
-    font-size: 0.85rem;
-    margin-bottom: 0.15rem;
-    line-height: 1.2;
-}
-
-/* Détails d'événement améliorés */
-.event-details {
-    font-size: 0.75rem;
-    color: #070707;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-/* Bouton de suppression amélioré */
-.delete-event {
-    position: absolute;
-    top: 0.25rem;
-    right: 0.25rem;
-    width: 18px;
-    height: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-    font-size: 0.8rem;
-    opacity: 0;
-    transition: all 0.2s ease;
-}
-
-.session-card:hover .delete-event {
-    opacity: 1;
-}
-
-/* Amélioration de la barre de progression */
-.progression-info {
-    margin-top: 0.25rem;
-    font-size: 0.7rem;
-    color: #64748b;
-}
-
-.progress {
-    height: 4px;
-    background: #e2e8f0;
-    border-radius: 2px;
-    margin: 0.25rem 0;
-}
-
-.progress-bar {
-    background: linear-gradient(to right, #3b82f6, #2563eb);
-    border-radius: 2px;
-    transition: width 0.3s ease;
-}
-
-/* Adaptation responsive */
-@media (max-width: 768px) {
-    .event-details {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-}
-
-.time-slot {
-    position: relative;
-    height: 600px; /* 10 heures (8h-18h) * 60px par heure */
+    width: 100%;
+    height: 100px;
+    display: grid;
+    grid-template-columns: repeat(10, 1fr); /* 10 colonnes égales */
+    background: #fff;
     border: 1px solid #ddd;
 }
 
-.session-card {
-    z-index: 1;
-    border-radius: 4px;
-    padding: 8px;
+/* Lignes de la grille horaire */
+.hour-marker {
+    position: absolute;
+    top: -20px;
+    width: 10%;
+    text-align: center;
     font-size: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    color: #666;
 }
 
-/* Background lines for hours */
-.time-slot::before {
-    content: '';
+/* Style de base pour un événement */
+.event-cell {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: repeating-linear-gradient(
-        to bottom,
-        #f5f5f5 0px,
-        #f5f5f5 1px,
-        transparent 1px,
-        transparent 60px
-    );
-    pointer-events: none;
+    height: 80%;
+    top: 10%;
+    border-radius: 4px;
+    padding: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
+    font-size: 12px;
+}
+
+/* Styles pour les différents types d'événements */
+.event-cours { background-color: #e3f2fd; }
+.event-examen { background-color: #fff3cd; }
+.event-formation { background-color: #d4edda; }
+.event-conference { background-color: #f8d7da; }
+
+/* Style pour les événements journée complète */
+.full-day-event {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #f8f9fa;
+    padding: 8px;
+    border-left: 4px solid #4a5568;
+}
+
+.event-title {
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.event-details {
+    font-size: 11px;
+    color: #666;
+}
+
+.delete-event {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    color: #dc3545;
+    opacity: 0.7;
+    cursor: pointer;
+}
+
+.delete-event:hover {
+    opacity: 1;
 }
 </style>
 
-{% if session %}
-<div class="session-card {% if session.type_evenement == 'JOUR_FERIE' %}jour-ferie
-    {% elif session.type_evenement == 'VACANCES' %}vacances
-    {% elif session.type_evenement == 'EXAMEN_PARTIEL' or session.type_evenement == 'EXAMEN_FINAL' %}examen{% endif %}"
-    style="
-    position: absolute;
-    top: {% widthratio session.heure_debut.hour|add:"-8" 1 60 %}px;
-    height: {% widthratio session.get_duration_in_hours 1 60 %}px;
-    left: 0;
-    right: 0;
-    {% if session.type_evenement == 'EXAMEN_PARTIEL' or session.type_evenement == 'EXAMEN_FINAL' %}
-    background: linear-gradient(45deg, #fff3cd, #fff8e1);
-    {% endif %}
-">
-    
-    <a href="{% url 'supprimer_evenement' session.id %}" 
-       class="delete-event" 
-       onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');"
-       title="Supprimer cet événement">
-        <i class="fas fa-times-circle"></i>
-    </a>
-    
-    <div class="event-info">
-        {% if session.type_evenement == 'COURS' %}
-            <strong class="event-title">{{ session.matiere.name }}</strong>
-            <small class="event-details">{{ session.professeur.admin.get_full_name }}</small>
-        {% elif session.type_evenement == 'RATTRAPAGE' %}
-            <strong class="event-title" style="color: #721c24;">Rattrapage</strong>
-            <strong class="event-title">{{ session.matiere.name }}</strong>
-            <small class="event-details">{{ session.professeur.admin.get_full_name }}</small>
-        {% elif session.type_evenement == 'FORMATION_MILITAIRE' %}
-            <strong class="event-title" style="color: #004085;">Formation Militaire</strong>
-            <small class="event-details">{{ session.titre_evenement }}</small>
-        {% elif session.type_evenement == 'CONFERENCE' %}
-            <strong class="event-title" style="color: #856404;">Conférence</strong>
-            <small class="event-details">{{ session.titre_evenement }}</small>
-        {% elif session.type_evenement == 'EXAMEN_PARTIEL' %}
-            <strong class="event-title" style="color: #856404;">Examen Partiel</strong>
-            <div class="matiere-info">
-                <strong>{{ session.matiere.name }}</strong>
-                <small class="event-details">{{ session.professeur.admin.get_full_name }}</small>
-            </div>
-        {% elif session.type_evenement == 'EXAMEN_FINAL' %}
-            <strong class="event-title" style="color: #721c24;">Examen Final</strong>
-            <div class="matiere-info">
-                <strong>{{ session.matiere.name }}</strong>
-                <small class="event-details">{{ session.professeur.admin.get_full_name }}</small>
-            </div>
-        {% else %}
-            <strong class="event-title">{{ session.titre_evenement }}</strong>
-        {% endif %}
+{% if session.is_multi_day_event %}
+    <div class="full-day-event">
+        <a href="{% url 'supprimer_evenement' session.id %}" 
+           class="delete-event" 
+           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');">
+            <i class="fas fa-times"></i>
+        </a>
+        <div class="event-title">{{ session.titre_evenement }}</div>
+        <div class="event-details">{{ session.get_type_evenement_display }}</div>
     </div>
-</div>
 {% else %}
-<!-- Formulaire rapide d'ajout -->
-<form class="quick-add-form" method="POST" action="{% url 'creer_emploi_temps' %}">
-    {% csrf_token %}
-    <input type="hidden" name="type_evenement" value="COURS">
-    <input type="hidden" name="promotion" value="{{ promotion_selected }}">
-    <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
-    <input type="hidden" name="horaire" value="{{ horaire }}">
-    
-    <select name="matiere" class="form-control form-control-sm">
-        <option value="">-- Choisir matière --</option>
-        {% for subject in subjects %}
-            <option value="{{ subject.id }}" data-professeur="{{ subject.staff.id }}">
-                {{ subject.name }}
-            </option>
-        {% endfor %}
-    </select>
-    
-    <button type="submit" class="btn btn-sm btn-primary mt-1">
-        <i class="fas fa-plus"></i>
-    </button>
-</form>
+    <div class="event-cell event-{{ session.type_evenement|lower }}"
+         style="left: {{ session.get_position_percent }}%; 
+                width: {{ session.get_width_percent }}%;">
+        <a href="{% url 'supprimer_evenement' session.id %}" 
+           class="delete-event" 
+           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');">
+            <i class="fas fa-times"></i>
+        </a>
+        <div class="event-title">
+            {% if session.matiere %}{{ session.matiere.name }}{% else %}{{ session.titre_evenement }}{% endif %}
+        </div>
+        <div class="event-details">
+            {{ session.heure_debut|time:"H:i" }} - {{ session.heure_fin|time:"H:i" }}
+        </div>
+    </div>
 {% endif %}
