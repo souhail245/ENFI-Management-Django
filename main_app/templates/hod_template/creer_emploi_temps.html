@@ -1815,23 +1815,24 @@
                     </div>
     
                     <div id="cours_examens_fields">
-                        <div class="form-group">
-                            <label for="matiere">Matière :</label>
-                            <select name="matiere" class="form-control">
-                                {% for subject in subjects %}
-                                    <option value="{{ subject.id }}">{{ subject.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="professeur">Professeur :</label>
-                            <select name="professeur" class="form-control">
-                                {% for prof in professeurs %}
-                                    <option value="{{ prof.id }}">{{ prof }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
+    <div class="form-group matiere-field">
+        <label for="matiere">Matière :</label>
+        <select name="matiere" class="form-control" required>
+            {% for subject in subjects %}
+                <option value="{{ subject.id }}">{{ subject.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group professeur-field">
+        <label for="professeur">Professeur :</label>
+        <select name="professeur" class="form-control">
+            {% for prof in professeurs %}
+                <option value="{{ prof.id }}">{{ prof }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+
     
                     <div id="ferie_fields" style="display:none;">
                         <div class="form-group">
@@ -2153,308 +2154,360 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialiser la date à aujourd'hui
-    const dateInput = document.getElementById('date');
-    dateInput.valueAsDate = new Date();
-
-    // Mettre à jour automatiquement le jour en fonction de la date
-    dateInput.addEventListener('change', function() {
-        const date = new Date(this.value);
-        const jourSelect = document.querySelector('select[name="jour"]');
-        const jours = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-        jourSelect.value = jours[date.getDay()];
-    });
-});
-
-document.getElementById('promotion').addEventListener('change', function() {
-    // Mettre à jour le formulaire de création avec les matières de la promotion sélectionnée
-    const promotion = this.value;
-    const matiereSelect = document.getElementById('matiere');
-
-    // Vider les options actuelles
-    matiereSelect.innerHTML = '';
-
-    // Charger les nouvelles matières via AJAX
-    fetch(`/get-matieres-by-niveau/?niveau=${promotion}`)
-        .then(response => response.json())
-        .then(data => {
-            data.matieres.forEach(matiere => {
-                const option = new Option(matiere.name, matiere.id);
-                matiereSelect.add(option);
-            });
-        });
-
-    // Recharger la page pour mettre à jour le planning
-    window.location.href = `?promotion=${promotion}`;
-});
-
-function toggleFields() {
-    const type = document.getElementById('type_evenement').value;
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize the date to today
+        const dateInput = document.getElementById('date');
+        if (dateInput) {
+            dateInput.valueAsDate = new Date();
     
-    // Tous les champs possibles
-    const fields = {
-        coursExamens: document.getElementById('cours_examens_fields'),
-        ferie: document.getElementById('ferie_fields'),
-        vacances: document.getElementById('vacances_fields'),
-        rattrapage: document.getElementById('rattrapage_fields'),
-        tournee: document.getElementById('tournee_fields'),
-        sortie: document.getElementById('sortie_fields'),
-        projet: document.getElementById('projet_fields'),
-        visiteMilitaire: document.getElementById('visite_militaire_fields'),
-        conference: document.getElementById('conference_fields'),
-        horaire: document.getElementById('horaire_fields'),
-        dateFin: document.getElementById('date_fin_group')
-    };
-
-    // Cacher tous les champs d'abord
-    Object.values(fields).forEach(field => {
-        if (field) field.style.display = 'none';
-    });
-
-    // Enlever tous les attributs required
-    document.querySelectorAll('[required]').forEach(field => {
-        field.removeAttribute('required');
-    });
-
-    // Définir les types d'événements
-    const EVENEMENTS_AVEC_MATIERE = ['EXAMEN_PARTIEL', 'EXAMEN_FINAL', 'RATTRAPAGE', 'SORTIE'];
-    const EVENEMENTS_MULTI_JOURS = ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE'];
-    const EVENEMENTS_AVEC_HORAIRE = ['EXAMEN_PARTIEL', 'EXAMEN_FINAL', 'RATTRAPAGE', 'FORMATION_MILITAIRE', 'CONFERENCE'];
-    const EVENEMENTS_SANS_MATIERE_PROFESSEUR = ['FORMATION_MILITAIRE', 'CONFERENCE'];
-    const EVENEMENTS_DATE_ET_HORAIRE = [
-        'COURS', 
-        'EXAMEN_PARTIEL',
-        'EXAMEN_FINAL',
-        'RATTRAPAGE',
-        'FORMATION_MILITAIRE',
-        'CONFERENCE'
-    ];
-    
-    const horaireFields = document.getElementById('horaire_fields');
-    const heureDebut = document.querySelector('input[name="heure_debut"]');
-    const heureFin = document.querySelector('input[name="heure_fin"]');
-    
-    // Gérer l'affichage et les attributs required des champs d'heure
-    if (EVENEMENTS_DATE_ET_HORAIRE.includes(type)) {
-        horaireFields.style.display = 'block';
-        heureDebut.setAttribute('required', '');
-        heureFin.setAttribute('required', '');
-    } else {
-        horaireFields.style.display = 'none';
-        heureDebut.removeAttribute('required');
-        heureFin.removeAttribute('required');
-    }
-
-    // Gestion de l'affichage des champs de matière et professeur
-    if (EVENEMENTS_AVEC_MATIERE.includes(type) && !EVENEMENTS_SANS_MATIERE_PROFESSEUR.includes(type)) {
-        fields.coursExamens.style.display = 'block';
-        document.querySelector('select[name="matiere"]').setAttribute('required', '');
-    }
-
-    // Gestion de l'affichage de l'horaire
-    if (EVENEMENTS_AVEC_HORAIRE.includes(type)) {
-        fields.horaire.style.display = 'block';
-        document.querySelector('select[name="horaire"]').setAttribute('required', '');
-    }
-
-    // Logique d'affichage selon le type
-    if (EVENEMENTS_AVEC_HORAIRE.includes(type)) {
-        // Événements avec horaire
-        fields.horaire.style.display = 'block';
-        if (!EVENEMENTS_SANS_MATIERE_PROFESSEUR.includes(type)) {
-            fields.coursExamens.style.display = 'block';
-        }
-        if (type === 'CONFERENCE') {
-            fields.conference.style.display = 'block';
-        }
-        // Champs requis
-        document.querySelector('select[name="horaire"]').setAttribute('required', '');
-        if (fields.coursExamens.style.display === 'block') {
-            fields.coursExamens.querySelector('select[name="matiere"]').setAttribute('required', '');
-        }
-    } 
-    else if (EVENEMENTS_MULTI_JOURS.includes(type)) {
-        // Événements sur plusieurs jours
-        fields.dateFin.style.display = 'block';
-        document.querySelector('input[name="date_fin"]').setAttribute('required', '');
-        
-        // Afficher les champs spécifiques
-        const specificField = document.getElementById(`${type.toLowerCase()}_fields`);
-        if (specificField) {
-            specificField.style.display = 'block';
-            // S'assurer que le champ titre est requis pour les événements multi-jours
-            const titreInput = specificField.querySelector('input[name="titre_evenement"]');
-            if (titreInput) {
-                titreInput.setAttribute('required', 'required');
-            }
-        }
-    }
-
-    // Gestion spécifique pour l'événement SORTIE
-    if (type === 'SORTIE') {
-        // Cacher le champ de matière standard
-        if (fields.coursExamens) {
-            fields.coursExamens.style.display = 'none';
-        }
-        // Afficher uniquement les champs spécifiques à la sortie
-        fields.sortie.style.display = 'block';
-        
-        // S'assurer que seul le champ matière de sortie est requis
-        const matiereSortieSelect = document.getElementById('matiere_sortie');
-        if (matiereSortieSelect) {
-            matiereSortieSelect.setAttribute('required', '');
-        }
-        // Supprimer required des autres champs de matière
-        const autresMatiereSelect = document.querySelector('#cours_examens_fields select[name="matiere"]');
-        if (autresMatiereSelect) {
-            autresMatiereSelect.removeAttribute('required');
-        }
-    }
-
-    // Toujours requis
-    document.querySelector('input[name="date_debut"]').setAttribute('required', '');
-    document.querySelector('select[name="promotion"]').setAttribute('required', '');
-}
-
-// Initialisation au chargement
-document.addEventListener('DOMContentLoaded', function() {
-    toggleFields();
-});
-
-// Écouter les changements
-document.getElementById('type_evenement').addEventListener('change', toggleFields);
-
-// Validation avant soumission
-document.querySelector('form').addEventListener('submit', function(e) {
-    const type = document.getElementById('type_evenement').value;
-    const EVENEMENTS_MULTI_JOURS = ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE'];
-    
-    if (EVENEMENTS_MULTI_JOURS.includes(type)) {
-        const dateDebut = new Date(document.querySelector('input[name="date_debut"]').value);
-        const dateFin = new Date(document.querySelector('input[name="date_fin"]').value);
-        
-        if (dateFin < dateDebut) {
-            e.preventDefault();
-            alert('La date de fin doit être postérieure à la date de début');
-        }
-    }
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Gérer la soumission des formulaires rapides
-    document.querySelectorAll('.quick-add-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const matiereSelect = this.querySelector('select[name="matiere"]');
-            
-            if (!matiereSelect.value) {
-                alert('Veuillez sélectionner une matière');
-                return;
-            }
-
-            // Ajouter automatiquement la date et l'horaire
-            formData.append('date_debut', this.querySelector('input[name="date"]').value);
-            formData.append('horaire', this.querySelector('input[name="horaire"]').value);
-
-            fetch(this.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            // Update the day automatically based on the date
+            dateInput.addEventListener('change', function() {
+                const date = new Date(this.value);
+                const jourSelect = document.querySelector('select[name="jour"]');
+                const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+                if (jourSelect) {
+                    jourSelect.value = days[date.getDay()];
                 }
-            })
-            .then(response => {
-                if (response.ok) {
-                    // Si la réponse est ok, recharger la page
-                    window.location.reload();
+            });
+        }
+    
+        // Promotion selection and subject updates
+        const promotionSelect = document.getElementById('promotion');
+        if (promotionSelect) {
+            promotionSelect.addEventListener('change', function() {
+                const promotion = this.value;
+                const matiereSelect = document.getElementById('matiere');
+    
+                // Clear current options
+                if (matiereSelect) {
+                    matiereSelect.innerHTML = ''; // Clear current options
+    
+                    // Load new subjects via AJAX
+                    fetch(`/get-matieres-by-niveau/?niveau=${promotion}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            data.matieres.forEach(matiere => {
+                                const option = new Option(matiere.name, matiere.id);
+                                matiereSelect.add(option);
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Error loading subjects:', error);
+                            alert('Failed to load subjects for the selected promotion.');
+                        });
+                }
+    
+                // Reload the page to update the schedule
+                window.location.href = `?promotion=${promotion}`;
+            });
+        }
+    
+        // Toggle form fields based on event type
+        const typeEvenementSelect = document.getElementById('type_evenement');
+    
+        function toggleFields() {
+            const type = typeEvenementSelect.value;
+    
+            // All possible fields
+            const fields = {
+                coursExamens: document.getElementById('cours_examens_fields'),
+                ferie: document.getElementById('ferie_fields'),
+                vacances: document.getElementById('vacances_fields'),
+                rattrapage: document.getElementById('rattrapage_fields'),
+                tournee: document.getElementById('tournee_fields'),
+                sortie: document.getElementById('sortie_fields'),
+                projet: document.getElementById('projet_fields'),
+                visiteMilitaire: document.getElementById('visite_militaire_fields'),
+                conference: document.getElementById('conference_fields'),
+                horaire: document.getElementById('horaire_fields'),
+                dateFin: document.getElementById('date_fin_group')
+            };
+    
+            // Hide all fields first
+            Object.values(fields).forEach(field => {
+                if (field) field.style.display = 'none';
+            });
+    
+            // Remove required attributes from all fields
+            document.querySelectorAll('[required]').forEach(field => field.removeAttribute('required'));
+    
+            // Define event types
+            const EVENTS_WITH_MATIERE = ['EXAMEN_PARTIEL', 'EXAMEN_FINAL', 'RATTRAPAGE', 'SORTIE', 'COURS'];
+            const MULTI_DAY_EVENTS = ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE'];
+            const EVENTS_WITH_HORAIRE = ['COURS', 'EXAMEN_PARTIEL', 'EXAMEN_FINAL', 'RATTRAPAGE', 'FORMATION_MILITAIRE',
+                'CONFERENCE'
+            ];
+    
+            // Conditionally display fields and set required attributes
+            if (EVENTS_WITH_MATIERE.includes(type)) {
+                if (fields.coursExamens) {
+                    fields.coursExamens.style.display = 'block';
+                    const matiereSelect = document.querySelector('#cours_examens_fields select[name="matiere"]');
+                    if (matiereSelect) {
+                        matiereSelect.setAttribute('required', '');
+                    }
+                }
+            }
+    
+            if (EVENTS_WITH_HORAIRE.includes(type)) {
+                if (fields.horaire) {
+                    fields.horaire.style.display = 'block';
+                    const heureDebutInput = document.querySelector('#horaire_fields input[name="heure_debut"]');
+                    const heureFinInput = document.querySelector('#horaire_fields input[name="heure_fin"]');
+                    if (heureDebutInput) {
+                        heureDebutInput.setAttribute('required', '');
+                    }
+                    if (heureFinInput) {
+                        heureFinInput.setAttribute('required', '');
+                    }
+                }
+            }
+    
+            if (MULTI_DAY_EVENTS.includes(type)) {
+                if (fields.dateFin) {
+                    fields.dateFin.style.display = 'block';
+                    const dateFinInput = document.querySelector('input[name="date_fin"]');
+                    if (dateFinInput) {
+                        dateFinInput.setAttribute('required', '');
+                    }
+                }
+            }
+    
+            if (type === 'SORTIE') {
+                if (fields.sortie) {
+                    fields.sortie.style.display = 'block';
+                    const matiereSortieSelect = document.querySelector('#sortie_fields select[name="matiere"]');
+                    if (matiereSortieSelect) {
+                        matiereSortieSelect.setAttribute('required', '');
+                    }
+                }
+            } else if (type === 'JOUR_FERIE') {
+                if (fields.ferie) {
+                    fields.ferie.style.display = 'block';
+                    const titreEvenementInput = document.querySelector('#ferie_fields input[name="titre_evenement"]');
+                    if (titreEvenementInput) {
+                        titreEvenementInput.setAttribute('required', '');
+                    }
+                }
+            } else if (type === 'VACANCES') {
+                if (fields.vacances) {
+                    fields.vacances.style.display = 'block';
+                    const titreEvenementInput = document.querySelector('#vacances_fields input[name="titre_evenement"]');
+                    if (titreEvenementInput) {
+                        titreEvenementInput.setAttribute('required', '');
+                    }
+                }
+            } else if (type === 'TOURNEE') {
+                if (fields.tournee) {
+                    fields.tournee.style.display = 'block';
+                    const titreEvenementInput = document.querySelector('#tournee_fields input[name="titre_evenement"]');
+                    if (titreEvenementInput) {
+                        titreEvenementInput.setAttribute('required', '');
+                    }
+                    if (fields.dateFin) {
+                        fields.dateFin.style.display = 'block';
+                        const dateFinInput = document.querySelector('input[name="date_fin"]');
+                        if (dateFinInput) {
+                            dateFinInput.setAttribute('required', '');
+                        }
+                    }
+                }
+            } else if (type === 'VISITE_MILITAIRE') {
+                if (fields.visiteMilitaire) {
+                    fields.visiteMilitaire.style.display = 'block';
+                    const titreEvenementInput = document.querySelector('#visite_militaire_fields input[name="titre_evenement"]');
+                    if (titreEvenementInput) {
+                        titreEvenementInput.setAttribute('required', '');
+                    }
+                    if (fields.dateFin) {
+                        fields.dateFin.style.display = 'block';
+                        const dateFinInput = document.querySelector('input[name="date_fin"]');
+                        if (dateFinInput) {
+                            dateFinInput.setAttribute('required', '');
+                        }
+                    }
+                }
+            } else if (type === 'PROJET') {
+                if (fields.projet) {
+                    fields.projet.style.display = 'block';
+                    const titreEvenementInput = document.querySelector('#projet_fields input[name="titre_evenement"]');
+                    if (titreEvenementInput) {
+                        titreEvenementInput.setAttribute('required', '');
+                    }
+                    if (fields.dateFin) {
+                        fields.dateFin.style.display = 'block';
+                        const dateFinInput = document.querySelector('input[name="date_fin"]');
+                        if (dateFinInput) {
+                            dateFinInput.setAttribute('required', '');
+                        }
+                    }
+                }
+            } else if (type === 'CONFERENCE') {
+                if (fields.conference) {
+                    fields.conference.style.display = 'block';
+                    const titreEvenementInput = document.querySelector('#conference_fields input[name="titre_evenement"]');
+                    if (titreEvenementInput) {
+                        titreEvenementInput.setAttribute('required', '');
+                    }
+                }
+            }
+        }
+    
+        // Initial call to toggleFields
+        if (typeEvenementSelect) {
+            toggleFields();
+            // Attach toggleFields to the change event
+            typeEvenementSelect.addEventListener('change', toggleFields);
+        }
+    
+        // Main form submission validation
+        const mainForm = document.querySelector('form');
+        if (mainForm) {
+            mainForm.addEventListener('submit', function(event) {
+                const type = typeEvenementSelect.value;
+                const dateDebutInput = document.querySelector('input[name="date_debut"]');
+                const dateFinInput = document.querySelector('input[name="date_fin"]');
+    
+                // Multiday event validation
+                if (MULTI_DAY_EVENTS.includes(type) && dateFinInput) {
+                    const dateDebut = new Date(dateDebutInput.value);
+                    const dateFin = new Date(dateFinInput.value);
+    
+                    if (dateFin < dateDebut) {
+                        alert('La date de fin doit être postérieure à la date de début');
+                        event.preventDefault();
+                    }
+                }
+    
+                // Basic form validity check
+                 if (!this.checkValidity()) {
+                     alert('Veuillez remplir tous les champs requis.');
+                     event.preventDefault(); // Stop the form from submitting
+                 }
+            });
+        }
+    
+        // Quick add form handling
+        const quickAddForms = document.querySelectorAll('.quick-add-form form');
+        quickAddForms.forEach(form => {
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+    
+                const formData = new FormData(this);
+    
+                // Basic form validity check
+                if (!this.checkValidity()) {
+                    alert('Please fill in all required fields.');
                     return;
                 }
-                // Si la réponse n'est pas ok, essayer de lire le message d'erreur
-                return response.json().then(data => {
-                    throw new Error(data.error || 'Une erreur est survenue');
-                });
-            })
-            .catch(error => {
-                
-                console.error('Erreur:', error);
-                if (error.message.includes('SyntaxError')) {
-                    // Si l'ajout a réussi mais la réponse n'est pas du JSON
-                    window.location.reload();
-                } else {
-                    alert(error.message);
-                }
+    
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                    }
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network error');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            // Reload the page if successful
+                            window.location.reload();
+                        } else {
+                            alert(data.error || 'An error occurred');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while adding the course');
+                    });
             });
         });
-
-        // Mettre à jour automatiquement le professeur quand une matière est sélectionnée
-        const matiereSelect = form.querySelector('select[name="matiere"]');
-        if (matiereSelect) {
-            matiereSelect.addEventListener('change', function() {
-                const selectedOption = this.options[this.selectedIndex];
-                if (selectedOption && selectedOption.dataset.professeur) {
-                    const professeurId = selectedOption.dataset.professeur;
-                    const formData = new FormData(this.closest('form'));
-                    formData.set('professeur', professeurId);
-                }
-            });
+    
+        // Date filtering function
+        window.filterByDate = function() {
+            const dateFilter = document.getElementById('date-filter').value;
+            if (dateFilter) {
+                window.location.href = `?promotion={{ promotion_selected }}&date_debut=${dateFilter}`;
+            }
+        };
+    
+        // Initializing the date filter
+        const dateFilterInput = document.getElementById('date-filter');
+        if (dateFilterInput) {
+            dateFilterInput.addEventListener('change', filterByDate);
         }
     });
-});
-
-function filterByDate() {
-    const dateFilter = document.getElementById('date-filter').value;
-    if (dateFilter) {
-        window.location.href = `?promotion={{ promotion_selected }}&date_debut=${dateFilter}`;
-    }
-}
-
+    </script>
+<script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Gérer tous les formulaires d'ajout rapide
-    document.querySelectorAll('.quick-add-form form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Vérifier si tous les champs requis sont remplis
-            if (!this.checkValidity()) {
-                alert('Veuillez remplir tous les champs requis');
-                return;
-            }
+    const typeEvenementSelect = document.getElementById('type_evenement');
+    const professeurField = document.querySelector('.professeur-field');
 
-            // Créer FormData
-            const formData = new FormData(this);
+    function toggleProfesseurField() {
+        const type = typeEvenementSelect.value;
+        // Liste des types d'événements où le champ professeur doit être caché
+        const hideForTypes = ['EXAMEN_PARTIEL', 'EXAMEN_FINAL', 'RATTRAPAGE'];
+        
+        if (hideForTypes.includes(type)) {
+            professeurField.style.display = 'none';
+        } else {
+            professeurField.style.display = 'block';
+        }
+    }
 
-            // Envoi AJAX
-            fetch(this.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Erreur réseau');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    // Recharger la page en cas de succès
-                    window.location.reload();
-                } else {
-                    alert(data.error || 'Une erreur est survenue');
-                }
-            })
-            .catch(error => {
-                console.error('Erreur:', error);
-                alert('Une erreur est survenue lors de l\'ajout du cours');
-            });
-        });
-    });
+    // Appliquer au chargement
+    toggleProfesseurField();
+    
+    // Appliquer au changement
+    typeEvenementSelect.addEventListener('change', toggleProfesseurField);
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const typeEvenementSelect = document.getElementById('type_evenement');
+    const professeurField = document.querySelector('.professeur-field');
+    const matiereField = document.querySelector('.matiere-field');
+
+    function toggleFields() {
+        const type = typeEvenementSelect.value;
+        
+        // Liste des types d'événements où les champs doivent être gérés différemment
+        const hideAllFields = ['FORMATION_MILITAIRE'];
+        const hideProfesseurOnly = ['EXAMEN_PARTIEL', 'EXAMEN_FINAL', 'RATTRAPAGE'];
+        
+        if (hideAllFields.includes(type)) {
+            // Cacher et désactiver tous les champs pour Formation Militaire
+            professeurField.style.display = 'none';
+            matiereField.style.display = 'none';
+            professeurField.querySelector('select').disabled = true;
+            matiereField.querySelector('select').disabled = true;
+        } else if (hideProfesseurOnly.includes(type)) {
+            // Pour les examens : afficher matière mais cacher professeur
+            professeurField.style.display = 'none';
+            matiereField.style.display = 'block';
+            professeurField.querySelector('select').disabled = true;
+            matiereField.querySelector('select').disabled = false;
+        } else {
+            // Pour les autres types : tout afficher
+            professeurField.style.display = 'block';
+            matiereField.style.display = 'block';
+            professeurField.querySelector('select').disabled = false;
+            matiereField.querySelector('select').disabled = false;
+        }
+    }
+
+    // Appliquer au chargement
+    toggleFields();
+    
+    // Appliquer au changement
+    typeEvenementSelect.addEventListener('change', toggleFields);
 });
 </script>
 {% endblock content %}

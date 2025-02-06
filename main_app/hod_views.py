@@ -1405,43 +1405,69 @@ from django.db.models import Q
 def creer_emploi_temps(request):
     if request.method == "POST":
         try:
-            print("Données POST reçues:", request.POST)  # Debug
-            
-            # Récupération des données
             type_evenement = request.POST.get("type_evenement")
             promotion = request.POST.get("promotion")
             date_debut = request.POST.get("date_debut")
-            matiere_id = request.POST.get("matiere")
-            heure_debut = request.POST.get("heure_debut")
-            heure_fin = request.POST.get("heure_fin")
-
-            # Validation
-            if not all([type_evenement, promotion, date_debut, matiere_id, heure_debut, heure_fin]):
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Tous les champs sont requis'
-                })
-
-            # Récupération de la matière
-            matiere = get_object_or_404(Subject, id=matiere_id)
             
-            # Création de l'événement
-            emploi_temps = EmploiTemps.objects.create(
-                niveau=promotion,
-                type_evenement=type_evenement,
-                date=date_debut,
-                date_debut=date_debut,
-                matiere=matiere,
-                professeur=matiere.staff,
-                heure_debut=datetime.strptime(heure_debut, '%H:%M').time(),
-                heure_fin=datetime.strptime(heure_fin, '%H:%M').time()
-            )
+            # Définir clairement les types d'événements
+            EVENEMENTS_AVEC_HORAIRE = ['COURS', 'EXAMEN_PARTIEL', 'EXAMEN_FINAL', 'RATTRAPAGE', 'FORMATION_MILITAIRE', 'CONFERENCE']
+            EVENEMENTS_MULTI_JOURS = ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE']
+            
+            if type_evenement in EVENEMENTS_MULTI_JOURS:
+                date_fin = request.POST.get("date_fin")
+                titre_evenement = request.POST.get("titre_evenement")
+                
+                if not date_fin:
+                    raise ValueError("La date de fin est requise pour ce type d'événement")
+                if not titre_evenement:
+                    raise ValueError("Le titre de l'événement est requis")
+                    
+                emploi_temps = EmploiTemps.objects.create(
+                    niveau=promotion,
+                    type_evenement=type_evenement,
+                    date=date_debut,
+                    date_debut=date_debut,
+                    date_fin=date_fin,
+                    titre_evenement=titre_evenement,  # Important: sauvegarder le titre
+                    matiere=None,
+                    professeur=None,
+                    heure_debut=None,
+                    heure_fin=None
+                )
+            elif type_evenement in EVENEMENTS_AVEC_HORAIRE:
+                heure_debut = request.POST.get("heure_debut")
+                heure_fin = request.POST.get("heure_fin")
+                titre_evenement = request.POST.get("titre_evenement")
+
+                if not (heure_debut and heure_fin):
+                    raise ValueError("Les heures de début et de fin sont requises pour ce type d'événement")
+
+                matiere = None
+                professeur = None
+                
+                # Récupérer la matière et le professeur seulement pour les événements qui en ont besoin
+                if type_evenement not in ['FORMATION_MILITAIRE', 'CONFERENCE']:
+                    matiere_id = request.POST.getlist("matiere")[0]
+                    matiere = get_object_or_404(Subject, id=matiere_id)
+                    professeur = matiere.staff
+
+                emploi_temps = EmploiTemps.objects.create(
+                    niveau=promotion,
+                    type_evenement=type_evenement,
+                    date=date_debut,
+                    date_debut=date_debut,
+                    matiere=matiere,
+                    professeur=professeur,
+                    titre_evenement=titre_evenement,
+                    heure_debut=datetime.strptime(heure_debut, '%H:%M').time(),
+                    heure_fin=datetime.strptime(heure_fin, '%H:%M').time()
+                )
 
             # Retourner une réponse JSON pour les requêtes AJAX
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'success': True})
             
-            messages.success(request, "Cours programmé avec succès")
+            messages.success(request, "Événement programmé avec succès")
             return redirect(f"{reverse('creer_emploi_temps')}?promotion={promotion}")
 
         except Exception as e:
