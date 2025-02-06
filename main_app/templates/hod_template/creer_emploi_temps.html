@@ -1918,19 +1918,33 @@
                         </div>
                     </div>
     
-                    <div id="horaire_fields" style="display:none;">
-{% for horaire in heures_possibles %}
+                    <div id="horaire_fields">
     <div class="row">
         <div class="col-md-6">
-            <label for="heure_debut">Heure de début:</label>
-            <input type="time" name="heure_debut" class="form-control" min="{{ horaire.debut }}" max="{{ horaire.debut }}">
+            <div class="form-group">
+                <label for="heure_debut">Heure de début :</label>
+                <input type="time" 
+                       name="heure_debut" 
+                       id="heure_debut" 
+                       class="form-control" 
+                       min="07:00" 
+                       max="19:00" 
+                       required>
+            </div>
         </div>
         <div class="col-md-6">
-            <label for="heure_fin">Heure de fin:</label>
-            <input type="time" name="heure_fin" class="form-control" min="{{ horaire.debut }}" max="{{ horaire.fin }}">
+            <div class="form-group">
+                <label for="heure_fin">Heure de fin :</label>
+                <input type="time" 
+                       name="heure_fin" 
+                       id="heure_fin" 
+                       class="form-control" 
+                       min="07:00" 
+                       max="19:00" 
+                       required>
+            </div>
         </div>
     </div>
-{% endfor %}
 </div>
 
 

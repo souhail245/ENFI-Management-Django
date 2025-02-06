@@ -10,10 +10,13 @@
             {{ session.heure_debut|time:"H:i" }} - {{ session.heure_fin|time:"H:i" }}
         </div>
         <div class="event-title">
-            {% if session.matiere %}
+            {% if session.type_evenement == 'COURS' and session.matiere %}
                 {{ session.matiere.name }}
             {% else %}
-                {{ session.titre_evenement }}
+                {{ session.get_type_evenement_display }}
+                {% if session.titre_evenement %}
+                    - {{ session.titre_evenement }}
+                {% endif %}
             {% endif %}
         </div>
         {% if session.professeur %}
@@ -176,5 +179,20 @@
     transition: all 0.2s ease;
     font-size: 14px;  /* Modifier la taille ici */
     border: 1px solid black;
+}
+
+.event-cell.event-examen_partiel {
+    background-color: #ffeeba;
+    border-color: #ffc107;
+}
+
+.event-cell.event-examen_final {
+    background-color: #f8d7da;
+    border-color: #dc3545;
+}
+
+.event-cell.event-rattrapage {
+    background-color: #d1ecf1;
+    border-color: #17a2b8;
 }
 </style>
