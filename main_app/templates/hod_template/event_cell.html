@@ -114,197 +114,179 @@
 </div>
 
 <style>
+    .full-day-event {
+        padding: 10px;
+        border-radius: 4px;
+        margin: 5px 0;
+        background-color: #ffffff;
+        border-left: 4px solid;
+    }
+
+    .full-day-event .event-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .full-day-event .event-type {
+        color: #0f0f0f;
+        font-size: 0.9em;
+    }
+
+    .full-day-event .event-title {
+        color: #000;
+        font-weight: 600;
+        font-size: 1.1em;
+    }
+
+    .full-day-event .event-dates {
+        color: #ffffff;
+        font-size: 0.9em;
+        font-style: italic;
+    }
+
+    /* Couleurs spécifiques pour chaque type d'événement */
+    .full-day-event[data-event-type="TOURNEE"] { border-left-color: #2196F3; }
+    .full-day-event[data-event-type="SORTIE"] { border-left-color: #4CAF50; }
+    .full-day-event[data-event-type="PROJET"] { border-left-color: #FFC107; }
+    .full-day-event[data-event-type="VISITE_MILITAIRE"] { border-left-color: #9C27B0; }
+    .full-day-event[data-event-type="VACANCES"] { border-left-color: #E91E63; }
+    .full-day-event[data-event-type="JOUR_FERIE"] { border-left-color: #FF5722; }
+
+
 .time-slot {
-    width: 100%;
-    height: 100px;
-    position: relative;
-    border: 1px solid #ddd;
-    margin-bottom: 10px;
-    overflow: hidden; /* Ajout important pour cacher le débordement */
+width: 100%;
+height: 100px;
+position: relative;
+border: 1px solid #ddd;
+margin-bottom: 10px;
+overflow: hidden;
 }
 
 .hours-header {
-    display: flex;
-    position: absolute;
-    top: -20px;
-    left: 0;
-    right: 0;
-    height: 20px;
-    white-space: nowrap; /* Empêche le passage à la ligne */
+display: flex;
+position: absolute;
+top: -20px;
+left: 0;
+right: 0;
+height: 20px;
+white-space: nowrap;
 }
 
 .hour-marker {
-    flex: 1;
-    text-align: center;
-    font-size: 10px; /* Taille de la police réduite */
-    color: #666;
-    border-left: 1px solid #ddd;
-    overflow: hidden;        /* Ajout important */
-    text-overflow: ellipsis;  /* Ajout important */
-    width: 10%;              /* Ajout important, ajuste la largeur de chaque marqueur */
+flex: 1;
+text-align: center;
+font-size: 10px;
+color: #666;
+border-left: 1px solid #ddd;
+overflow: hidden;
+text-overflow: ellipsis;
+width: 10%;
 }
 
 .events-container {
-    position: relative;
-    height: 100%;
+position: relative;
+height: 100%;
 }
 
 .event {
-    position: absolute;
-    height: 80%;
-    top: 10%;
-    background-color: #3498db;
-    color: white;
-    padding: 4px;
-    border-radius: 4px;
-    font-size: 18px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+position: absolute;
+height: 80%;
+top: 10%;
+background-color: #3498db;
+color: white;
+padding: 4px;
+border-radius: 4px;
+font-size: 18px;
+overflow: hidden;
+white-space: nowrap;
+text-overflow: ellipsis;
 }
 
-/* Pour les noms longs de matière */
 .event-title {
-    font-weight: bold;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+font-weight: bold;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
 }
 
-/* Pour les noms longs de professeur */
 .event-prof {
-    font-size: 10px;
-    color: #666;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+font-size: 12px;
+color: #0c0c0c;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
 }
+
+/* Style pour les événements de type "COURS", "EXAMEN_PARTIEL", etc. */
 .event-cell {
-    position: absolute;
-    height: 70px !important;  /* Hauteur fixe plus petite */
-    top: 5px;  /* Centrage vertical */
-    background: white;
-    border-radius: 4px;
-    padding: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    overflow: hidden;
-    z-index: 2;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 14px;  /* Modifier la taille ici */
-    border: 1px solid black;
+position: absolute;
+height: 70px !important;
+top: 5px;
+background: rgb(228, 223, 223);
+border-radius: 4px;
+padding: 4px;
+box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+overflow: hidden;
+z-index: 2;
+cursor: pointer;
+transition: all 0.2s ease;
+font-size: 14px;
+border: 1px solid rgb(0, 0, 0);
 }
 
 .event-cell.event-examen_partiel {
-    background-color: #ffeeba;
-    border-color: #ffc107;
+background-color: #90f362;
+border-color: #184d00;
 }
 
 .event-cell.event-examen_final {
-    background-color: #f8d7da;
-    border-color: #dc3545;
+background-color: #fc7582;
+border-color: #f73a4d;
 }
 
 .event-cell.event-rattrapage {
-    background-color: #d1ecf1;
-    border-color: #17a2b8;
+background-color: #a8a0f5;
+border-color: #091072;
 }
 
-/* Ajouter les styles spécifiques pour les conférences */
-.event-cell.event-conference {
-    background-color: #9C27B0;
-    color: white;
-    border: 1px solid #7B1FA2;
-}
-
-.event-cell.event-conference .event-title {
-    font-size: 12px;
-    line-height: 1.2;
-}
-
-.event-cell.event-conference strong {
-    font-size: 11px;
-    color: #E1BEE7;
-    display: inline-block;
-    margin-bottom: 2px;
-}
-
-.event-info {
-    margin: 2px 0;
-    font-size: 12px;
-    line-height: 1.3;
-}
-
-.event-type {
-    display: block;
-    color: #666;
-    font-size: 11px;
-    margin-bottom: 2px;
-}
-
-.event-title {
-    display: block;
-    font-weight: bold;
-    margin: 2px 0;
-}
-
-.event-matiere {
-    display: block;
-    font-style: italic;
-    color: #555;
-    font-size: 11px;
-}
-
-.event-details {
-    font-size: 10px;
-    color: #666;
-    margin-top: 2px;
-}
-
+/* Style pour les événements qui occupent toute la cellule (SORTIE, TOURNEE, VISITE_MILITAIRE) */
 .full-day-event {
-    background: #f8f9fa;
-    padding: 10px;
-    border-radius: 8px;
-    margin: 5px 0;
-    border-left: 4px solid;
-}
-
-.event-header {
-    margin-bottom: 8px;
-}
-
-.full-day-event .event-type {
-    display: inline-block;
-    font-size: 0.9em;
-    color: #666;
-    margin-bottom: 4px;
+width: 100%; /* Occupe toute la largeur */
+height: 100px; /* Occupe toute la hauteur de la cellule (ajuster si nécessaire) */
+display: flex; /* Utilise Flexbox */
+flex-direction: column; /* Aligne les éléments verticalement */
+justify-content: center; /* Centre verticalement */
+align-items: center; /* Centre horizontalement */
+text-align: center; /* Centre le texte */
+background-color: #313131; /* Couleur de fond (ajuster) */
+border: 1px solid #111111; /* Bordure (ajuster) */
+border-radius: 5px; /* Bordure arrondie (ajuster) */
+font-size: 16px; /* Taille de la police (ajuster) */
+font-weight: bold; /* Texte en gras (ajuster) */
+color: #131212; /* Couleur du texte (ajuster) */
+box-sizing: border-box; /* Important pour que padding et border n'affectent pas la largeur */
 }
 
 .full-day-event .event-title {
-    font-size: 1.1em;
-    font-weight: 600;
-    color: #000;
-    margin: 4px 0;
+font-size: 1.2em; /* Augmente légèrement la taille du titre */
+margin-bottom: 5px; /* Ajoute un peu d'espace en dessous du titre */
 }
 
-.full-day-event .event-dates {
-    font-size: 0.8em;
-    color: #666;
-    font-style: italic;
+.full-day-event .event-type {
+font-size: 0.9em; /* Réduit légèrement la taille du type d'événement */
+color: #ffffff; /* Couleur du type d'événement (ajuster) */
 }
 
-/* Styles spécifiques pour chaque type d'événement */
-.event-tournee { border-left-color: #2196F3; }
-.event-sortie { border-left-color: #4CAF50; }
-.event-projet { border-left-color: #FFC107; }
-.event-visite_militaire { border-left-color: #9C27B0; }
-.event-conference { border-left-color: #E91E63; }
+.full-day-event .delete-event {
+position: absolute;
+top: 5px;
+right: 5px;
+color: #ff0000;
+cursor: pointer;
+}
 
-/* Styles spécifiques pour chaque type d'événement */
-.event-cell.event-cours { border-left: 4px solid #2196F3; }
-.event-cell.event-examen_partiel { border-left: 4px solid #FFC107; }
-.event-cell.event-examen_final { border-left: 4px solid #F44336; }
-.event-cell.event-rattrapage { border-left: 4px solid #4CAF50; }
-.event-cell.event-formation_militaire { border-left: 4px solid #795548; }
-.event-cell.event-conference { border-left: 4px solid #9C27B0; }
+.full-day-event .delete-event:hover {
+color: #ff0000;
+}
 </style>

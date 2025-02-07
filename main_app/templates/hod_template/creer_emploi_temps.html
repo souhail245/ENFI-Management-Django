@@ -258,6 +258,7 @@
     .quick-add-form {
         display: none;
         padding: 5px;
+        
     }
     
     td:hover .quick-add-form {
@@ -265,13 +266,14 @@
     }
     
     .quick-add-form select {
-        font-size: 12px;
-        width: 100%;
-        margin-bottom: 5px;
+      padding: 5px 5px; /* Rembourrage (haut/bas, gauche/droite) */
+      font-size: 12px; /* Taille de la police */
+      width: 200px; 
+      height: 30px;
     }
     
     .quick-add-form button {
-        width: 100%;
+        width: 50%;
         padding: 2px;
     }
 
@@ -658,18 +660,16 @@
 
 /* Style des boutons */
 .btn-primary {
-    background: #2563eb;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    font-weight: 500;
-    border-radius: 8px;
-    transition: all 0.2s ease;
+    background: #eb5d25;
+    
 }
 
 .btn-primary:hover {
     background: #1d4ed8;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    padding: 5px 5px; /* Rembourrage (haut/bas, gauche/droite) */
+    font-size: 10px; /* Taille de la police */
+    width: 30px; 
+    height: 30px;
 }
 
 /* Types d'événements améliorés */
@@ -1585,7 +1585,7 @@
 }
 
 .event-tournee { background: linear-gradient(90deg, rgba(25, 118, 210, 0.7), rgba(33, 150, 243, 0.7)); }
-.event-sortie { background: linear-gradient(90deg, rgba(156, 39, 176, 0.7), rgba(224, 64, 251, 0.7)); }
+.event-sortie { background: linear-gradient(90deg, rgba(84, 110, 122, 0.7), rgba(120, 144, 156, 0.7)); }
 .event-projet { background: linear-gradient(90deg, rgba(245, 124, 0, 0.7), rgba(255, 167, 38, 0.7)); }
 .event-visite_militaire { background: linear-gradient(90deg, rgba(84, 110, 122, 0.7), rgba(120, 144, 156, 0.7)); }
 .event-formation_militaire { background: linear-gradient(90deg, rgba(46, 125, 50, 0.7), rgba(67, 160, 71, 0.7)); }
@@ -1596,7 +1596,7 @@
     position: relative;
     height: 100px;
     padding: 0 !important;
-    background: #fff;
+    background: #bbbaba;
     overflow: hidden;
 }
 .date-header {
@@ -1695,7 +1695,7 @@
     position: absolute;
     height: 70px !important;  /* Hauteur fixe plus petite */
     top: 5px;  /* Centrage vertical */
-    background: white;
+    background: rgb(105, 104, 104);
     border-radius: 4px;
     padding: 4px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -1714,8 +1714,8 @@
 }
 
 .event-time {
-    font-size: 10px;
-    color: #666;
+    font-size: 14px;
+    color: #111111;
     margin-bottom: 2px;
 }
 
@@ -1728,8 +1728,8 @@
 }
 
 .event-details {
-    font-size: 10px;
-    color: #666;
+    font-size: 12px;
+    color: #111111;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1739,8 +1739,8 @@
     position: absolute;
     top: 2px;
     right: 2px;
-    font-size: 10px;
-    opacity: 0.7;
+    font-size: 12px;
+    opacity: 0.8;
 }
 
 .delete-event:hover {
@@ -1831,14 +1831,7 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <div class="form-group professeur-field">
-                            <label for="professeur">Professeur :</label>
-                            <select name="professeur" class="form-control">
-                                {% for prof in professeurs %}
-                                    <option value="{{ prof.id }}">{{ prof }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+
                     </div>
                 </div>
             </div>
@@ -1976,182 +1969,129 @@
         <label for="date-filter">Filtrer par date :</label>
         <input type="date" id="date-filter" class="form-control" onchange="filterByDate()">
     </div>
-
-    <!-- Aperçu du calendrier -->
     <div class="timetable-section">
-        <!-- Ajouter ce bloc de code juste avant calendar-header -->
-        
-
         <div class="calendar-header">
             <h4>Planning des 14 prochains jours - {{ promotion_selected }}</h4>
             <strong>Du {{ date_debut|date:"d/m/Y" }} au {{ date_fin|date:"d/m/Y" }}</strong>
         </div>
-
-        <!-- Remplacer la section du tableau par ce code -->
-<div class="table-responsive">
-    <table class="calendar">
-        <thead>
-            <tr>
-                <th class="date-header" style="width: 120px;">Date</th>
-                <th class="timeline-header">Planning journalier</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for date in dates %}
-            <tr>
-                <td class="date-cell">
-                    <strong>{{ date|date:"d/m/Y" }}</strong><br>
-                    <small>{{ date|date:"l"|capfirst }}</small>
-                </td>
-                <td class="planning-cell">
-                    <div class="timeline-container">
-                        {% with day_events=sessions_by_date|get_dict_item:date %}
-                            {% if day_events.full_day %}
-                                <div class="full-day-event">
-                                    <!-- Événement sur toute la journée -->
-                                    <div class="event-content full-day">
-                                        <strong>{{ day_events.full_day.titre_evenement }}</strong>
-                                        <span class="event-type">{{ day_events.full_day.get_type_evenement_display }}</span>
-                                    </div>
+    
+        <div class="calendar-container">
+            <div class="table-responsive">
+                <table class="calendar">
+                    <thead>
+                        <tr>
+                            <th class="date-header">Date</th>
+                            <th class="timeline-header">Planning journalier</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for date in dates %}
+                        <tr>
+                            <td class="date-cell">
+                                <strong>{{ date|date:"d/m/Y" }}</strong><br>
+                                <small>{{ date|date:"l"|capfirst }}</small>
+                            </td>
+                            <td class="planning-cell">
+                                <div class="timeline-container">
+                                    {% with day_events=sessions_by_date|get_dict_item:date %}
+                                        {% if day_events.full_day %}
+                                            <div class="full-day-event">
+                                                <div class="event-content full-day">
+                                                    <strong>{{ day_events.full_day.titre_evenement }}</strong>
+                                                    <span class="event-type">{{ day_events.full_day.get_type_evenement_display }}</span>
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <div class="events-container">
+                                                {% for event in day_events %}
+                                                    {% include "hod_template/event_cell.html" with session=event %}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    {% endwith %}
                                 </div>
-                            {% else %}
-                                <div class="events-container">
-                                    {% for event in day_events %}
-                                        {% include "hod_template/event_cell.html" with session=event %}
-                                    {% endfor %}
-                                    <!-- Ajout du formulaire rapide -->
-                                    <div class="quick-add-form">
-    <form method="POST" action="{% url 'creer_emploi_temps' %}" class="inline-form">
-        {% csrf_token %}
-        <input type="hidden" name="type_evenement" value="COURS">
-        <input type="hidden" name="promotion" value="{{ promotion_selected }}">
-        <input type="hidden" name="date_debut" value="{{ date|date:'Y-m-d' }}">
-        
-        <div class="row g-2">
-            <div class="col-12">
-                <select name="matiere" class="form-control form-control-sm" required>
-                    <option value="">Choisir une matière</option>
-                    {% for subject in subjects %}
-                        <option value="{{ subject.id }}">{{ subject.name }}</option>
-                    {% endfor %}
-                </select>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-            <div class="col-6">
-                <input type="time" name="heure_debut" class="form-control form-control-sm" 
-                       min="08:00" max="18:00" required>
-            </div>
-            <div class="col-6">
-                <input type="time" name="heure_fin" class="form-control form-control-sm" 
-                       min="08:00" max="18:00" required>
-            </div>
-            <div class="col-12">
-                <button type="submit" class="btn btn-primary btn-sm w-100">
-                    <i class="fas fa-plus"></i> Ajouter
-                </button>
-            </div>
-        </div>
-    </form>
-</div>
-
-                                </div>
-                            {% endif %}
-                        {% endwith %}
-                    </div>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
 
 <style>
-.planning-cell {
-    position: relative;
-    height: 100px;
-    padding: 0 !important;
-}
+    .planning-cell {
+        position: relative;
+        height: 100px;
+        padding: 0 !important;
+    }
+    
+    .timeline-container {
+        position: relative;
+        height: 100%;
+        background: repeating-linear-gradient(
+            to right,
+            #f5f5f5 0px,
+            #f5f5f5 1px,
+            transparent 1px,
+            transparent calc(100% / 10)
+        );
+    }
+    
+    
+    .full-day {
+        height: 100%;
+        background: #f8f9fa;
+        padding: 8px;
+        border-left: 4px solid #4a5568;
+    }
+    
+    .event-content {
+        font-size: 11px;
+        line-height: 1.2;
+    }
+    
+    
+    .quick-add-form {
+        display: none;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 5px;
+        border-top: 1px solid #ddd;
+        z-index: 10;
+        
+    }
+   
+    
+    .planning-cell:hover .quick-add-form {
+        display: block;
+    }
+    
+    .inline-form {
+        display: flex;
+        gap: 5px;
+    }
+    
+    .form-row {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+    }
+    
+    .form-control-sm {
+        font-size: 12px;
+        padding: 2px 5px;
+        height: auto;
+    }
+    
+    .btn-sm {
+        padding: 2px 8px;
+        font-size: 12px;
+    }
+    </style>
 
-.timeline-container {
-    position: relative;
-    height: 100%;
-    background: repeating-linear-gradient(
-        to right,
-        #f5f5f5 0px,
-        #f5f5f5 1px,
-        transparent 1px,
-        transparent calc(100% / 10)
-    );
-}
-
-.event-cell {
-    position: absolute;
-    height: 80%;
-    top: 10%;
-    background: white;
-    border-radius: 4px;
-    padding: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    overflow: hidden;
-    z-index: 2;
-}
-
-.full-day {
-    height: 100%;
-    background: #f8f9fa;
-    padding: 8px;
-    border-left: 4px solid #4a5568;
-}
-
-.event-content {
-    font-size: 11px;
-    line-height: 1.2;
-}
-
-.event-time {
-    font-size: 10px;
-    color: #666;
-    margin-bottom: 2px;
-}
-
-.quick-add-form {
-    display: none;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(255, 255, 255, 0.95);
-    padding: 5px;
-    border-top: 1px solid #ddd;
-    z-index: 10;
-}
-
-.planning-cell:hover .quick-add-form {
-    display: block;
-}
-
-.inline-form {
-    display: flex;
-    gap: 5px;
-}
-
-.form-row {
-    display: flex;
-    gap: 5px;
-    align-items: center;
-}
-
-.form-control-sm {
-    font-size: 12px;
-    padding: 2px 5px;
-    height: auto;
-}
-
-.btn-sm {
-    padding: 2px 8px;
-    font-size: 12px;
-}
-</style>
-
+    
     </div>
 </div>
 
