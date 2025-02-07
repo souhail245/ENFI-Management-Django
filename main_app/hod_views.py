@@ -1409,6 +1409,8 @@ def creer_emploi_temps(request):
             type_evenement = request.POST.get("type_evenement")
             date_debut = request.POST.get("date_debut")
             
+            # Récupérer la matière (une seule valeur)
+            matiere_id = request.POST.get("matiere")
             # Récupérer le titre de l'événement selon le type
             titre_evenement = None
             if type_evenement == 'TOURNEE':
@@ -1459,8 +1461,10 @@ def creer_emploi_temps(request):
                 if not (heure_debut and heure_fin):
                     raise ValueError("Les heures de début et de fin sont requises pour ce type d'événement")
 
-                matiere_id = request.POST.get("matiere")
-                matiere = get_object_or_404(Subject, id=matiere_id)
+                if matiere_id:
+                    matiere = get_object_or_404(Subject, id=matiere_id)
+                else:
+                    matiere = None
 
                 # Gestion spécifique pour FORMATION_MILITAIRE
                 if type_evenement == 'FORMATION_MILITAIRE':
@@ -1665,7 +1669,7 @@ def liste_emplois(request):
             (Q(date__range=[date_debut, date_fin])) |
             # Pour les événements multi-jours
             (
-                (Q(date_debut__lte=date_fin) if date_debut else Q(pk__in=[])) &
+                (Q(date_debut__lte=date_fin) if date_debut else Q(pk__in=   [])) &
                 (Q(date_fin__gte=date_debut) if date_fin else Q(pk__in=[])) &
                 Q(type_evenement__in=['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE', 'VACANCES', 'JOUR_FERIE'])
             )

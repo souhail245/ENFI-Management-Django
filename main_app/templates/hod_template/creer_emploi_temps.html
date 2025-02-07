@@ -1823,16 +1823,17 @@
 
                     <!-- Matière et Professeur (dans le même bloc) -->
                     <div id="cours_examens_fields">
-                        <div class="form-group matiere-field">
-                            <label for="matiere">Matière :</label>
-                            <select name="matiere" class="form-control" required>
-                                {% for subject in subjects %}
-                                    <option value="{{ subject.id }}">{{ subject.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+    <div class="form-group matiere-field">
+        <label for="matiere">Matière :</label>
+        <select name="matiere" id="matiere-select" class="form-control">
+            <option value="">Choisir une matière</option>
+            {% for subject in subjects %}
+                <option value="{{ subject.id }}">{{ subject.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
 
-                    </div>
                 </div>
             </div>
 
@@ -2386,7 +2387,7 @@
             dateFilterInput.addEventListener('change', filterByDate);
         }
     });
-    </script>
+</script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const typeEvenementSelect = document.getElementById('type_evenement');
@@ -2450,6 +2451,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Appliquer au changement
     typeEvenementSelect.addEventListener('change', toggleFields);
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Désactiver les autres sélecteurs de matière s'ils existent
+    const otherSelects = document.querySelectorAll('select[name="matiere"]:not(#matiere-select)');
+    otherSelects.forEach(select => {
+        select.disabled = true;
+    });
 });
 </script>
 {% endblock content %}
