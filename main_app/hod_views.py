@@ -1409,31 +1409,48 @@ def creer_emploi_temps(request):
             promotion = request.POST.get("promotion")
             date_debut = request.POST.get("date_debut")
             
-            # Définir clairement les types d'événements
+            # Récupérer le titre de l'événement selon le type
+            titre_evenement = None
+            if type_evenement == 'TOURNEE':
+                titre_evenement = request.POST.get("titre_evenement_tournee")
+            elif type_evenement == 'SORTIE':
+                titre_evenement = request.POST.get("titre_evenement_sortie")
+            elif type_evenement == 'PROJET':
+                titre_evenement = request.POST.get("titre_evenement_projet")
+            elif type_evenement == 'VISITE_MILITAIRE':
+                titre_evenement = request.POST.get("titre_evenement")
+            elif type_evenement == 'CONFERENCE':
+                titre_evenement = request.POST.get("titre_evenement")
+            
+            # Si aucun titre spécifique n'est trouvé, utiliser le champ générique
+            if not titre_evenement:
+                titre_evenement = request.POST.get("titre_evenement")
+
+            # Définir les types d'événements
             EVENEMENTS_AVEC_HORAIRE = ['COURS', 'EXAMEN_PARTIEL', 'EXAMEN_FINAL', 'RATTRAPAGE', 'FORMATION_MILITAIRE', 'CONFERENCE']
             EVENEMENTS_MULTI_JOURS = ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE']
             
             if type_evenement in EVENEMENTS_MULTI_JOURS:
                 date_fin = request.POST.get("date_fin")
-                titre_evenement = request.POST.get("titre_evenement")
                 
                 if not date_fin:
                     raise ValueError("La date de fin est requise pour ce type d'événement")
                 if not titre_evenement:
-                    raise ValueError("Le titre de l'événement est requis")
-                    
+                    raise ValueError(f"Le titre est requis pour un événement de type {type_evenement}")
+
                 emploi_temps = EmploiTemps.objects.create(
                     niveau=promotion,
                     type_evenement=type_evenement,
                     date=date_debut,
                     date_debut=date_debut,
                     date_fin=date_fin,
-                    titre_evenement=titre_evenement,  # Important: sauvegarder le titre
+                    titre_evenement=titre_evenement,
                     matiere=None,
                     professeur=None,
                     heure_debut=None,
                     heure_fin=None
                 )
+                
             elif type_evenement in EVENEMENTS_AVEC_HORAIRE:
                 heure_debut = request.POST.get("heure_debut")
                 heure_fin = request.POST.get("heure_fin")
@@ -1442,14 +1459,10 @@ def creer_emploi_temps(request):
                 if not (heure_debut and heure_fin):
                     raise ValueError("Les heures de début et de fin sont requises pour ce type d'événement")
 
-                matiere = None
-                professeur = None
-                
-                # Récupérer la matière et le professeur seulement pour les événements qui en ont besoin
-                if type_evenement not in ['FORMATION_MILITAIRE', 'CONFERENCE']:
-                    matiere_id = request.POST.getlist("matiere")[0]
-                    matiere = get_object_or_404(Subject, id=matiere_id)
-                    professeur = matiere.staff
+                matiere_id = request.POST.get("matiere")
+                matiere = Subject.objects.get(id=matiere_id)
+                professeur_id = request.POST.get("professeur")
+                professeur = Staff.objects.get(id=professeur_id)
 
                 emploi_temps = EmploiTemps.objects.create(
                     niveau=promotion,

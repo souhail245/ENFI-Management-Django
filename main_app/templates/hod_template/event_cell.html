@@ -5,25 +5,26 @@
         <div class="event-cell event-{{ session.type_evenement|lower }}"
              style="position: absolute;
                     left: {% widthratio session.get_left_position 1 1 %}%;
-                    width: {% widthratio session.get_width 1 1 %}%;"
-        >
+                    width: {% widthratio session.get_width 1 1 %}%;">
             <div class="event-time">
                 {{ session.heure_debut|time:"H:i" }} - {{ session.heure_fin|time:"H:i" }}
             </div>
             <div class="event-info">
                 <strong class="event-type">[{{ session.get_type_evenement_display }}]</strong>
-                {% if session.titre_evenement %}
-                    <span class="event-title">{{ session.titre_evenement }}</span>
+                {% if session.type_evenement == 'CONFERENCE' %}
+                    <div class="event-title">{{ session.titre_evenement }}</div>
+                {% else %}
+                    {% if session.titre_evenement %}
+                        <div class="event-title">{{ session.titre_evenement }}</div>
+                    {% endif %}
+                    {% if session.matiere %}
+                        <div class="event-matiere">{{ session.matiere.name }}</div>
+                    {% endif %}
                 {% endif %}
-                {% if session.matiere %}
-                    <span class="event-matiere">{{ session.matiere.name }}</span>
+                {% if session.professeur and session.type_evenement != 'CONFERENCE' %}
+                    <div class="event-details">{{ session.professeur.admin.get_full_name }}</div>
                 {% endif %}
             </div>
-            {% if session.professeur and session.type_evenement != 'CONFERENCE' %}
-                <div class="event-details">
-                    {{ session.professeur.admin.get_full_name }}
-                </div>
-            {% endif %}
             <a href="{% url 'supprimer_evenement' session.id %}"
                class="delete-event"
                onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');">
@@ -31,16 +32,18 @@
             </a>
         </div>
     {% else %}
-        <div class="full-day-event">
+        <div class="full-day-event event-{{ session.type_evenement|lower }}">
             <div class="event-info">
-                <strong class="event-type">[{{ session.get_type_evenement_display }}]</strong>
-                {% if session.titre_evenement %}
-                    <span class="event-title">"{{ session.titre_evenement }}"</span>
-                {% endif %}
+                <div class="event-header">
+                    <strong class="event-type">[{{ session.get_type_evenement_display }}]</strong>
+                    {% if session.titre_evenement %}
+                        <div class="event-title">{{ session.titre_evenement }}</div>
+                    {% endif %}
+                </div>
                 {% if session.date_debut and session.date_fin %}
-                    <span class="event-dates">
+                    <div class="event-dates">
                         Du {{ session.date_debut|date:"d/m/Y" }} au {{ session.date_fin|date:"d/m/Y" }}
-                    </span>
+                    </div>
                 {% endif %}
             </div>
             <a href="{% url 'supprimer_evenement' session.id %}"
@@ -49,47 +52,6 @@
                 <i class="fas fa-times"></i>
             </a>
         </div>
-
-        <style>
-            .full-day-event {
-                padding: 10px;
-                border-radius: 4px;
-                margin: 5px 0;
-                background-color: #f8f9fa;
-                border-left: 4px solid;
-            }
-
-            .full-day-event .event-info {
-                display: flex;
-                flex-direction: column;
-                gap: 4px;
-            }
-
-            .full-day-event .event-type {
-                color: #495057;
-                font-size: 0.9em;
-            }
-
-            .full-day-event .event-title {
-                color: #000;
-                font-weight: 600;
-                font-size: 1.1em;
-            }
-
-            .full-day-event .event-dates {
-                color: #6c757d;
-                font-size: 0.8em;
-                font-style: italic;
-            }
-
-            /* Couleurs spécifiques pour chaque type d'événement */
-            .full-day-event[data-event-type="TOURNEE"] { border-left-color: #2196F3; }
-            .full-day-event[data-event-type="SORTIE"] { border-left-color: #4CAF50; }
-            .full-day-event[data-event-type="PROJET"] { border-left-color: #FFC107; }
-            .full-day-event[data-event-type="VISITE_MILITAIRE"] { border-left-color: #9C27B0; }
-            .full-day-event[data-event-type="VACANCES"] { border-left-color: #E91E63; }
-            .full-day-event[data-event-type="JOUR_FERIE"] { border-left-color: #FF5722; }
-        </style>
     {% endif %}
 {% endif %}
 
@@ -301,17 +263,42 @@
 
 .full-day-event {
     background: #f8f9fa;
-    padding: 8px;
-    border-radius: 4px;
-    margin: 2px;
-    border-left: 4px solid #4a5568;
+    padding: 10px;
+    border-radius: 8px;
+    margin: 5px 0;
+    border-left: 4px solid;
 }
 
-.full-day-event .event-info {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+.event-header {
+    margin-bottom: 8px;
 }
+
+.full-day-event .event-type {
+    display: inline-block;
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.full-day-event .event-title {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #000;
+    margin: 4px 0;
+}
+
+.full-day-event .event-dates {
+    font-size: 0.8em;
+    color: #666;
+    font-style: italic;
+}
+
+/* Styles spécifiques pour chaque type d'événement */
+.event-tournee { border-left-color: #2196F3; }
+.event-sortie { border-left-color: #4CAF50; }
+.event-projet { border-left-color: #FFC107; }
+.event-visite_militaire { border-left-color: #9C27B0; }
+.event-conference { border-left-color: #E91E63; }
 
 /* Styles spécifiques pour chaque type d'événement */
 .event-cell.event-cours { border-left: 4px solid #2196F3; }

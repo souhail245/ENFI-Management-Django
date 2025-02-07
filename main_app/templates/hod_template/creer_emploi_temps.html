@@ -1783,11 +1783,17 @@
 
     <!-- Formulaire de création -->
     <div class="creation-form">
-        <h3>Programmer un événement</h3>
-        <form method="POST" action="{% url 'creer_emploi_temps' %}">
-            {% csrf_token %}
-            <div class="row">
-                <div class="col-md-6">
+    <h3>Programmer un événement</h3>
+    <form method="POST" action="{% url 'creer_emploi_temps' %}">
+        {% csrf_token %}
+        
+        <div class="row">
+            <!-- Colonne gauche : Informations générales et détails du cours -->
+            <div class="col-md-6">
+                <div class="section-block">
+                    <h4 class="section-title">Détails de l'événement</h4>
+                    
+                    <!-- Type d'événement -->
                     <div class="form-group">
                         <label for="type_evenement">Type d'événement :</label>
                         <select name="type_evenement" id="type_evenement" class="form-control" required onchange="toggleFields()">
@@ -1802,7 +1808,8 @@
                             <option value="CONFERENCE">Conférence</option>
                         </select>
                     </div>
-    
+
+                    <!-- Promotion -->
                     <div class="form-group">
                         <label for="promotion">Promotion :</label>
                         <select name="promotion" id="promotion" class="form-control" required>
@@ -1813,161 +1820,156 @@
                             {% endfor %}
                         </select>
                     </div>
-    
-                    <div id="cours_examens_fields">
-    <div class="form-group matiere-field">
-        <label for="matiere">Matière :</label>
-        <select name="matiere" class="form-control" required>
-            {% for subject in subjects %}
-                <option value="{{ subject.id }}">{{ subject.name }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="form-group professeur-field">
-        <label for="professeur">Professeur :</label>
-        <select name="professeur" class="form-control">
-            {% for prof in professeurs %}
-                <option value="{{ prof.id }}">{{ prof }}</option>
-            {% endfor %}
-        </select>
-    </div>
-</div>
 
-    
-                    <div id="ferie_fields" style="display:none;">
-                        <div class="form-group">
-                            <label for="titre_evenement">Nom du jour férié :</label>
-                            <input type="text" name="titre_evenement" class="form-control" placeholder="Ex: Fête du Trône">
+                    <!-- Matière et Professeur (dans le même bloc) -->
+                    <div id="cours_examens_fields">
+                        <div class="form-group matiere-field">
+                            <label for="matiere">Matière :</label>
+                            <select name="matiere" class="form-control" required>
+                                {% for subject in subjects %}
+                                    <option value="{{ subject.id }}">{{ subject.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group professeur-field">
+                            <label for="professeur">Professeur :</label>
+                            <select name="professeur" class="form-control">
+                                {% for prof in professeurs %}
+                                    <option value="{{ prof.id }}">{{ prof }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                     </div>
-    
-                    <div id="rattrapage_fields" style="display:none;">
+                </div>
+            </div>
+
+            <!-- Colonne droite : Planification et événements spécifiques -->
+            <div class="col-md-6">
+                <div class="section-block">
+                    <h4 class="section-title">Planification</h4>
+                    
+                    <!-- Dates -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="date_debut">Date début :</label>
+                                <input type="date" name="date_debut" id="date_debut" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group" id="date_fin_group">
+                                <label for="date_fin">Date fin :</label>
+                                <input type="date" name="date_fin" id="date_fin" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Heures -->
+                    <div id="horaire_fields">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="heure_debut">Heure début :</label>
+                                    <input type="time" name="heure_debut" id="heure_debut" class="form-control" min="07:00" max="19:00" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="heure_fin">Heure fin :</label>
+                                    <input type="time" name="heure_fin" id="heure_fin" class="form-control" min="07:00" max="19:00" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Champs spécifiques pour chaque type d'événement -->
+                <div class="section-block">
+                    <h4 class="section-title">Détails spécifiques</h4>
+                    <div id="tournee_fields" style="display:none;">
                         <div class="form-group">
-                            <label for="matiere_rattrapage">Matière à rattraper :</label>
-                            <select name="matiere" class="form-control">
+                            <label for="titre_evenement_tournee">Nom de la tournée :</label>
+                            <input type="text" name="titre_evenement_tournee" class="form-control" placeholder="Ex: Tournée forestière Ifrane">
+                        </div>
+                    </div>
+
+                    <div id="sortie_fields" style="display:none;">
+                        <div class="form-group">
+                            <label for="titre_evenement_sortie">Nom de la sortie :</label>
+                            <input type="text" name="titre_evenement_sortie" id="titre_evenement_sortie" class="form-control" placeholder="Ex: Sortie géologique">
+                        </div>
+                        <div class="form-group">
+                            <label for="matiere_sortie">Matière concernée :</label>
+                            <select name="matiere" id="matiere_sortie" class="form-control">
                                 {% for subject in subjects %}
                                     <option value="{{ subject.id }}">{{ subject.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
                     </div>
-    
-                    <div id="tournee_fields" style="display:none;">
-                        <div class="form-group">
-                            <label for="titre_evenement_tournee">Nom de la tournée :</label>
-                            <input type="text" 
-                                   name="titre_evenement" 
-                                   id="titre_evenement_tournee"
-                                   class="form-control" 
-                                   placeholder="Ex: Tournée forestière Ifrane"
-                                   required>
-                        </div>
-                    </div>
-    
-                    <div id="sortie_fields" style="display:none;">
-    <div class="form-group">
-        <label for="titre_evenement">Nom de la sortie :</label>
-        <input type="text" name="titre_evenement" class="form-control" placeholder="Ex: Sortie géologique">
-    </div>
-    <div class="form-group">
-        <label for="matiere_sortie">Matière concernée :</label>
-        <select name="matiere" id="matiere_sortie" class="form-control">
-            {% for subject in subjects %}
-                <option value="{{ subject.id }}">{{ subject.name }}</option>
-            {% endfor %}
-        </select>
-    </div>
-</div>
-    
+
                     <div id="projet_fields" style="display:none;">
                         <div class="form-group">
-                            <label for="titre_evenement">Nom du projet :</label>
-                            <input type="text" name="titre_evenement" class="form-control" placeholder="Ex: Projet SIG">
+                            <label for="titre_evenement_projet">Nom du projet :</label>
+                            <input type="text" name="titre_evenement_projet" id="titre_evenement_projet" class="form-control" placeholder="Ex: Projet SIG">
                         </div>
                     </div>
-    
-                    <div id="visite_militaire_fields" style="display:none;">
-                        <div class="form-group">
-                            <label for="titre_evenement">Unité à visiter :</label>
-                            <input type="text" name="titre_evenement" class="form-control" placeholder="Ex: Base militaire de Kénitra">
-                        </div>
-                    </div>
-    
+
                     <div id="conference_fields" style="display:none;">
                         <div class="form-group">
                             <label for="titre_evenement">Nom de la conférence :</label>
                             <input type="text" name="titre_evenement" class="form-control" placeholder="Ex: Conférence sur le changement climatique">
                         </div>
                     </div>
-                </div>
-    
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="date_debut">Date début :</label>
-                        <input type="date" name="date_debut" id="date_debut" class="form-control" required>
-                    </div>
-    
-                    <div class="form-group" id="date_fin_group" style="display:none;">
-                        <label for="date_fin">Date fin :</label>
-                        <input type="date" name="date_fin" id="date_fin" class="form-control">
-                    </div>
-                    
-                    <div id="vacances_fields" style="display:none;">
+
+                    <div id="visite_militaire_fields" style="display:none;">
                         <div class="form-group">
-                            <label for="titre_vacances">Type de vacances :</label>
-                            <input type="text" name="titre_evenement" class="form-control" placeholder="Ex: Vacances d'hiver">
+                            <label for="titre_evenement">Unité à visiter :</label>
+                            <input type="text" name="titre_evenement" class="form-control" placeholder="Ex: Base militaire de Kénitra">
                         </div>
                     </div>
-    
-                    <div id="horaire_fields">
-    <div class="row">
-        <div class="col-md-6">
-            <div class="form-group">
-                <label for="heure_debut">Heure de début :</label>
-                <input type="time" 
-                       name="heure_debut" 
-                       id="heure_debut" 
-                       class="form-control" 
-                       min="07:00" 
-                       max="19:00" 
-                       required>
+                </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="form-group">
-                <label for="heure_fin">Heure de fin :</label>
-                <input type="time" 
-                       name="heure_fin" 
-                       id="heure_fin" 
-                       class="form-control" 
-                       min="07:00" 
-                       max="19:00" 
-                       required>
+
+        <!-- Boutons d'action -->
+        <div class="event-buttons-container text-center mt-4">
+            <div class="btn-group-custom">
+                <button type="submit" class="btn-create">
+                    <i class="fas fa-calendar-plus"></i> Programmer l'événement
+                </button>
+                <a href="{% url 'liste_emplois' %}" class="btn-view-progress">
+                    <i class="fas fa-chart-line"></i> Voir la progression
+                </a>
+                <a href="{% url 'historique_emploi' %}?promotion={{ promotion_selected }}" class="btn-history">
+                    <i class="fas fa-history"></i> Voir l'historique des emplois
+                </a>
             </div>
         </div>
-    </div>
+    </form>
 </div>
 
+<!-- Ajouter ces styles spécifiques -->
+<style>
+.section-block {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
 
-                </div>
-            </div>
-    
-            <div class="event-buttons-container text-center mt-4">
-                <div class="btn-group-custom">
-                    <button type="submit" class="btn-create">
-                        <i class="fas fa-calendar-plus"></i> Programmer l'événement
-                    </button>
-                    <a href="{% url 'liste_emplois' %}" class="btn-view-progress">
-                        <i class="fas fa-chart-line"></i> Voir la progression
-                    </a>
-                    <a href="{% url 'historique_emploi' %}?promotion={{ promotion_selected }}" class="btn-history">
-                        <i class="fas fa-history"></i> Voir l'historique des emplois
-                    </a>
-                </div>
-            </div>
-            
-        </form>
-    </div>
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+/* ... rest of existing styles ... */
+</style>
 
     <!-- Filtre de date -->
     <div class="form-group">
