@@ -6,11 +6,15 @@
              style="position: absolute;
                     left: {% widthratio session.get_left_position 1 1 %}%;
                     width: {% widthratio session.get_width 1 1 %}%;">
+
             <div class="event-time">
                 {{ session.heure_debut|time:"H:i" }} - {{ session.heure_fin|time:"H:i" }}
             </div>
             <div class="event-info">
                 <strong class="event-type">[{{ session.get_type_evenement_display }}]</strong>
+                {% if session.matiere %}
+                    <div class="event-title">{{ session.matiere.name }}</div>
+                {% endif %}
                 {% if session.titre_evenement %}
                     <div class="event-title">{{ session.titre_evenement }}</div>
                 {% endif %}

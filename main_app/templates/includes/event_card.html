@@ -1,0 +1,118 @@
+<div class="multi-day-event">
+    <div class="session-card event-{{ session.type_evenement|lower }}">
+        <div class="event-content">
+            {% if session.type_evenement == 'FORMATION_MILITAIRE' %}
+                <div class="event-type">
+                    <i class="fas fa-shield-alt"></i>
+                    Formation Militaire
+                </div>
+                <div class="event-details">
+                    {% if session.titre_evenement %}
+                        <div class="event-title">{{ session.titre_evenement }}</div>
+                    {% endif %}
+                    <div class="event-date">{{ session.heure_debut|time:"H:i" }} - {{ session.heure_fin|time:"H:i" }}</div>
+                </div>
+
+            {% elif session.type_evenement == 'TOURNEE' %}
+                <div class="event-type">
+                    <i class="fas fa-route"></i>
+                    Tournée
+                </div>
+                <div class="event-details">
+                    <div class="event-title">{{ session.titre_evenement }}</div>
+                    {% if session.date_debut and session.date_fin %}
+                        <div class="event-date">Du {{ session.date_debut|date:"d/m" }} au {{ session.date_fin|date:"d/m" }}</div>
+                    {% endif %}
+                </div>
+
+            {% elif session.type_evenement == 'SORTIE' %}
+                <div class="event-type">
+                    <i class="fas fa-hiking"></i>
+                    Sortie
+                </div>
+                <div class="event-details">
+                    <div class="event-title">{{ session.titre_evenement }}</div>
+                    {% if session.matiere %}
+                        <div class="event-matiere">{{ session.matiere.name }}</div>
+                    {% endif %}
+                    {% if session.date_debut and session.date_fin %}
+                        <div class="event-date">Du {{ session.date_debut|date:"d/m" }} au {{ session.date_fin|date:"d/m" }}</div>
+                    {% endif %}
+                </div>
+
+            {% elif session.type_evenement == 'PROJET' %}
+                <div class="event-type">
+                    <i class="fas fa-project-diagram"></i>
+                    Projet
+                </div>
+                <div class="event-details">
+                    <div class="event-title">{{ session.titre_evenement }}</div>
+                    {% if session.date_debut and session.date_fin %}
+                        <div class="event-date">Du {{ session.date_debut|date:"d/m" }} au {{ session.date_fin|date:"d/m" }}</div>
+                    {% endif %}
+                </div>
+
+            {% elif session.type_evenement == 'VISITE_MILITAIRE' %}
+                <div class="event-type">
+                    <i class="fas fa-medal"></i>
+                    Visite Militaire
+                </div>
+                <div class="event-details">
+                    <div class="event-title">{{ session.titre_evenement }}</div>
+                    {% if session.date_debut and session.date_fin %}
+                        <div class="event-date">Du {{ session.date_debut|date:"d/m" }} au {{ session.date_fin|date:"d/m" }}</div>
+                    {% endif %}
+                </div>
+
+            {% elif session.type_evenement == 'CONFERENCE' %}
+                <div class="event-type">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    Conférence
+                </div>
+                <div class="event-details">
+                    <div class="event-title">{{ session.titre_evenement }}</div>
+                    <div class="event-date">{{ session.heure_debut|time:"H:i" }} - {{ session.heure_fin|time:"H:i" }}</div>
+                </div>
+
+            {% elif session.type_evenement == 'EXAMEN_PARTIEL' or session.type_evenement == 'EXAMEN_FINAL' %}
+                <div class="event-type">
+                    <i class="fas fa-file-alt"></i>
+                    {{ session.type_evenement|title|replace:"_"," " }}
+                </div>
+                <div class="event-details">
+                    <div class="event-title">{{ session.matiere.name }}</div>
+                    <div class="event-date">{{ session.heure_debut|time:"H:i" }} - {{ session.heure_fin|time:"H:i" }}</div>
+                </div>
+
+            {% elif session.type_evenement == 'RATTRAPAGE' %}
+                <div class="event-type">
+                    <i class="fas fa-redo"></i>
+                    Rattrapage
+                </div>
+                <div class="event-details">
+                    <div class="event-title">{{ session.matiere.name }}</div>
+                    <div class="event-date">{{ session.heure_debut|time:"H:i" }} - {{ session.heure_fin|time:"H:i" }}</div>
+                </div>
+            
+            {% elif session.type_evenement == 'VACANCES' %}
+                <div class="event-type">
+                    <i class="fas fa-umbrella-beach"></i>
+                    Vacances
+                </div>
+                <div class="event-details">
+                    <div class="event-title">{{ session.titre_evenement }}</div>
+                </div>
+
+            {% elif session.type_evenement == 'JOUR_FERIE' %}
+                <div class="event-type">
+                    <i class="fas fa-calendar-day"></i>
+                    Jour Férié
+                </div>
+                <div class="event-details">
+                    <div class="event-title">{{ session.titre_evenement }}</div>
+                </div>
+
+            {% endif %}
+        </div>
+    </div>
+</div>
