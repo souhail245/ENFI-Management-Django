@@ -17,6 +17,7 @@ import xlsxwriter
 from io import BytesIO
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
+from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 
@@ -76,7 +77,6 @@ def view_absences(request):
     if (date_debut):
         absences = absences.filter(date__gte=date_debut)
     
-    if (date_fin):
         absences = absences.filter(date__lte=date_fin)
     
     if (niveau):
@@ -1408,26 +1408,20 @@ def creer_emploi_temps(request):
         try:
             type_evenement = request.POST.get("type_evenement")
             date_debut = request.POST.get("date_debut")
-            
-            # Récupérer la matière (une seule valeur)
             matiere_id = request.POST.get("matiere")
-
             
-            # Récupérer le titre de l'événement selon le type
+            # Récupérer le titre selon le type d'événement
             titre_evenement = None
-            if type_evenement == 'TOURNEE':
+            if type_evenement == 'CONFERENCE':
+                # Pour une conférence, utiliser directement le champ titre_evenement
+                titre_evenement = request.POST.get("titre_evenement")
+            elif type_evenement == 'TOURNEE':
                 titre_evenement = request.POST.get("titre_evenement_tournee")
             elif type_evenement == 'SORTIE':
                 titre_evenement = request.POST.get("titre_evenement_sortie")
             elif type_evenement == 'PROJET':
                 titre_evenement = request.POST.get("titre_evenement_projet")
             elif type_evenement == 'VISITE_MILITAIRE':
-                titre_evenement = request.POST.get("titre_evenement")
-            elif type_evenement == 'CONFERENCE':
-                titre_evenement = request.POST.get("titre_evenement")
-
-            # Si aucun titre spécifique n'est trouvé, utiliser le champ générique
-            if not titre_evenement:
                 titre_evenement = request.POST.get("titre_evenement")
 
             # Définir les types d'événements
@@ -1442,6 +1436,11 @@ def creer_emploi_temps(request):
                 if not titre_evenement:
                     raise ValueError(f"Le titre est requis pour un événement de type {type_evenement}")
 
+                # Pour les sorties, on conserve la référence à la matière
+                matiere_instance = None
+                if type_evenement == 'SORTIE' and matiere_id:
+                    matiere_instance = get_object_or_404(Subject, id=matiere_id)
+
                 emploi_temps = EmploiTemps.objects.create(
                     niveau=promotion,
                     type_evenement=type_evenement,
@@ -1449,7 +1448,7 @@ def creer_emploi_temps(request):
                     date_debut=date_debut,
                     date_fin=date_fin,
                     titre_evenement=titre_evenement,
-                    matiere=None,
+                    matiere=matiere_instance,  # Sera None pour les autres types d'événements
                     professeur=None,
                     heure_debut=None,
                     heure_fin=None
@@ -1458,8 +1457,7 @@ def creer_emploi_temps(request):
             elif type_evenement in EVENEMENTS_AVEC_HORAIRE:
                 heure_debut = request.POST.get("heure_debut")
                 heure_fin = request.POST.get("heure_fin")
-                titre_evenement = request.POST.get("titre_evenement")
-
+                
                 if not (heure_debut and heure_fin):
                     raise ValueError("Les heures de début et de fin sont requises pour ce type d'événement")
 
@@ -1491,8 +1489,8 @@ def creer_emploi_temps(request):
                     date=date_debut,
                     date_debut=date_debut,
                     matiere=matiere,
-                    professeur=professeur,  # Utiliser le professeur récupéré (peut être None)
-                    titre_evenement=titre_evenement,
+                    professeur=professeur,
+                    titre_evenement=titre_evenement,  # Utilisation directe du titre
                     heure_debut=datetime.strptime(heure_debut, '%H:%M').time(),
                     heure_fin=datetime.strptime(heure_fin, '%H:%M').time()
                 )
@@ -1571,13 +1569,13 @@ def creer_emploi_temps(request):
         # Organiser les sessions par date
         sessions_by_date = defaultdict(lambda: defaultdict(dict))
         for session in sessions:
-            if session.type_evenement in ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE', 'VACANCES', 'JOUR_FERIE']:
+            if (session.type_evenement in ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE', 'VACANCES', 'JOUR_FERIE']):
                 # Pour les événements multi-jours
-                if session.date_debut and session.date_fin:
+                if (session.date_debut and session.date_fin):
                     event_start = max(session.date_debut, date_debut)
                     event_end = min(session.date_fin, date_fin)
                     current = event_start
-                    while current <= event_end:
+                    while (current <= event_end):
                         sessions_by_date[current]['full_day'] = session
                         current += timedelta(days=1)
                 else:

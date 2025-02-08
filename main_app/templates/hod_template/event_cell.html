@@ -11,18 +11,8 @@
             </div>
             <div class="event-info">
                 <strong class="event-type">[{{ session.get_type_evenement_display }}]</strong>
-                {% if session.type_evenement == 'CONFERENCE' %}
+                {% if session.titre_evenement %}
                     <div class="event-title">{{ session.titre_evenement }}</div>
-                {% else %}
-                    {% if session.titre_evenement %}
-                        <div class="event-title">{{ session.titre_evenement }}</div>
-                    {% endif %}
-                    {% if session.matiere %}
-                        <div class="event-matiere">{{ session.matiere.name }}</div>
-                    {% endif %}
-                {% endif %}
-                {% if session.professeur and session.type_evenement != 'CONFERENCE' %}
-                    <div class="event-details">{{ session.professeur.admin.get_full_name }}</div>
                 {% endif %}
             </div>
             <a href="{% url 'supprimer_evenement' session.id %}"
@@ -38,6 +28,9 @@
                     <strong class="event-type">[{{ session.get_type_evenement_display }}]</strong>
                     {% if session.titre_evenement %}
                         <div class="event-title">{{ session.titre_evenement }}</div>
+                    {% endif %}
+                    {% if session.type_evenement == 'SORTIE' and session.matiere %}
+                        <div class="event-matiere">{{ session.matiere.name }}</div>
                     {% endif %}
                 </div>
                 {% if session.date_debut and session.date_fin %}
@@ -250,6 +243,23 @@ background-color: #a8a0f5;
 border-color: #091072;
 }
 
+.event-cell.event-conference {
+    background-color: #e6d5f5;
+    border-color: #7B1FA2;
+}
+
+.event-cell.event-conference .event-title {
+    font-weight: 600;
+    color: #000;
+    margin-top: 4px;
+    font-size: 0.9em;
+}
+
+.event-cell.event-conference .event-time {
+    color: #000;
+    font-weight: 500;
+}
+
 /* Style pour les événements qui occupent toute la cellule (SORTIE, TOURNEE, VISITE_MILITAIRE) */
 .full-day-event {
 width: 100%; /* Occupe toute la largeur */
@@ -288,5 +298,19 @@ cursor: pointer;
 
 .full-day-event .delete-event:hover {
 color: #ff0000;
+}
+
+.event-matiere {
+    font-size: 0.9em;
+    color: #000000;
+    margin-top: 4px;
+    font-style: italic;
+    font-weight: 500;
+}
+
+.full-day-event .event-matiere {
+    margin-top: 4px;
+    color: #000000;
+    font-weight: 500;
 }
 </style>

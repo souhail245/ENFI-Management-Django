@@ -1896,14 +1896,6 @@
                             <label for="titre_evenement_sortie">Nom de la sortie :</label>
                             <input type="text" name="titre_evenement_sortie" id="titre_evenement_sortie" class="form-control" placeholder="Ex: Sortie géologique">
                         </div>
-                        <div class="form-group">
-                            <label for="matiere_sortie">Matière concernée :</label>
-                            <select name="matiere" id="matiere_sortie" class="form-control">
-                                {% for subject in subjects %}
-                                    <option value="{{ subject.id }}">{{ subject.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
                     </div>
 
                     <div id="projet_fields" style="display:none;">
