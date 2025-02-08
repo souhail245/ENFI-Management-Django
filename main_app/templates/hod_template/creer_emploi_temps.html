@@ -267,15 +267,26 @@
     
     .quick-add-form select {
       padding: 5px 5px; /* Rembourrage (haut/bas, gauche/droite) */
-      font-size: 12px; /* Taille de la police */
+      font-size: 13px; /* Taille de la police */
       width: 200px; 
       height: 30px;
     }
     
-    .quick-add-form button {
-        width: 50%;
-        padding: 2px;
-    }
+    /* Style pour les champs de temps */
+.quick-add-form input[type="time"] {
+    width: 120%;
+    padding: 10px 10px;
+    font-size: 13px;
+    height: 30px;
+}
+
+/* Style pour le bouton */
+.quick-add-form button {
+    width: 120px;
+    padding: 4px 4px;
+    font-size: 12px;
+  
+}
 
     .multi-day-event {
         background-color: #f8f9fa;
@@ -660,17 +671,10 @@
 
 /* Style des boutons */
 .btn-primary {
-    background: #eb5d25;
+    background: #0a0a0a;
     
 }
 
-.btn-primary:hover {
-    background: #1d4ed8;
-    padding: 5px 5px; /* Rembourrage (haut/bas, gauche/droite) */
-    font-size: 10px; /* Taille de la police */
-    width: 30px; 
-    height: 30px;
-}
 
 /* Types d'événements améliorés */
 .event-cours { background: linear-gradient(135deg, #60a5fa20, #60a5fa10); border-left: 4px solid #60a5fa; }
@@ -2037,7 +2041,7 @@
                                             </div>
                                         </div>
                     
-                                        <button type="submit" class="btn btn-primary btn-sm mt-2 w-100">
+                                        <button type="submit" class="btn btn-primary btn-sm">
                                             <i class="fas fa-plus"></i> Ajouter
                                         </button>
                                     </form>
@@ -2089,7 +2093,7 @@
         bottom: 0;
         left: 0;
         right: 0;
-        background: rgba(255, 255, 255, 0.95);
+        background: rgba(241, 227, 227, 0.95);
         padding: 5px;
         border-top: 1px solid #ddd;
         z-index: 10;
