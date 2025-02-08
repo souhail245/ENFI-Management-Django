@@ -1643,21 +1643,19 @@ def choisir_promotion(request):
         'page_title': 'Choisir une promotion'
     }
     return render(request, 'hod_template/choisir_promotion.html', context)
-
 def liste_emplois(request):
     promotion_selected = request.GET.get('promotion', '3ème année')
     date_debut = request.GET.get('date_debut')
     date_fin = request.GET.get('date_fin')
-    
+
     promotions = ['3ème année', '4ème année', '5ème année', '6ème année']
-    horaires = ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00']
 
     # Convertir les dates
     if date_debut:
         date_debut = datetime.strptime(date_debut, '%Y-%m-%d').date()
     else:
         date_debut = datetime.now().date()
-    
+
     if date_fin:
         date_fin = datetime.strptime(date_fin, '%Y-%m-%d').date()
     else:
@@ -1667,16 +1665,14 @@ def liste_emplois(request):
     sessions = EmploiTemps.objects.filter(
         Q(niveau=promotion_selected) &
         (
-            # Pour les événements standards
             (Q(date__range=[date_debut, date_fin])) |
-            # Pour les événements multi-jours
             (
-                (Q(date_debut__lte=date_fin) if date_debut else Q(pk__in=   [])) &
+                (Q(date_debut__lte=date_fin) if date_debut else Q(pk__in=[])) &
                 (Q(date_fin__gte=date_debut) if date_fin else Q(pk__in=[])) &
                 Q(type_evenement__in=['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE', 'VACANCES', 'JOUR_FERIE'])
             )
         )
-    ).select_related('matiere', 'professeur')
+    ).select_related('matiere', 'professeur').order_by('date')
 
     # Générer les dates
     dates = []
@@ -1686,28 +1682,13 @@ def liste_emplois(request):
         current_date += timedelta(days=1)
 
     # Organiser les sessions par date
-    sessions_by_date = defaultdict(dict)
+    sessions_by_date = defaultdict(list)
     for session in sessions:
-     if session.type_evenement in ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE', 'VACANCES', 'JOUR_FERIE']:
-        # Pour les événements multi-jours
-         if session.date_debut and session.date_fin:
-             event_start = max(session.date_debut, date_debut) 
-             event_end = min(session.date_fin, date_fin) 
-             current = event_start
-             while current <= event_end:
-                 sessions_by_date[current]['full_day'] = session
-                 current += timedelta(days=1)
-         else:
-             # Pour les événements VACANCES et JOUR_FERIE
-              sessions_by_date[session.date]['full_day'] = session
-     else:
-         # Pour les événements standards
-         sessions_by_date[session.date][session.horaire] = session
+        sessions_by_date[session.date].append(session) # Organiser par date, et lister les sessions
 
     context = {
         'sessions_by_date': dict(sessions_by_date),
         'promotions': promotions,
-        'horaires': horaires,
         'promotion_selected': promotion_selected,
         'date_debut': date_debut,
         'date_fin': date_fin,

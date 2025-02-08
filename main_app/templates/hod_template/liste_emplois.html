@@ -469,6 +469,7 @@
 
 </style>
 
+
 <div class="main-container">
     <!-- Bouton de retour -->
     <div class="text-center mb-4">
@@ -513,9 +514,7 @@
                 <thead>
                     <tr>
                         <th>Date</th>
-                        {% for horaire in horaires %}
-                            <th>{{ horaire }}</th>
-                        {% endfor %}
+                        <th>Événements</th> <!-- Suppression des colonnes d'horaires -->
                     </tr>
                 </thead>
                 <tbody>
@@ -525,128 +524,83 @@
                             <strong>{{ date|date:"d/m/Y" }}</strong><br>
                             <small>{{ date|date:"l"|capfirst }}</small>
                         </td>
-                        {% with full_day_event=sessions_by_date|get_dict_item:date|get_dict_item:'full_day' %}
-                        {% if full_day_event %}
-                        <td colspan="{{ horaires|length }}" class="multi-day-event">
-                            <div class="session-card event-{{ full_day_event.type_evenement|lower }}">
-                                <div class="event-content">
-                                    <span class="event-type">
-                                        {% if full_day_event.type_evenement == 'TOURNEE' %}
-                                            <i class="fas fa-hiking"></i>
-                                        {% elif full_day_event.type_evenement == 'SORTIE' %}
-                                            <i class="fas fa-map-marked-alt"></i>
-                                        {% elif full_day_event.type_evenement == 'PROJET' %}
-                                            <i class="fas fa-project-diagram"></i>
-                                        {% elif full_day_event.type_evenement == 'VISITE_MILITAIRE' %}
-                                            <i class="fas fa-shield-alt"></i>
-                                        {% elif full_day_event.type_evenement == 'FORMATION_MILITAIRE' %}
-                                            <i class="fas fa-medal"></i>
-                                        {% elif full_day_event.type_evenement == 'CONFERENCE' %}
-                                            <i class="fas fa-microphone-alt"></i>
-                                        {% endif %}
-                                        <span>{{ full_day_event.type_evenement|title|cut:"_" }}</span>
-                                    </span>
-                                    
-                                    <div class="event-details">
-                                        {% if full_day_event.titre_evenement %}
-                                            <span class="event-title">{{ full_day_event.titre_evenement }}</span>
-                                        {% endif %}
-                                        
-                                        {% if full_day_event.matiere %}
-                                            <span class="event-matiere">({{ full_day_event.matiere.name }})</span>
-                                        {% endif %}
-                                        
-                                        <span class="event-date">
-                                            {{ full_day_event.date_debut|date:"d/m" }} - {{ full_day_event.date_fin|date:"d/m" }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                        {% else %}
-                            {% for horaire in horaires %}
-                            <td>
-                                {% with session=sessions_by_date|get_dict_item:date|get_dict_item:horaire %}
-                                    {% if session %}
-                                        <div class="session-card {% if session.type_evenement == 'JOUR_FERIE' %}jour-ferie
-                                            {% elif session.type_evenement == 'VACANCES' %}vacances
-                                            {% elif session.type_evenement == 'EXAMEN_PARTIEL' or session.type_evenement == 'EXAMEN_FINAL' %}examen{% endif %}">
-                                            
-                                            {% if session.type_evenement == 'COURS' %}
-                                                <strong>{{ session.matiere.name }}</strong>
-                                                <small class="d-block">{{ session.professeur.admin.get_full_name }}</small>
-                                                
-                                                <!-- Progression -->
-<div class="progress">
-    <div class="progress-bar" 
-         role="progressbar" 
-         style="width: {% if session.progression %}{{ session.progression }}{% else %}0{% endif %}%"
-         aria-valuenow="{% if session.progression %}{{ session.progression }}{% else %}0{% endif %}"
-         aria-valuemin="0" 
-         aria-valuemax="100">
-    </div>
-</div>
-<div class="progression-info">
-    <span class="progression-value">
-        Progression: {% if session.progression %}{{ session.progression }}{% else %}0{% endif %}%
-    </span>
-    <div class="seance-info">
-        Séance {{ session.numero_seance }}/{{ session.matiere.volume_horaire_total|divided_by:2|floatformat:"0" }}
-    </div>
-</div>
-                                               
-                                            {% elif session.type_evenement == 'RATTRAPAGE' %}
-                                                <strong style="color: #721c24;">Rattrapage</strong><br>
-                                                <strong>{{ session.matiere.name }}</strong><br>
-                                                <small>{{ session.professeur.admin.get_full_name }}</small>
-                                            {% elif session.type_evenement == 'EXAMEN_PARTIEL' %}
-                                                <strong style="color: #856404;">Examen Partiel</strong>
-                                                <div class="matiere-info">
-                                                    <strong>{{ session.matiere.name }}</strong>
-                                                    <small class="event-details">{{ session.professeur.admin.get_full_name }}</small>
-                                                </div>
-                                            {% elif session.type_evenement == 'EXAMEN_FINAL' %}
-                                                <strong style="color: #721c24;">Examen Final</strong>
-                                                <div class="matiere-info">
-                                                    <strong>{{ session.matiere.name }}</strong>
-                                                    <small class="event-details">{{ session.professeur.admin.get_full_name }}</small>
-                                                </div>
-                                            {% elif session.type_evenement == 'FORMATION_MILITAIRE' %}
-                                                <strong style="color: #004085;">Formation Militaire</strong><br>
-                                                <small>{{ session.titre_evenement }}</small>
-                                            {% elif session.type_evenement == 'TOURNEE' %}
-                                                <div style="text-align: center;">
-                                                    <strong style="color: #0c5460;">TOURNÉE</strong>
-                                                    {% if session.titre_evenement %}
-                                                        <br><small>{{ session.titre_evenement }}</small>
-                                                    {% endif %}
-                                                </div>
-                                            {% elif session.type_evenement == 'SORTIE' %}
-                                                <strong style="color: #383d41;">Sortie</strong><br>
-                                                <small>{{ session.titre_evenement }}</small><br>
-                                                <small>Matière: {{ session.matiere.name }}</small>
-                                            {% elif session.type_evenement == 'PROJET' %}
-                                                <strong style="color: #155724;">Projet</strong><br>
-                                                <small>{{ session.titre_evenement }}</small>
-                                            {% elif session.type_evenement == 'VISITE_MILITAIRE' %}
-                                                <strong style="color: #1b1e21;">Visite Militaire</strong><br>
-                                                <small>{{ session.titre_evenement }}</small>
-                                            {% elif session.type_evenement == 'CONFERENCE' %}
-                                                <strong style="color: #856404;">Conférence</strong><br>
-                                                <small>{{ session.titre_evenement }}</small>
-                                            {% else %}
-                                                <strong>{{ session.type_evenement|title }}</strong><br>
-                                                {% if session.titre_evenement %}
-                                                    <span>{{ session.titre_evenement }}</span>
-                                                {% endif %}
+                        <td>
+                            {% for session in sessions_by_date|get_dict_item:date %}
+                                <div class="session-card {% if session.type_evenement == 'JOUR_FERIE' %}jour-ferie
+                                                    {% elif session.type_evenement == 'VACANCES' %}vacances
+                                                    {% elif session.type_evenement == 'EXAMEN_PARTIEL' or session.type_evenement == 'EXAMEN_FINAL' %}examen{% endif %}">
+
+                                    {% if session.type_evenement == 'COURS' %}
+                                        <strong>{{ session.matiere.name }}</strong>
+                                        <small class="d-block">{{ session.professeur.admin.get_full_name }}</small>
+
+                                        <!-- Progression -->
+                                        <div class="progress">
+                                            <div class="progress-bar"
+                                                 role="progressbar"
+                                                 style="width: {% if session.progression %}{{ session.progression }}{% else %}0{% endif %}%"
+                                                 aria-valuenow="{% if session.progression %}{{ session.progression }}{% else %}0{% endif %}"
+                                                 aria-valuemin="0"
+                                                 aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                        <div class="progression-info">
+                                            <span class="progression-value">
+                                                Progression: {% if session.progression %}{{ session.progression }}{% else %}0{% endif %}%
+                                            </span>
+                                            <div class="seance-info">
+                                                Séance {{ session.numero_seance }}/{{ session.matiere.volume_horaire_total|divided_by:2|floatformat:"0" }}
+                                            </div>
+                                        </div>
+
+                                    {% elif session.type_evenement == 'RATTRAPAGE' %}
+                                        <strong style="color: #721c24;">Rattrapage</strong><br>
+                                        <strong>{{ session.matiere.name }}</strong><br>
+                                        <small>{{ session.professeur.admin.get_full_name }}</small>
+                                    {% elif session.type_evenement == 'EXAMEN_PARTIEL' %}
+                                        <strong style="color: #856404;">Examen Partiel</strong>
+                                        <div class="matiere-info">
+                                            <strong>{{ session.matiere.name }}</strong>
+                                            <small class="event-details">{{ session.professeur.admin.get_full_name }}</small>
+                                        </div>
+                                    {% elif session.type_evenement == 'EXAMEN_FINAL' %}
+                                        <strong style="color: #721c24;">Examen Final</strong>
+                                        <div class="matiere-info">
+                                            <strong>{{ session.matiere.name }}</strong>
+                                            <small class="event-details">{{ session.professeur.admin.get_full_name }}</small>
+                                        </div>
+                                    {% elif session.type_evenement == 'FORMATION_MILITAIRE' %}
+                                        <strong style="color: #004085;">Formation Militaire</strong><br>
+                                        <small>{{ session.titre_evenement }}</small>
+                                    {% elif session.type_evenement == 'TOURNEE' %}
+                                        <div style="text-align: center;">
+                                            <strong style="color: #0c5460;">TOURNÉE</strong>
+                                            {% if session.titre_evenement %}
+                                                <br><small>{{ session.titre_evenement }}</small>
                                             {% endif %}
                                         </div>
+                                    {% elif session.type_evenement == 'SORTIE' %}
+                                        <strong style="color: #383d41;">Sortie</strong><br>
+                                        <small>{{ session.titre_evenement }}</small><br>
+                                        <small>Matière: {{ session.matiere.name }}</small>
+                                    {% elif session.type_evenement == 'PROJET' %}
+                                        <strong style="color: #155724;">Projet</strong><br>
+                                        <small>{{ session.titre_evenement }}</small>
+                                    {% elif session.type_evenement == 'VISITE_MILITAIRE' %}
+                                        <strong style="color: #1b1e21;">Visite Militaire</strong><br>
+                                        <small>{{ session.titre_evenement }}</small>
+                                    {% elif session.type_evenement == 'CONFERENCE' %}
+                                        <strong style="color: #856404;">Conférence</strong><br>
+                                        <small>{{ session.titre_evenement }}</small>
+                                    {% else %}
+                                        <strong>{{ session.type_evenement|title }}</strong><br>
+                                        {% if session.titre_evenement %}
+                                            <span>{{ session.titre_evenement }}</span>
+                                        {% endif %}
                                     {% endif %}
-                                {% endwith %}
-                            </td>
+                                </div>
                             {% endfor %}
-                        {% endif %}
-                        {% endwith %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
