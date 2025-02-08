@@ -1411,6 +1411,8 @@ def creer_emploi_temps(request):
             
             # Récupérer la matière (une seule valeur)
             matiere_id = request.POST.get("matiere")
+
+            
             # Récupérer le titre de l'événement selon le type
             titre_evenement = None
             if type_evenement == 'TOURNEE':

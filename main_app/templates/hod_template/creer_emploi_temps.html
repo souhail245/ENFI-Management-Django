@@ -2011,9 +2011,41 @@
                                         {% endif %}
                                     {% endwith %}
                                 </div>
+
+                         <div class="quick-add-form">
+                                    <form method="POST" action="{% url 'creer_emploi_temps' %}" class="inline-form" id="quickAddForm">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="type_evenement" value="COURS">
+                                        <input type="hidden" name="promotion" value="{{ promotion_selected }}">
+                                        <input type="hidden" name="date_debut" value="{{ date|date:'Y-m-d' }}">
+                    
+                                        <div class="form-group mb-2">
+                                            <select name="matiere" id="matiere-select" class="form-control">
+                                                <option value="">Choisir une matière</option>
+                                                {% for subject in subjects %}
+                                                    <option value="{{ subject.id }}">{{ subject.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                    
+                                        <div class="row g-2">
+                                            <div class="col-6">
+                                                <input type="time" name="heure_debut" class="form-control form-control-sm" min="08:00" max="18:00" required>
+                                            </div>
+                                            <div class="col-6">
+                                                <input type="time" name="heure_fin" class="form-control form-control-sm" min="08:00" max="18:00" required>
+                                            </div>
+                                        </div>
+                    
+                                        <button type="submit" class="btn btn-primary btn-sm mt-2 w-100">
+                                            <i class="fas fa-plus"></i> Ajouter
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
-                        {% endfor %}
+                    {% endfor %}
+            
                     </tbody>
                 </table>
             </div>
@@ -2095,6 +2127,8 @@
     
     </div>
 </div>
+
+
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -2331,47 +2365,50 @@
         }
     
         // Quick add form handling
-        const quickAddForms = document.querySelectorAll('.quick-add-form form');
-        quickAddForms.forEach(form => {
-            form.addEventListener('submit', function(event) {
-                event.preventDefault();
-    
-                const formData = new FormData(this);
-    
-                // Basic form validity check
-                if (!this.checkValidity()) {
-                    alert('Please fill in all required fields.');
-                    return;
+        document.addEventListener('DOMContentLoaded', function() {
+    // Quick add form handling
+    const quickAddForms = document.querySelectorAll('.quick-add-form form');
+    quickAddForms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+
+            // Basic form validity check
+            if (!this.checkValidity()) {
+                alert('Veuillez remplir tous les champs requis.');
+                return;
+            }
+
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
                 }
-    
-                fetch(this.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-                    }
-                })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network error');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            // Reload the page if successful
-                            window.location.reload();
-                        } else {
-                            alert(data.error || 'An error occurred');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('An error occurred while adding the course');
-                    });
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network error');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Reload the page if successful
+                    window.location.reload();
+                } else {
+                    alert(data.error || 'An error occurred');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Une erreur est survenue lors de l\'ajout du cours.');
             });
         });
+    });
+});
     
         // Date filtering function
         window.filterByDate = function() {
