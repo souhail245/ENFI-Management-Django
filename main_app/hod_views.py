@@ -24,6 +24,10 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from .forms import *
 from .models import *
 
+# Ajouter ces imports en haut du fichier
+from django.db.models import F, Sum, ExpressionWrapper, DurationField
+from datetime import datetime, timedelta
+
 # manager abscence
 
 from django.http import JsonResponse
@@ -1672,6 +1676,41 @@ def liste_emplois(request):
         )
     ).select_related('matiere', 'professeur').order_by('date')
 
+    # Calculer les heures effectuées et la progression pour chaque séance
+    for session in sessions:
+        if session.type_evenement == 'COURS' and session.heure_debut and session.heure_fin:
+            # Convertir les heures de début et de fin en datetime pour le calcul
+            debut = datetime.combine(session.date, session.heure_debut)
+            fin = datetime.combine(session.date, session.heure_fin)
+            
+            # Calculer la durée de la séance en heures
+            duree_seance = (fin - debut).total_seconds() / 3600  # Convertir en heures
+            
+            # Calculer les heures effectuées pour les séances précédentes
+            seances_precedentes = EmploiTemps.objects.filter(
+                matiere=session.matiere,
+                type_evenement='COURS',
+                date__lt=session.date  # Uniquement les séances avant la date actuelle
+            )
+            
+            total_heures = duree_seance  # Commencer avec la durée de la séance actuelle
+            
+            # Ajouter les durées des séances précédentes
+            for seance in seances_precedentes:
+                debut_seance = datetime.combine(seance.date, seance.heure_debut)
+                fin_seance = datetime.combine(seance.date, seance.heure_fin)
+                duree = (fin_seance - debut_seance).total_seconds() / 3600
+                total_heures += duree
+            
+            # Calculer la progression
+            if session.matiere and session.matiere.volume_horaire_total > 0:
+                progression = min(int((total_heures / session.matiere.volume_horaire_total) * 100), 100)
+            else:
+                progression = 0
+                
+            session.progression = progression
+            session.numero_seance = len(seances_precedentes) + 1  # Numéro de séance basé sur le compte des séances précédentes
+
     # Générer les dates
     dates = []
     current_date = date_debut
@@ -1683,6 +1722,18 @@ def liste_emplois(request):
     sessions_by_date = defaultdict(list)
     for session in sessions:
         sessions_by_date[session.date].append(session) # Organiser par date, et lister les sessions
+    
+    # Trier les sessions par heure pour chaque date
+    for date in sessions_by_date:
+        sessions_by_date[date] = sorted(
+            sessions_by_date[date],
+            key=lambda x: (
+                # Les événements multi-jours en premier
+                0 if x.type_evenement in ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE', 'VACANCES', 'JOUR_FERIE'] else 1,
+                # Puis par heure de début (si existe)
+                x.heure_debut.strftime('%H:%M') if x.heure_debut else '23:59'
+            )
+        )
 
     context = {
         'sessions_by_date': dict(sessions_by_date),
