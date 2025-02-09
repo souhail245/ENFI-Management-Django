@@ -109,6 +109,9 @@ urlpatterns = [
     path('emploi/choisir_promotion/', hod_views.choisir_promotion, name='choisir_promotion'),
     
     path('get_progression_data', hod_views.get_progression_data, name='get_progression_data'),
+# emploi Options 
+    path('options_5eme/', hod_views.gerer_emploi_temps_options, name='gerer_emploi_temps_options'),
+    path('supprimer-evenement-option/<int:evenement_id>/', hod_views.supprimer_evenement_option, name='supprimer_evenement_option'),
 
     # Staff
     path("staff/home/", staff_views.staff_home, name='staff_home'),

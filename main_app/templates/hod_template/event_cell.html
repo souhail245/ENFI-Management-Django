@@ -19,7 +19,7 @@
                     <div class="event-title">{{ session.titre_evenement }}</div>
                 {% endif %}
             </div>
-            <a href="{% url 'supprimer_evenement' session.id %}"
+            <a href="{% if from_options %}{% url 'supprimer_evenement_option' session.id %}{% else %}{% url 'supprimer_evenement' session.id %}{% endif %}"
                class="delete-event"
                onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');">
                 <i class="fas fa-times"></i>
@@ -43,7 +43,7 @@
                     </div>
                 {% endif %}
             </div>
-            <a href="{% url 'supprimer_evenement' session.id %}"
+            <a href="{% if from_options %}{% url 'supprimer_evenement_option' session.id %}{% else %}{% url 'supprimer_evenement' session.id %}{% endif %}"
                class="delete-event"
                onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');">
                 <i class="fas fa-times"></i>

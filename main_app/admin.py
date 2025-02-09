@@ -16,3 +16,6 @@ admin.site.register(Student)
 admin.site.register(Course)
 admin.site.register(Subject)
 admin.site.register(EmploiTemps)
+admin.site.register(Option5eme)
+admin.site.register(EmploiTempsOption)
+

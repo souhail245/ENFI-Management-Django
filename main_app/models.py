@@ -274,6 +274,8 @@ class EmploiTemps(models.Model):
         ('PROJET', 'Projet'),
         ('VISITE_MILITAIRE', 'Visite Militaire'),
         ('CONFERENCE', 'Conférence'),
+        ('VACANCES', 'VACANCES'),
+        ('JOUR_FERIE', 'JOUR_FERIE'),
     ]
     
     type_evenement = models.CharField(
@@ -691,5 +693,321 @@ class SuiviCours(models.Model):
 
 
 
-#  test annnée academique
+#  test option emploi
+
+from django.db import models
+from datetime import date
+from django.core.exceptions import ValidationError
+from django.db.models import Q
+from django.utils import timezone
+
+
+class Option5eme(models.Model):  # Nouveau modèle pour les options
+    NOM_OPTIONS = [
+        ('GRN', 'GRN'),
+        ('VALO', 'VALO'),
+        ('AF', 'AF'),
+        ('ECO', 'ECO'),
+        ('EF', 'EF'),
+        ('GAP', 'GAP'),
+    ]
+    nom = models.CharField(max_length=10, choices=NOM_OPTIONS, unique=True)
+
+    def __str__(self):
+        return self.nom
+
+class EmploiTempsOption(models.Model): # Modèle pour l'emploi du temps par option
+    option = models.ForeignKey(Option5eme, on_delete=models.CASCADE, verbose_name="Option")
+    JOUR_CHOICES = [
+        ('Lundi', 'Lundi'),
+        ('Mardi', 'Mardi'),
+        ('Mercredi', 'Mercredi'),
+        ('Jeudi', 'Jeudi'),
+        ('Vendredi', 'Vendredi'),
+        ('Samedi', 'Samedi'),
+    ]
+    jour = models.CharField(max_length=10, choices=JOUR_CHOICES, default='Lundi')
+    date = models.DateField(default=date.today)
+    heure_debut = models.TimeField(null=True, blank=True)
+    heure_fin = models.TimeField(null=True, blank=True)
+    matiere = models.ForeignKey(
+        Subject,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    professeur = models.ForeignKey(
+        Staff,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    progression = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Décrivez la progression, par exemple '50% terminé' ou 'Chapitre 3 terminé'."
+    )
+    TYPE_CHOICES = [
+        ('COURS', 'Cours'),
+        ('EXAMEN_PARTIEL', 'Examen Partiel'),
+        ('EXAMEN_FINAL', 'Examen Final'),
+        ('RATTRAPAGE', 'Rattrapage'),
+        ('FORMATION_MILITAIRE', 'Formation Militaire'),
+        ('TOURNEE', 'Tournée'),
+        ('SORTIE', 'Sortie'),
+        ('PROJET', 'Projet'),
+        ('VISITE_MILITAIRE', 'Visite Militaire'),
+        ('CONFERENCE', 'Conférence'),
+        ('VACANCES', 'VACANCES'),
+        ('JOUR_FERIES', 'JOUR_FERIES'),
+    ]
+    type_evenement = models.CharField(
+        max_length=20,
+        choices=TYPE_CHOICES,
+        default='COURS'
+    )
+    titre_evenement = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Titre de l'événement (conférence, tournée, etc.)"
+    )
+    date_debut = models.DateField(null=True, blank=True)
+    date_fin = models.DateField(null=True, blank=True)
+    numero_seance = models.IntegerField(default=0)
+    class Meta:
+        # Supprimer la contrainte unique pour permettre des événements sans horaire
+        unique_together = []
+        
+    # Créer deux listes pour distinguer les types d'événements
+    EVENEMENTS_AVEC_HORAIRE = ['COURS', 'EXAMEN_PARTIEL', 'EXAMEN_FINAL', 'RATTRAPAGE', 'FORMATION_MILITAIRE', 'CONFERENCE']
+    EVENEMENTS_SANS_HORAIRE = ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE']
+    
+    # Nouvelle définition des constantes de type d'événements
+    EVENEMENTS_DATE_ET_HORAIRE = [
+        'COURS', 
+        'EXAMEN_PARTIEL',
+        'EXAMEN_FINAL',
+        'RATTRAPAGE',
+        'FORMATION_MILITAIRE',
+        'CONFERENCE'
+    ]
+    
+    EVENEMENTS_MULTI_JOURS = [
+        'TOURNEE',
+        'SORTIE',
+        'PROJET',
+        'VISITE_MILITAIRE'
+    ]
+
+    @property
+    def is_multi_day_event(self):
+        return self.type_evenement in self.EVENEMENTS_MULTI_JOURS
+
+    def get_duration_in_hours(self):
+        """Calcule la durée en heures"""
+        if self.heure_debut and self.heure_fin:
+            debut = self.heure_debut.hour + self.heure_debut.minute / 60
+            fin = self.heure_fin.hour + self.heure_fin.minute / 60
+            return (fin - debut)
+        return 1  # Durée par défaut
+    
+    def get_top_position(self):
+        """Calcule la position verticale en pixels"""
+        if self.heure_debut:
+            hours_from_start = (self.heure_debut.hour - 8) + (self.heure_debut.minute / 60)
+            return hours_from_start * 60
+        return 0
+
+    def clean(self):
+        super().clean()
+        if self.type_evenement in self.EVENEMENTS_MULTI_JOURS:
+            if not self.date_debut or not self.date_fin:
+                raise ValidationError({
+                    'date_debut': 'La date de début est requise',
+                    'date_fin': 'La date de fin est requise'
+                })
+            if self.date_fin < self.date_debut:
+                raise ValidationError('La date de fin ne peut pas être antérieure à la date de début')
+            
+            # Ne pas toucher aux heures pour les événements multi-jours
+            self.heure_debut = None
+            self.heure_fin = None
+            
+            # Vérifier les chevauchements sur la période
+            chevauchement = EmploiTempsOption.objects.filter(
+                option=self.option,
+                type_evenement=self.type_evenement
+            ).exclude(id=self.id).filter(
+                Q(date_debut__range=(self.date_debut, self.date_fin)) |
+                Q(date_fin__range=(self.date_debut, self.date_fin)) |
+                Q(date_debut__lte=self.date_debut, date_fin__gte=self.date_fin)
+            )
+            
+            if chevauchement.exists():
+                raise ValidationError('Un événement du même type existe déjà sur cette période')
+        
+        elif self.type_evenement in self.EVENEMENTS_DATE_ET_HORAIRE:
+            if not self.heure_debut or not self.heure_fin:
+                raise ValidationError('Les heures de début et de fin sont requises pour ce type d\'événement')
+            if self.heure_fin <= self.heure_debut:
+                raise ValidationError('L\'heure de fin doit être postérieure à l\'heure de début')
+            
+            # Forcer la date de fin à être égale à la date de début
+            self.date_fin = self.date_debut
+            
+            # Vérifier les chevauchements sur le créneau horaire
+            chevauchement = EmploiTempsOption.objects.filter(
+                option=self.option,
+                date=self.date_debut,
+                heure_debut__lt=self.heure_fin,
+                heure_fin__gt=self.heure_debut
+            ).exclude(id=self.id)
+            
+            if chevauchement.exists():
+                raise ValidationError('Un événement existe déjà à cet horaire')
+    
+    def save(self, *args, **kwargs):
+        # Pour les événements multi-jours
+        if self.type_evenement in self.EVENEMENTS_MULTI_JOURS:
+            self.heure_debut = None
+            self.heure_fin = None
+            if not self.date_fin:
+                self.date_fin = self.date_debut
+        else:
+            self.date_fin = self.date_debut
+
+        is_new = self.pk is None
+        # Appel unique à save()
+        super().save(*args, **kwargs)
+        
+        # Mise à jour de la progression uniquement pour les nouveaux cours
+        if is_new and self.type_evenement == 'COURS' and self.matiere:
+            seances_precedentes = EmploiTempsOption.objects.filter(
+                matiere=self.matiere,
+                type_evenement='COURS',
+                date__lt=self.date
+            ).count()
+            
+            seances_meme_jour = EmploiTempsOption.objects.filter(
+                matiere=self.matiere,
+                type_evenement='COURS',
+                date=self.date,
+                heure_debut__lt=self.heure_debut
+            ).count()
+            
+            self.numero_seance = seances_precedentes + seances_meme_jour + 1
+            progression = min(int((self.numero_seance * 2 / self.matiere.volume_horaire_total) * 100), 100)
+            
+            # Mise à jour dans la base de données
+            EmploiTempsOption.objects.filter(pk=self.pk).update(
+                numero_seance=self.numero_seance,
+                progression=str(progression)
+            )
+            
+            # Mise à jour de la matière
+            self.matiere.heures_ajoutees = self.numero_seance * 2
+            self.matiere.volume_horaire_restant = max(
+                self.matiere.volume_horaire_total - self.matiere.heures_ajoutees,
+                0
+            )
+            self.matiere.progression_cours = progression
+            
+            Subject.objects.filter(pk=self.matiere.pk).update(
+                heures_ajoutees=self.matiere.heures_ajoutees,
+                progression_cours=self.matiere.progression_cours,
+                volume_horaire_restant=self.matiere.volume_horaire_restant
+            )
+
+    def get_progression_percentage(self):
+        """Retourne la progression en pourcentage"""
+        try:
+            return int(self.progression or 0)
+        except ValueError:
+            return 0
+
+    def __str__(self):
+        return f"{self.option} - {self.date} - {self.heure_debut} : {self.matiere}"
+
+    def get_position_style(self):
+        """Calcule la position et la taille de l'événement dans le planning"""
+        if not self.heure_debut or not self.heure_fin:
+            return {}
+            
+        # Convertir les heures en minutes depuis le début de la journée (8h)
+        debut_minutes = (self.heure_debut.hour - 8) * 60 + self.heure_debut.minute
+        fin_minutes = (self.heure_fin.hour - 8) * 60 + self.heure_fin.minute
+        
+        # Calculer la hauteur (1px = 1 minute)
+        height = fin_minutes - debut_minutes
+        
+        return {
+            'top': f"{debut_minutes}px",
+            'height': f"{height}px"
+        }
+
+    def get_formatted_hours(self):
+        """Retourne les heures formatées pour l'affichage"""
+        if not self.heure_debut or not self.heure_fin:
+            return ""
+        return f"{self.heure_debut.strftime('%H:%M')} - {self.heure_fin.strftime('%H:%M')}"
+
+    def get_left_position(self):
+        """Calcule la position horizontale en pourcentage"""
+        if not self.heure_debut:
+            return 0
+        # Position basée sur l'heure (8h = 0%, 18h = 100%)
+        total_heures = 10  # 10 heures entre 8h et 18h
+        heure_relative = self.heure_debut.hour - 8 + (self.heure_debut.minute / 60)
+        return (heure_relative / total_heures) * 100
+
+    def get_width(self):
+        """Calcule la largeur en pourcentage"""
+        if not self.heure_debut or not self.heure_fin:
+            return 10
+        # Calculer la durée en heures
+        debut = self.heure_debut.hour + (self.heure_debut.minute / 60)
+        fin = self.heure_fin.hour + (self.heure_fin.minute / 60)
+        duree = fin - debut
+        # Convertir la durée en pourcentage (10 heures = 100%)
+        return (duree / 10) * 100
+
+    def get_left_position(self):
+        """Calcule la position horizontale en pourcentage"""
+        if not self.heure_debut:
+            return 0
+            
+        minutes_since_8am = (self.heure_debut.hour - 8) * 60 + self.heure_debut.minute
+        total_minutes = (18 - 8) * 60  # 10 heures (8h-18h) en minutes
+        return (minutes_since_8am / total_minutes) * 100
+
+    def get_width(self):
+        """Calcule la largeur en pourcentage basée sur la durée"""
+        if not (self.heure_debut and self.heure_fin):
+            return 10  # Largeur minimale par défaut
+            
+        debut_minutes = (self.heure_debut.hour - 8) * 60 + self.heure_debut.minute
+        fin_minutes = (self.heure_fin.hour - 8) * 60 + self.heure_fin.minute
+        duree_minutes = fin_minutes - debut_minutes
+        total_minutes = (18 - 8) * 60  # 10 heures en minutes
+        
+        # Minimum width of 5% to ensure visibility
+        return max((duree_minutes / total_minutes) * 100, 5)
+
+    def get_position_percent(self):
+        """Calcule la position horizontale en pourcentage basé sur une journée de 10h (8h-18h)"""
+        if not self.heure_debut:
+            return 0
+        minutes_since_8am = (self.heure_debut.hour - 8) * 60 + self.heure_debut.minute
+        return (minutes_since_8am / (10 * 60)) * 100  # 10 heures = 100%
+
+    def get_width_percent(self):
+        """Calcule la largeur en pourcentage basé sur la durée"""
+        if not (self.heure_debut and self.heure_fin):
+            return 10  # largeur minimale
+        
+        duree_minutes = (self.heure_fin.hour - self.heure_debut.hour) * 60 + \
+                       (self.heure_fin.minute - self.heure_debut.minute)
+        return max((duree_minutes / (10 * 60)) * 100, 5)  # minimum 5% de largeur
 

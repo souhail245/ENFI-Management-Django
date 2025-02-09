@@ -259,8 +259,18 @@
                         </p>
                     </a>
                 </li>
-                
-                <li class="nav-item">
+
+
+                <li class="nav-item has-treeview">
+                 <a href="#" class="nav-link">
+                    <i class="nav-icon fas fa-book"></i>
+                    <p>
+                        Gesttion des cours
+                        <i class="fas fa-angle-left right"></i>
+                    </p>
+                  </a>
+                <ul class="nav nav-treeview">
+                 <li class="nav-item">
                     {% url 'creer_emploi_temps' as creer_emploi_temps %}
                     <a href="{{ creer_emploi_temps }}"
                         class="nav-link {% if manage_timetable == request.path %} active {% endif %}">
@@ -269,7 +279,19 @@
                             Emploi du Temps
                         </p>
                     </a>
-                </li>
+                 </li>
+                 <li class="nav-item">
+                    {% url 'gerer_emploi_temps_options' as gerer_emploi_temps_options %}  {# Nouvelle URL #}
+                    <a href="{{ gerer_emploi_temps_options }}"
+                        class="nav-link {% if manage_timetable == request.path %} active {% endif %}">
+                        <i class="far fa-calendar-alt nav-icon"></i>
+                        <p>
+                            Options
+                        </p>
+                    </a>
+                 </li>
+                </ul>
+           
                 
 
 
