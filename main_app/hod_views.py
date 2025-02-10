@@ -2137,23 +2137,20 @@ def suivi_progression_options(request):
     progression_data = []
     
     for subject in subjects:
-        # Récupérer toutes les séances de cours réalisées
+        # Modifier la requête pour utiliser la plage de dates sélectionnée
         seances = EmploiTempsOption.objects.filter(
             option__nom=option_selected,
             matiere=subject,
             type_evenement='COURS',
-            date__lte=today
+            date__range=[date_debut, date_fin]  # Utiliser les dates du filtre au lieu de today
         )
         
         # Calculer le total des heures réalisées
         heures_realisees = 0
         for seance in seances:
             if seance.heure_debut and seance.heure_fin:
-                # Convertir les heures en datetime pour le calcul
-                debut = datetime.combine(date.today(), seance.heure_debut)
-                fin = datetime.combine(date.today(), seance.heure_fin)
-                
-                # Calculer la durée en heures
+                debut = datetime.combine(seance.date, seance.heure_debut)
+                fin = datetime.combine(seance.date, seance.heure_fin)
                 duree = (fin - debut).total_seconds() / 3600
                 heures_realisees += duree
         
@@ -2172,6 +2169,18 @@ def suivi_progression_options(request):
             'heures_realisees': heures_realisees,
             'progression': progression
         })
+    
+    # Modifier la requête des sessions pour utiliser date__range
+    sessions = EmploiTempsOption.objects.filter(
+        Q(option__nom=option_selected) &
+        (
+            Q(date__range=[date_debut, date_fin]) |  # Pour les événements standards
+            (
+                Q(date_debut__lte=date_fin) &  # Pour les événements multi-jours
+                Q(date_fin__gte=date_debut)
+            )
+        )
+    ).select_related('matiere', 'professeur').order_by('date', 'heure_debut')
     
     # Ajouter ceci avant le context
     # Récupérer les sessions pour le planning
