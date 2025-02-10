@@ -1912,7 +1912,7 @@ def gerer_emploi_temps_options(request):
             option_nom = request.POST.get('option')
             type_evenement = request.POST.get('type_evenement')
             date_debut_str = request.POST.get('date_debut')
-            matiere_id = request.POST.get('matiere')
+            matiere_id = request.POST.get('heure_debut')
             heure_debut_str = request.POST.get('heure_debut')
             heure_fin_str = request.POST.get('heure_fin')
             titre_evenement = request.POST.get('titre_evenement')
@@ -2108,4 +2108,92 @@ def supprimer_evenement_option(request, evenement_id):
 
     # Rediriger vers la page de gestion des options
     return redirect(reverse('gerer_emploi_temps_options') + '?option=' + option)
+
+def suivi_progression_options(request):
+    option_selected = request.GET.get('option')
+    date_debut = request.GET.get('date_debut')
+    date_fin = request.GET.get('date_fin')
+    options = Option5eme.objects.all()
+    
+    if not option_selected and options.exists():
+        option_selected = options.first().nom
+    
+    # Gestion des dates
+    today = datetime.now().date()
+    if date_debut:
+        date_debut = datetime.strptime(date_debut, '%Y-%m-%d').date()
+    else:
+        date_debut = today
+    
+    if date_fin:
+        date_fin = datetime.strptime(date_fin, '%Y-%m-%d').date()
+    else:
+        date_fin = date_debut + timedelta(days=14)
+    
+    # Récupérer toutes les matières de l'option sélectionnée
+    subjects = Subject.objects.filter(niveau='5ème année')
+    
+    # Tableau pour stocker les données de progression
+    progression_data = []
+    
+    for subject in subjects:
+        # Récupérer toutes les séances de cours réalisées
+        seances = EmploiTempsOption.objects.filter(
+            option__nom=option_selected,
+            matiere=subject,
+            type_evenement='COURS',
+            date__lte=today
+        )
+        
+        # Calculer le total des heures réalisées
+        heures_realisees = 0
+        for seance in seances:
+            if seance.heure_debut and seance.heure_fin:
+                # Convertir les heures en datetime pour le calcul
+                debut = datetime.combine(date.today(), seance.heure_debut)
+                fin = datetime.combine(date.today(), seance.heure_fin)
+                
+                # Calculer la durée en heures
+                duree = (fin - debut).total_seconds() / 3600
+                heures_realisees += duree
+        
+        # Arrondir les heures réalisées à 2 décimales
+        heures_realisees = round(heures_realisees, 2)
+        
+        # Calculer la progression en pourcentage
+        if subject.volume_horaire_total > 0:
+            progression = min(int((heures_realisees / subject.volume_horaire_total) * 100), 100)
+        else:
+            progression = 0
+            
+        progression_data.append({
+            'matiere': subject.name,
+            'volume_total': subject.volume_horaire_total,
+            'heures_realisees': heures_realisees,
+            'progression': progression
+        })
+    
+    # Ajouter ceci avant le context
+    # Récupérer les sessions pour le planning
+    sessions = EmploiTempsOption.objects.filter(
+        option__nom=option_selected,
+        date__range=[date_debut, date_fin]  # Afficher les 2 prochaines semaines
+    ).order_by('date', 'heure_debut')
+    
+    # Organiser les sessions par date
+    sessions_by_date = defaultdict(list)
+    for session in sessions:
+        sessions_by_date[session.date].append(session)
+    
+    context = {
+        'options': options,
+        'option_selected': option_selected,
+        'progression_data': progression_data,
+        'sessions_by_date': dict(sessions_by_date),  # Ajouter les sessions au contexte
+        'page_title': f'Suivi de progression - {option_selected}',
+        'date_debut': date_debut,
+        'date_fin': date_fin
+    }
+    
+    return render(request, 'hod_template/suivi_progression_options.html', context)
 

@@ -1792,6 +1792,8 @@
 
     <div class="creation-form">
         <h3>Programmer un événement pour l'option {{ option_selected }}</h3>
+        
+        <!-- Le reste du formulaire -->
         <form method="POST" action="{% url 'gerer_emploi_temps_options' %}">
             {% csrf_token %}
 
@@ -1870,6 +1872,10 @@
                     <button type="submit" class="btn-create">
                         <i class="fas fa-calendar-plus"></i> Programmer l'événement
                     </button>
+                    
+                    <a href="{% url 'suivi_progression_options' %}?option={{ option_selected }}" class="btn-create btn-view-progress">
+                        <i class="fas fa-chart-line"></i> Voir la progression
+                    </a>
                 </div>
             </div>
         </form>
