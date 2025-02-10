@@ -1735,6 +1735,44 @@ def liste_emplois(request):
             )
         )
 
+    # Calculer la progression pour chaque matière avec un calcul correct
+    subjects = Subject.objects.filter(niveau=promotion_selected)
+    today = datetime.now().date()
+
+    for subject in subjects:
+        # Récupérer toutes les séances de cours jusqu'à aujourd'hui
+        seances = EmploiTemps.objects.filter(
+            matiere=subject,
+            type_evenement='COURS',
+            date__lte=today,  # Seulement les séances passées
+            niveau=promotion_selected
+        )
+        
+        heures_realisees = 0
+        for seance in seances:
+            if seance.heure_debut and seance.heure_fin:
+                debut = datetime.combine(seance.date, seance.heure_debut)
+                fin = datetime.combine(seance.date, seance.heure_fin)
+                duree = (fin - debut).total_seconds() / 3600  # Convertir en heures
+                heures_realisees += duree
+
+        # Arrondir les heures réalisées à 2 décimales
+        subject.heures_realisees = round(heures_realisees, 2)
+        
+        # Calculer la progression en pourcentage
+        if subject.volume_horaire_total > 0:
+            subject.progression = min(
+                round((subject.heures_realisees / subject.volume_horaire_total) * 100),
+                100
+            )
+        else:
+            subject.progression = 0
+
+        # Calculer le nombre de séances restantes
+        subject.nombre_seances = seances.count()
+        subject.seances_totales = round(subject.volume_horaire_total / 2)  # 2h par séance
+        subject.seances_restantes = max(0, subject.seances_totales - subject.nombre_seances)
+
     context = {
         'sessions_by_date': dict(sessions_by_date),
         'promotions': promotions,
@@ -1742,8 +1780,10 @@ def liste_emplois(request):
         'date_debut': date_debut,
         'date_fin': date_fin,
         'dates': dates,
-        'page_title': f'Emploi du temps - {promotion_selected}'
+        'page_title': f'Emploi du temps - {promotion_selected}',
+        'subjects': subjects  # Passer les matières mises à jour au template
     }
+
     return render(request, "hod_template/liste_emplois.html", context)
 
 
