@@ -8,7 +8,7 @@ class UserModel(UserAdmin):
     ordering = ('email',)
 
 
-
+admin.site.register(MatiereOption5eme)
 
 admin.site.register(CustomUser, UserModel)
 admin.site.register(Staff)
@@ -18,4 +18,8 @@ admin.site.register(Subject)
 admin.site.register(EmploiTemps)
 admin.site.register(Option5eme)
 admin.site.register(EmploiTempsOption)
+
+
+
+
 

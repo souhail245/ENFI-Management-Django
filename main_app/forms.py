@@ -228,3 +228,25 @@ class AbsenceForm(forms.ModelForm):
             'time_to': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
             'reason': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
+
+
+
+class MatiereOption5emeForm(FormSettings):
+    option = forms.ModelChoiceField(queryset=Option5eme.objects.all(), label="Option")
+    professeur = forms.ModelChoiceField(queryset=Staff.objects.all(), label="Professeur")
+
+    class Meta:
+        model = MatiereOption5eme
+        fields = ['matiere', 'option', 'professeur', 'volume_horaire_total']
+        widgets = {
+            'matiere': forms.TextInput(attrs={'class': 'form-control'}),
+            'option': forms.Select(attrs={'class': 'form-control'}),
+            'professeur': forms.Select(attrs={'class': 'form-control'}),
+            'volume_horaire_total': forms.NumberInput(attrs={'class': 'form-control'}),
+        }
+
+    def clean_volume_horaire_total(self):
+        volume_horaire_total = self.cleaned_data.get('volume_horaire_total')
+        if volume_horaire_total is not None and volume_horaire_total < 0:
+            raise forms.ValidationError("Le volume horaire doit être positif ou nul.")
+        return volume_horaire_total

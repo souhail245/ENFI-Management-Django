@@ -1859,31 +1859,25 @@ def supprimer_evenement(request, evenement_id):
 
 
 # emploi des options :
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-from django.http import JsonResponse
 from django.contrib import messages
-from django.db.models import Q
-from django.views.decorators.csrf import csrf_exempt
+from .models import Option5eme, Subject, EmploiTempsOption, Holiday, Vacation, AcademicYear, Staff, MatiereOption5eme
+from django.utils import timezone
+from datetime import date, timedelta, datetime
 from collections import defaultdict
-from datetime import datetime, date, timedelta
-
-from .models import (
-    AcademicYear,
-    Holiday,
-    Vacation,
-    Subject,
-    Staff,
-    EmploiTempsOption,
-    Option5eme,
-)
+from django.db.models import Q
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
 def gerer_emploi_temps_options(request):
+    # Définir les options par défaut et les récupérer depuis la base de données
     options = Option5eme.objects.all()
     option_selected = request.GET.get('option', None)
+
     if not options.exists():
+      #Création des options
         Option5eme.objects.create(nom='GRN')
         Option5eme.objects.create(nom='VALO')
         Option5eme.objects.create(nom='AF')
@@ -1891,48 +1885,75 @@ def gerer_emploi_temps_options(request):
         Option5eme.objects.create(nom='EF')
         Option5eme.objects.create(nom='GAP')
         options = Option5eme.objects.all()
+        #Redirection
         first_option = Option5eme.objects.first()
         if first_option:
-            return redirect(f"{reverse('gerer_emploi_temps_options')}?option={first_option.nom}")
-        else:
+             return redirect(f"{reverse('gerer_emploi_temps_options')}?option={first_option.nom}")
+        else :
             messages.error(request, "Impossible de créer les options par defauts")
+
     if not option_selected:
+        # Si aucune option n'est sélectionnée, prendre la première option par défaut
         first_option = Option5eme.objects.first()
         if first_option:
             option_selected = first_option.nom
         else:
-            option_selected = None
+            option_selected = None  # Ou gérer le cas où il n'y a pas d'options
+
     promotions = ['3ème année', '4ème année', '5ème année', '6ème année']
-    subjects = Subject.objects.filter(niveau='5ème année')
+
+    # Récupère les matières de 5ème année pour l'option sélectionnée
+    if option_selected:
+        selected_option = Option5eme.objects.get(nom=option_selected)
+        matiere_options = MatiereOption5eme.objects.filter(option=selected_option)
+    else:
+        matiere_options = []
+
     staffs = Staff.objects.all()
+
     date_debut = date.today()
     date_fin = date_debut + timedelta(days=14)
+
+    # Définir les types d'événements (en dehors du bloc try)
+    EVENEMENTS_AVEC_HORAIRE = ['COURS', 'EXAMEN_PARTIEL', 'EXAMEN_FINAL', 'RATTRAPAGE', 'FORMATION_MILITAIRE', 'CONFERENCE']
+    EVENEMENTS_MULTI_JOURS = ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE']
+    EVENEMENTS_AVEC_TITRE_OBLIGATOIRE = ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE', 'CONFERENCE']
+
     if request.method == 'POST':
         try:
             option_nom = request.POST.get('option')
             type_evenement = request.POST.get('type_evenement')
             date_debut_str = request.POST.get('date_debut')
-            matiere_id = request.POST.get('heure_debut')
+            matiere_id = request.POST.get('matiere')  # ID de MatiereOption5eme
             heure_debut_str = request.POST.get('heure_debut')
             heure_fin_str = request.POST.get('heure_fin')
             titre_evenement = request.POST.get('titre_evenement')
+
             option = Option5eme.objects.get(nom=option_nom)
+
             if matiere_id:
-                matiere = Subject.objects.get(pk=matiere_id)
+                matiere_option = get_object_or_404(MatiereOption5eme, pk=matiere_id)  # Récupérer l'instance de MatiereOption5eme
+                matiere = matiere_option #On récupere l'objet
+                professeur = matiere_option.professeur
             else:
+                matiere_option = None
                 matiere = None
+                professeur = None
+
             date_debut = date.fromisoformat(date_debut_str)
-            EVENEMENTS_AVEC_HORAIRE = ['COURS', 'EXAMEN_PARTIEL', 'EXAMEN_FINAL', 'RATTRAPAGE', 'FORMATION_MILITAIRE', 'CONFERENCE']
-            EVENEMENTS_MULTI_JOURS = ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE']
-            if not titre_evenement and type_evenement != 'FORMATION_MILITAIRE':
-                messages.error(request, "Le titre de l'événement est obligatoire.")
+
+            # Vérifier si le titre est vide (seulement si c'est un événement avec titre obligatoire)
+            if type_evenement in EVENEMENTS_AVEC_TITRE_OBLIGATOIRE and not titre_evenement:
+                messages.error(request, "Le titre de l'événement est obligatoire pour ce type d'événement.")
                 return redirect(f"{reverse('gerer_emploi_temps_options')}?option={option.nom}")
+
             if type_evenement in EVENEMENTS_MULTI_JOURS:
                 date_fin = request.POST.get("date_fin")
+
                 if not date_fin:
-                    raise ValueError("La date de fin est requise pour ce type d'événement")
-                if not titre_evenement:
-                    raise ValueError(f"Le titre est requis pour un événement de type {type_evenement}")
+                    messages.error(request, "La date de fin est requise pour ce type d'événement")
+                    return redirect(f"{reverse('gerer_emploi_temps_options')}?option={option.nom}")
+
                 emploi_temps = EmploiTempsOption.objects.create(
                     option=option,
                     type_evenement=type_evenement,
@@ -1940,63 +1961,75 @@ def gerer_emploi_temps_options(request):
                     date_debut=date_debut,
                     date_fin=date_fin,
                     titre_evenement=titre_evenement,
-                    matiere=matiere,
+                    matiere=matiere_option,  # Instance de MatiereOption5eme
                     professeur=None,
                     heure_debut=None,
                     heure_fin=None
                 )
+
             elif type_evenement in EVENEMENTS_AVEC_HORAIRE:
                 heure_debut = request.POST.get("heure_debut")
                 heure_fin = request.POST.get("heure_fin")
+
                 if not (heure_debut and heure_fin):
-                    raise ValueError("Les heures de début et de fin sont requises pour ce type d'événement")
-                if matiere_id:
-                    matiere = Subject.objects.get(pk=matiere_id)
-                else:
-                    matiere = None
+                    messages.error(request, "Les heures de début et de fin sont requises pour ce type d'événement")
+                    return redirect(f"{reverse('gerer_emploi_temps_options')}?option={option.nom}")
+
+                # Gestion spécifique pour FORMATION_MILITAIRE
                 if type_evenement == 'FORMATION_MILITAIRE':
                     professeur = None
                     matiere = None
                 else:
-                    try:
-                        professeur = matiere.professeur
-                        if type_evenement in ['EXAMEN_PARTIEL', 'EXAMEN_FINAL', 'RATTRAPAGE'] and professeur is None:
-                            messages.error(request, "Aucun professeur n'est associé à cette matière. Veuillez contacter l'administrateur.")
-                            return redirect(f"{reverse('gerer_emploi_temps_options')}?option={option.nom}")
-                    except AttributeError:
-                        professeur = None
+                    #professeur=matiere.professeur
+                    #if matiere:
+                     professeur = matiere_option.professeur if matiere_option else None   #instance
+                    #else:
+                        #professeur=None
+
                 emploi_temps = EmploiTempsOption.objects.create(
                     option=option,
                     type_evenement=type_evenement,
                     date=date_debut,
                     date_debut=date_debut,
-                    matiere=matiere,
+                    matiere=matiere_option,  # Instance de MatiereOption5eme
                     professeur=professeur,
                     titre_evenement=titre_evenement,
                     heure_debut=datetime.strptime(heure_debut, '%H:%M').time(),
                     heure_fin=datetime.strptime(heure_fin, '%H:%M').time()
                 )
+
+            # Retourner une réponse JSON pour les requêtes AJAX
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'success': True})
+
             messages.success(request, "Événement programmé avec succès")
             return redirect(f"{reverse('gerer_emploi_temps_options')}?option={option.nom}")
+
         except Exception as e:
             print(f"Erreur: {str(e)}")
             messages.error(request, f"Erreur lors de la programmation : {str(e)}")
             return redirect(f"{reverse('gerer_emploi_temps_options')}?option={option.nom}")
+
     else:
+        # Le reste de votre code pour le cas GET reste inchangé
         date_debut = request.GET.get('date_debut', datetime.now().date())
         if isinstance(date_debut, str):
             date_debut = datetime.strptime(date_debut, '%Y-%m-%d').date()
         date_fin = date_debut + timedelta(days=14)
+
+        # Récupération de l'année académique courante
         try:
             current_year = AcademicYear.objects.filter(start_date__lte=date_debut, end_date__gte=date_debut).first()
         except AcademicYear.DoesNotExist:
             messages.error(request, "Aucune année académique n'a été définie pour cette date.")
             current_year = None
+
+        # Création des événements 'JOUR_FERIE' et 'VACANCES'
         if current_year:
+            # Récupérer les jours fériés de l'année courante
             holidays = Holiday.objects.filter(date__range=[current_year.start_date, current_year.end_date])
             for holiday in holidays:
+                # Vérifier si l'événement n'existe pas déjà pour éviter les doublons
                 if not EmploiTempsOption.objects.filter(date=holiday.date, type_evenement='JOUR_FERIE', option__nom=option_selected).exists():
                     Option_choosed = Option5eme.objects.get(nom=option_selected)
                     emploi_temps = EmploiTempsOption(
@@ -2006,10 +2039,14 @@ def gerer_emploi_temps_options(request):
                         titre_evenement=holiday.description,
                     )
                     emploi_temps.save()
+
+            # Récupérer les vacances de l'année courante
             vacations = Vacation.objects.filter(start_date__range=[current_year.start_date, current_year.end_date])
             for vacation in vacations:
+                # Pour chaque jour de la période de vacances
                 current_date = vacation.start_date
                 while current_date <= vacation.end_date:
+                    # Vérifier si la période n'existe pas déjà pour éviter les doublons
                     if not EmploiTempsOption.objects.filter(date=current_date, type_evenement='VACANCES', option__nom=option_selected, titre_evenement=vacation.description).exists():
                         Option_choosed = Option5eme.objects.get(nom=option_selected)
                         EmploiTempsOption.objects.create(
@@ -2019,6 +2056,8 @@ def gerer_emploi_temps_options(request):
                             titre_evenement=vacation.description,
                         )
                     current_date += timedelta(days=1)
+
+        # Récupérer l'emploi du temps pour l'option sélectionnée et les 14 prochains jours
         if option_selected:
             selected_option = Option5eme.objects.get(nom=option_selected)
             sessions = EmploiTempsOption.objects.filter(
@@ -2027,6 +2066,7 @@ def gerer_emploi_temps_options(request):
             ).select_related('matiere', 'professeur').order_by('heure_debut')
         else:
             sessions = []
+
         sessions_by_date = defaultdict(dict)
         dates = []
         current_date = date_debut
@@ -2034,27 +2074,32 @@ def gerer_emploi_temps_options(request):
             dates.append(current_date)
             current_date += timedelta(days=1)
         horaires = ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00']
+
         sessions_by_date = defaultdict(lambda: defaultdict(dict))
         for session in sessions:
             if (session.type_evenement in ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE', 'VACANCES', 'JOUR_FERIE']):
+                # Pour les événements multi-jours
                 if (session.date_debut and session.date_fin):
                     event_start = max(session.date_debut, date_debut)
                     event_end = min(session.date_fin, date_fin)
                     current = event_start
-                    while (current <= event_end):
+                    while current <= event_end:
                         sessions_by_date[current]['full_day'] = session
                         current += timedelta(days=1)
                 else:
+                    # Pour les événements VACANCES et JOUR_FERIE
                     sessions_by_date[session.date]['full_day'] = session
             else:
+                # Pour les événements standards, utiliser heure_debut comme clé
                 time_key = session.heure_debut.strftime('%H:%M')
                 sessions_by_date[session.date][time_key] = session
+
         context = {
             "promotions": promotions,
-            "promotion_selected": '',
+            "promotion_selected": '', #Pas besoin de cette variable
             "options": options,
             "option_selected": option_selected,
-            "subjects": Subject.objects.filter(niveau= '5ème année').order_by('name'),
+            "matieres_options": matiere_options,  # Les instances de MatiereOption5eme
             "sessions_by_date": dict(sessions_by_date),
             "dates": dates,
             "horaires": horaires,
@@ -2062,16 +2107,21 @@ def gerer_emploi_temps_options(request):
             "date_fin": date_fin,
             'page_title': f'Emploi du temps - {option_selected}'
         }
+
+        # Remplacer horaires fixes par plage horaire
         heures_possibles = [
-            {'debut': '08:00', 'fin': '19:00'}
+            {'debut': '08:00', 'fin': '19:00'}  # Plage horaire de la journée
         ]
+
         context.update({
             'heures_possibles': heures_possibles,
-            'intervalle_minutes': 30
+            'intervalle_minutes': 30  # Pour l'affichage de la grille
         })
-        sessions_by_date = defaultdict(list)
+
+        sessions_by_date = defaultdict(list)  # Changé en list au lieu de dict
         for session in sessions:
             if session.type_evenement in ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE', 'VACANCES', 'JOUR_FERIE']:
+                # Pour les événements multi-jours
                 if session.date_debut and session.date_fin:
                     event_start = max(session.date_debut, date_debut)
                     event_end = min(session.date_fin, date_fin)
@@ -2079,12 +2129,14 @@ def gerer_emploi_temps_options(request):
                     while current <= event_end:
                         sessions_by_date[current].append(session)
                         current += timedelta(days=1)
-                else:
-                    time_key = session.heure_debut.strftime('%H:%M')
-                    sessions_by_date[session.date].append(session)
+            else:
+                # Pour les événements standards avec horaire
+                sessions_by_date[session.date].append(session)
+
         context.update({
             'sessions_by_date': dict(sessions_by_date)
         })
+
         return render(request, "hod_template/options_5eme.html", context)
         
 def supprimer_evenement_option(request, evenement_id):
@@ -2205,4 +2257,32 @@ def suivi_progression_options(request):
     }
     
     return render(request, 'hod_template/suivi_progression_options.html', context)
+
+
+
+# matieres des options :
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
+from django.contrib import messages
+from .models import MatiereOption5eme, Option5eme
+from .forms import MatiereOption5emeForm
+
+def ajouter_matiere_option(request):
+    if request.method == 'POST':
+        form = MatiereOption5emeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Matière ajoutée avec succès à l'option.")
+            return redirect(reverse('ajouter_matiere_option'))  # Rediriger vers la même page
+        else:
+            messages.error(request, "Erreur lors de l'ajout de la matière.")
+    else:
+        form = MatiereOption5emeForm()
+    context = {
+        'form': form,
+        'page_title': 'Ajouter une matière à une option (5ème année)'
+    }
+    return render(request, 'hod_template/ajouter_matiere_option.html', context)
+
 

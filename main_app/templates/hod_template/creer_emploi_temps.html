@@ -1762,16 +1762,6 @@
 
 
 <div class="main-container">
-    <!-- Messages -->
-    {% if messages %}
-        <div class="alert-container">
-            {% for message in messages %}
-                <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
 
     <!-- Liste déroulante pour choisir la promotion -->
     <div class="form-group">

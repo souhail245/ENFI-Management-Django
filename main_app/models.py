@@ -716,6 +716,19 @@ class Option5eme(models.Model):  # Nouveau modèle pour les options
     def __str__(self):
         return self.nom
 
+class MatiereOption5eme(models.Model):
+    option = models.ForeignKey(Option5eme, on_delete=models.CASCADE, verbose_name="Option")
+    matiere = models.CharField(max_length=255, verbose_name="Nom de la matière")
+    professeur = models.ForeignKey('Staff', on_delete=models.CASCADE, verbose_name="Professeur", null=True,
+        blank=True)
+    volume_horaire_total = models.IntegerField(default=40, verbose_name="Volume horaire total")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Date de mise à jour")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
+
+    def __str__(self):
+        return f"{self.matiere} ({self.option.nom})"
+
+
 class EmploiTempsOption(models.Model): # Modèle pour l'emploi du temps par option
     option = models.ForeignKey(Option5eme, on_delete=models.CASCADE, verbose_name="Option")
     JOUR_CHOICES = [
@@ -731,10 +744,11 @@ class EmploiTempsOption(models.Model): # Modèle pour l'emploi du temps par opti
     heure_debut = models.TimeField(null=True, blank=True)
     heure_fin = models.TimeField(null=True, blank=True)
     matiere = models.ForeignKey(
-        Subject,
+        MatiereOption5eme,
         on_delete=models.CASCADE,
         null=True,
-        blank=True
+        blank=True,
+        verbose_name="Matière (Option)"
     )
     professeur = models.ForeignKey(
         Staff,

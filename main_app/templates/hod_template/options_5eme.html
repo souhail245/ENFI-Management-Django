@@ -1767,16 +1767,6 @@
 
 
 <div class="main-container">
-    <!-- Messages -->
-    {% if messages %}
-        <div class="alert-container">
-            {% for message in messages %}
-                <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
 
     <!-- Liste déroulante pour choisir l'option -->
     <div class="form-group">
@@ -1816,15 +1806,13 @@
                 </div>
     
                 <!-- Matière et Professeur -->
-                <div id="cours_examens_fields" style="display:none;">
-                    <div class="form-group">
-                        <label for="matiere">Matière :</label>
-                        <select name="matiere" id="matiere" class="form-control">
-                            {% for subject in subjects %}
-                                <option value="{{ subject.id }}">{{ subject.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
+                <div class="form-group">
+                    <label for="matiere">Matière :</label>
+                    <select name="matiere" id="matiere" class="form-control">
+                        {% for matiere_option in matieres_options %}
+                            <option value="{{ matiere_option.id }}">{{ matiere_option.matiere }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
     
                 <!-- Dates et Heures -->
@@ -1928,15 +1916,16 @@
                                             <input type="hidden" name="type_evenement" value="COURS">
                                             <input type="hidden" name="promotion" value="{{ promotion_selected }}">
                                             <input type="hidden" name="date_debut" value="{{ date|date:'Y-m-d' }}">
-                        
-                                            <div class="form-group mb-2">
-                                                <select name="matiere" id="matiere-select" class="form-control">
-                                                    <option value="">Choisir une matière</option>
-                                                    {% for subject in subjects %}
-                                                        <option value="{{ subject.id }}">{{ subject.name }}</option>
-                                                    {% endfor %}
-                                                </select>
-                                            </div>
+                                                            
+                    <div class="form-group">
+                        <label for="matiere">Matière :</label>
+                        <select name="matiere" id="matiere" class="form-control">
+                            {% for matiere_option in matieres_options %}
+                                <option value="{{ matiere_option.id }}">{{ matiere_option.matiere }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                  
                         
                                             <div class="row g-2">
                                                 <div class="col-6">
@@ -1963,16 +1952,16 @@
         </div>
     </div>
     <script>
-          document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function() {
     const typeEvenementSelect = document.getElementById('type_evenement');
     const titreEvenementGroup = document.getElementById('titre_evenement_group');
     const matiereGroup = document.getElementById('cours_examens_fields');
     const dateFinGroup = document.getElementById('date_fin_group');
     const horaireFields = document.getElementById('horaire_fields');
-
+    const EVENTS_WITH_TITLE = ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE', 'CONFERENCE'];
     function toggleFields() {
         const type = typeEvenementSelect.value;
-        const showTitle = ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE', 'CONFERENCE'].includes(type);
+        const showTitle = EVENTS_WITH_TITLE.includes(type);
         const showMatiere = ['COURS', 'EXAMEN_PARTIEL', 'EXAMEN_FINAL', 'RATTRAPAGE'].includes(type);
         const showDateFin = ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE'].includes(type);
         const showHoraire = ['COURS', 'EXAMEN_PARTIEL', 'EXAMEN_FINAL', 'RATTRAPAGE', 'FORMATION_MILITAIRE','CONFERENCE'].includes(type);
@@ -1996,7 +1985,9 @@
 
        toggleFields(); // Initialiser l'affichage au chargement de la page
        typeEvenementSelect.addEventListener('change', toggleFields);
+    
    });
+   
         document.addEventListener('DOMContentLoaded', function() {
             // Définir une liste des types d'événements qui sont multi-jours
             const multiDayEventTypes = ['TOURNEE', 'SORTIE', 'PROJET', 'VISITE_MILITAIRE'];

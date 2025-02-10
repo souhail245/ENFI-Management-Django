@@ -304,17 +304,7 @@
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            {% url 'add_subject' as add_subject %}
-                            <a href="{{add_subject}}"
-                                class="nav-link  {% if add_subject == request.path %} active {% endif %}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>
-                                    Ajouter une Matière
-
-                                </p>
-                            </a>
-                        </li>
+                        
                         <li class="nav-item">
                             {% url 'manage_subject' as manage_subject %}
                             {% url 'edit_subject' subject_id as edit_subject %}
@@ -324,6 +314,16 @@
                                 <p>
                                     Gérer les Matières
 
+                                </p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            {% url 'ajouter_matiere_option' as ajouter_matiere_option_url %}  {# Stocker l'URL dans une variable #}
+                            <a href="{{ ajouter_matiere_option_url }}"  {# Utiliser la variable #}
+                               class="nav-link {% if ajouter_matiere_option_url == request.path %}active{% endif %}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>
+                                   Matières (Options)
                                 </p>
                             </a>
                         </li>

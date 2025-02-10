@@ -114,7 +114,7 @@ urlpatterns = [
     path('supprimer-evenement-option/<int:evenement_id>/', hod_views.supprimer_evenement_option, name='supprimer_evenement_option'),
 
     path('suivi-progression-options/', hod_views.suivi_progression_options, name='suivi_progression_options'),
-
+     path('matieres_options/ajouter/', hod_views.ajouter_matiere_option, name='ajouter_matiere_option'),
     # Staff
     path("staff/home/", staff_views.staff_home, name='staff_home'),
     path("staff/apply/leave/", staff_views.staff_apply_leave,
